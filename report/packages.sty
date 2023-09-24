@@ -1,0 +1,81 @@
+\ProvidesPackage{packages}
+% Page layout, document format
+\usepackage[top=3.5cm,bottom=2cm,right=2cm,left=3.5cm]{geometry}
+\geometry{a4paper,tmargin=35mm,bmargin=20mm,lmargin=35mm,rmargin=20mm} % margins, valid for both one- and two-sided print
+\usepackage{lastpage} % For counting number of pages in abstract
+\usepackage[figure,table,xspace]{totalcount} % For counting number of figures/tables in abstract
+\usepackage[anticlockwise, figuresleft]{rotating} % For rotating pages/tables/figures
+\usepackage{setspace}   % More control over linespacing
+\usepackage{fancyhdr}   % More control over headers and footers
+\usepackage[titletoc]{appendix}
+
+% Text
+\usepackage[T1]{fontenc}    %  Fix accented characters in PDFs, e.g. ä instead of ¨a
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{csquotes}   % Automatic quote styles
+\usepackage{textcomp, gensymb}  % SI units and other special symbols
+\usepackage{multicol}   % Multicolumn text
+%\usepackage{icomma}     % Comma as decimal separator
+\usepackage[gen]{eurosym}
+
+% Math
+\usepackage{mathtools}  % amsmath + additional control over formatting and symbols
+\mathtoolsset{showonlyrefs} % Only number equations that are referred to
+\usepackage{amssymb,amsthm}   % Math environments, fonts, symbols, etc.
+\usepackage{commath}    % Differential calculus, delimiter and reference macros, misc.
+\usepackage{bm,bbm}     % \bm for bold math symbols and \mathbbm to use instead of \mathbb
+
+% References
+\usepackage[style=authoryear, autocite=inline, maxbibnames=9,maxcitenames=2, date=year,citestyle=authoryear,sorting=nyt,natbib=true,uniquelist=false,uniquename=false]{biblatex}
+\DeclareFieldFormat*{title}{\textit{#1}}
+\DeclareFieldFormat*{journal}{\textnormal{#1}}
+\DeclareFieldFormat*{booktitle}{\textnormal{#1}}
+\DeclareFieldFormat*{journaltitle}{\textnormal{#1}}
+\renewbibmacro{in:}{}
+\DeclareNameAlias{sortname}{family-given}
+\DeclareNameAlias{author}{family-given}
+\renewcommand\nameyeardelim{, }
+
+% Figures
+\usepackage{pgfplots}
+\usepackage{caption, subcaption}
+\captionsetup{font=small,labelfont={bf},labelsep=period, singlelinecheck=off}
+\captionsetup[sub]{font=footnotesize,labelfont={}}
+\usepackage{placeins}   % More control over float positioning with \FloatBarrier
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing, decorations.markings, shapes, bayesnet}
+\usetikzlibrary{external} % Convert tikz code into .pdf for faster compiling
+\usepackage[outdir=./]{epstopdf}    % Convert .eps to .pdf
+
+% Algorithms
+\usepackage{algorithm2e}
+\renewcommand{\@algocf@capt@plain}{above}   % Algorithm caption before the algorithm
+\SetKwProg{Fn}{Function}{}{}
+
+% Other environments
+\usepackage[shortlabels]{enumitem}  % Enhanced lists
+\usepackage{tabularx,booktabs,longtable}  % Enhanced tables
+\usepackage[final]{pdfpages} % Insert pdf pages in document
+\usepackage{fancyvrb} % Enable verbatim in footnotes
+\VerbatimFootnotes
+\usepackage{csvsimple}  % Working with CSVs
+
+% Editor
+\usepackage{comment}
+\usepackage[l2tabu]{nag}    % Warnings for style mistakes and obsolete commands
+
+% Hyper/cleveref have a tendency to mess things up if imported too early, hence they are imported as late as possible
+\usepackage{hyperref}
+\usepackage[capitalize]{cleveref}% Hyperlinks and automatic reference style with \cref
+\urlstyle{same}
+% Formatting of the references
+\crefdefaultlabelformat{#2#1#3}
+\creflabelformat{figure}{#2#1#3}
+\crefformat{figure}{Figure~#2#1#3}
+\Crefformat{figure}{Figure~#2#1#3}
+\creflabelformat{equation}{(#2#1#3)}
+\Crefformat{equation}{Equation~(#2#1#3)}
+% Fix refering to appendices
+\AtBeginEnvironment{appendices}{\crefalias{section}{appendix}} 
+\AtBeginEnvironment{appendices}{\crefalias{subsection}{appendix}}
