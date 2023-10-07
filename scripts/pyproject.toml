@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kyykkaanalysis"
+authors = [
+    {name = "Elias Räsänen"},
+]
+description = "Analysis of kyykka play times"
+readme = "README.md"
+requires-python = ">=3.12"
+version = "0.0.1"
+dependencies = [
+    "numpy>=1.26.0",
+    "packaging>=23.2",
+    "plotly>=5.17.0",
+    "tenacity>=8.2.3",
+]
+
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "click",
+    "colorama",
+    "mypy-extensions",
+    "pathspec",
+    "platformdirs",
+]
