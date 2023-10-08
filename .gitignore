@@ -461,4 +461,4 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
 report/main.pdf
-.vscode/launch.json
+.vscode/*
