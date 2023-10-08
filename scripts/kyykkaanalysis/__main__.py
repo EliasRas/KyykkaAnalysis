@@ -2,6 +2,8 @@
 from pathlib import Path
 from argparse import ArgumentParser, Namespace
 
+from kyykkaanalysis.data.data_reading import read_times
+
 
 def main():
     """
@@ -9,6 +11,7 @@ def main():
     """
 
     args = _parse_arguments()
+    data = read_times(args.input_file)
 
 
 def _parse_arguments() -> Namespace:
