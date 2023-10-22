@@ -108,7 +108,7 @@ def _parse_kona_time(
     halves: list[Half],
     konas: list[Konatime],
     time: np.datetime64,
-) -> list[Konatime]:
+) -> tuple[list[Half], list[Konatime]]:
     if len(konas) == 0:
         konas.append(Konatime(time))
     else:
@@ -117,8 +117,8 @@ def _parse_kona_time(
         konas = []
         if len(halves) == 2:
             stream.games.append(Game(tuple(halves)))
-            halves = []
+            halves = [Half()]
         else:
             halves.append(Half())
 
-    return konas
+    return halves, konas
