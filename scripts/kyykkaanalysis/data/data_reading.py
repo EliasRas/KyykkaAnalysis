@@ -31,6 +31,7 @@ def read_times(input_file: Path) -> list[Stream]:
     if not input_file.exists():
         raise ValueError("Input file does not exist.")
 
+    player_ids = {}
     data = []
     with open(input_file, encoding="utf-8") as file:
         for i, line in enumerate(file):
@@ -45,7 +46,7 @@ def read_times(input_file: Path) -> list[Stream]:
                 times = content[: _last_valid_time(content) + 1]
             else:
                 players = content[: _last_valid_time(content) + 1]
-                _read_stream_times(stream, times, players)
+                _read_stream_times(player_ids, stream, times, players)
                 data.append(stream)
 
     return data
@@ -59,23 +60,30 @@ def _last_valid_time(content: list[str]) -> int:
     return last_valid_index
 
 
-def _read_stream_times(stream: Stream, times: list[str], players: list[str]) -> None:
+def _read_stream_times(
+    player_ids: dict[str, int], stream: Stream, times: list[str], players: list[str]
+) -> None:
     halves = [Half()]
     konas = []
     for time, player in zip(times, players, strict=True):
+        if len(player_ids) == 0:
+            player_ids[player] = 1
+        elif player not in player_ids:
+            player_ids[player] = max(player_ids.values()) + 1
+
         if time == "?":
-            time = None
+            time = np.datetime64("NaT")
         elif time == player == "":
             continue
         else:
             time = _parse_time(time)
 
         if player == "Kona kasassa":
-            konas = _parse_kona_time(stream, halves, konas, time)
+            halves, konas = _parse_kona_time(stream, halves, konas, time)
         else:
-            halves[-1].throws.append(Throwtime(player, time))
+            halves[-1].throws.append(Throwtime(player_ids[player], player, time))
 
-    halves[-1].konas = (None, None)
+    halves[-1].konas = (Konatime(np.datetime64("NaT")), Konatime(np.datetime64("NaT")))
     stream.games.append(Game(tuple(halves)))
 
 
@@ -99,7 +107,7 @@ def _parse_kona_time(
     stream: Stream,
     halves: list[Half],
     konas: list[Konatime],
-    time: np.datetime64 | None,
+    time: np.datetime64,
 ) -> list[Konatime]:
     if len(konas) == 0:
         konas.append(Konatime(time))
