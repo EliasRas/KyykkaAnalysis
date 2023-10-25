@@ -5,6 +5,69 @@ import numpy as np
 
 from .data_classes import Stream, Game, Half, Konatime, Throwtime
 
+TEAMS = {
+    "Tommi Linnamaa": "ABUA",
+    "Tommi Nikula": "ABUA",
+    "Akseli Kalliomäki": "MOT",
+    "Jesse Peltoniemi": "MOT",
+    "Valtteri Yli-Karro": "ABUA",
+    "Tiina Mikkonen": "ABUA",
+    "Janne Rahko": "MOT",
+    "Sami Mäkipää": "MOT",
+    "Akseli Koskela": "DDRNV Biergarten",
+    "Juho Ahvenniemi": "KOVA",
+    "Pietu Mäenpää": "KOVA",
+    "Viljami Sinisalo": "KOVA",
+    "Kim Lillfors": "KOVA",
+    "Salla-Mari Palokari": "DDRNV Arschloch",
+    "Mikko Rajakorpi": "DDRNV Arschloch",
+    "Jere Lilja": "DDRNV Arschloch",
+    "Juulia Kärki": "DDRNV Arschloch",
+    "Vilma Mäkitalo": "KuHa",
+    "Miika Vanonen": "KuHa",
+    "Julius Setälä": "KOVA",
+    "Kalle Lehtola": "KuHa",
+    "Inka Seppälä": "KuHa",
+    "Eino Niittymäki": "Sauna ukot",
+    "Topi Jalonen": "Sauna ukot",
+    "Nuutti Mikkonen": "Sauna ukot",
+    "Antti Vettervik": "Sauna ukot",
+    "Aleksi Kamppi": "Sauna ukot",
+    "Lauri Varjo": "Sauna ukot",
+    "Antti Kukko": "DL",
+    "Elias Räsänen": "DL",
+    "Oskari Kansanen": "DDRNV Langer tod",
+    "Tuomas Himmanen": "DDRNV Langer tod",
+    "Antti Peltotalo": "DL",
+    "Julia Bondarchik": "DL",
+    "Veeti Ahvonen": "DDRNV Langer tod",
+    "Iiro Pulska": "DDRNV Langer tod",
+    "Teemu Ala-Järvenpää": "DDRNV Biergarten",
+    "Matias Selin": "DDRNV Biergarten",
+    "Niko Leppänen": "DDRNV Biergarten",
+    "Natalia Kovru": "Ullatus",
+    "Miika Sorvali": "Ullatus",
+    "Tuomo Nieminen": "Ullatus",
+    "Riku Sinkkonen": "Ullatus",
+    "Kimmo Lastunen": "MörköEeverttiMöröt",
+    "Sakari Rautalin": "MörköEeverttiMöröt",
+    "Janne Lehtimäki": "MörköEeverttiMöröt",
+    "Lasse Enäsuo": "MörköEeverttiMöröt",
+    "Oskari Kolehmainen": "DDRNV Arschloch",
+    "Thomas Mikkonen": "DDRNV Biergarten",
+    "Akseli Kolari": "EssoXL",
+    "Jori Ala-Aho": "EssoXL",
+    "Timo Punkari": "EssoXL",
+    "Karli Kund": "EssoXL",
+    "Lassi Halminen": "DDRNV Langer tod",
+    "Ville Venetjoki": "ABUA",
+    "Jani Käpylä": "Sauna ukot",
+    "Rudolf Salminen": "EssoXL",
+    "Leevi Malin": "KuHa",
+    "Lauri Ahlqvist": "KuHa",
+    "Ville Niemi": "DL",
+}
+
 
 def read_times(input_file: Path) -> list[Stream]:
     """
@@ -17,8 +80,8 @@ def read_times(input_file: Path) -> list[Stream]:
 
     Returns
     -------
-    list[Stream]
-        _description_
+    list of Stream
+        Play times
 
     Raises
     ------
@@ -41,12 +104,14 @@ def read_times(input_file: Path) -> list[Stream]:
                 pitch = content[1]
                 if pitch == "":
                     pitch = "Kenttä 1"
-                stream = Stream(url, pitch)
+                stream = Stream(url, pitch, len(data) >= 13)
             elif i % 3 == 1:
                 times = content[: _last_valid_time(content) + 1]
             else:
                 players = content[: _last_valid_time(content) + 1]
-                _read_stream_times(player_ids, stream, times, players)
+                _read_stream_times(
+                    player_ids, stream, times, players, playoffs=len(data) >= 13
+                )
                 data.append(stream)
 
     return data
@@ -61,9 +126,13 @@ def _last_valid_time(content: list[str]) -> int:
 
 
 def _read_stream_times(
-    player_ids: dict[str, int], stream: Stream, times: list[str], players: list[str]
+    player_ids: dict[str, int],
+    stream: Stream,
+    times: list[str],
+    players: list[str],
+    playoffs: bool,
 ) -> None:
-    halves = [Half()]
+    halves = [Half(playoffs)]
     konas = []
     for time, player in zip(times, players, strict=True):
         if len(player_ids) == 0:
@@ -79,12 +148,17 @@ def _read_stream_times(
             time = _parse_time(time)
 
         if player == "Kona kasassa":
-            halves, konas = _parse_kona_time(stream, halves, konas, time)
+            halves, konas = _parse_kona_time(stream, halves, konas, time, playoffs)
         else:
-            halves[-1].throws.append(Throwtime(player_ids[player], player, time))
+            halves[-1].throws.append(
+                Throwtime(player_ids[player], player, time, TEAMS[player], playoffs)
+            )
 
-    halves[-1].konas = (Konatime(np.datetime64("NaT")), Konatime(np.datetime64("NaT")))
-    stream.games.append(Game(tuple(halves)))
+    halves[-1].konas = (
+        Konatime(np.datetime64("NaT"), playoffs),
+        Konatime(np.datetime64("NaT"), playoffs),
+    )
+    stream.games.append(Game(playoffs, tuple(halves)))
 
 
 def _parse_time(time_string: str) -> np.datetime64:
@@ -108,17 +182,18 @@ def _parse_kona_time(
     halves: list[Half],
     konas: list[Konatime],
     time: np.datetime64,
+    playoffs: bool,
 ) -> tuple[list[Half], list[Konatime]]:
     if len(konas) == 0:
-        konas.append(Konatime(time))
+        konas.append(Konatime(time, playoffs))
     else:
-        konas.append(Konatime(time))
+        konas.append(Konatime(time, playoffs))
         halves[-1].konas = tuple(konas)
         konas = []
         if len(halves) == 2:
-            stream.games.append(Game(tuple(halves)))
-            halves = [Half()]
+            stream.games.append(Game(playoffs, tuple(halves)))
+            halves = [Half(playoffs)]
         else:
-            halves.append(Half())
+            halves.append(Half(playoffs))
 
     return halves, konas

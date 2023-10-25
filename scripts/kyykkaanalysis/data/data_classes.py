@@ -20,11 +20,17 @@ class Throwtime:
         Name of the player
     time : numpy.datetime64
         Time of the throw
+    team : str
+        Name of the player's team
+    playoffs : bool
+        Whether the half is from a playoff game
     """
 
     player_id: int
     player: str
     time: np.datetime64
+    team: str
+    playoffs: bool
 
 
 @dataclass
@@ -36,9 +42,12 @@ class Konatime:
     ----------
     time : numpy.datetime64
         Time of the kona
+    playoffs : bool
+        Whether the half is from a playoff game
     """
 
     time: np.datetime64
+    playoffs: bool
 
 
 @dataclass
@@ -48,12 +57,15 @@ class Half:
 
     Attributes
     ----------
+    playoffs : bool
+        Whether the half is from a playoff game
     throws : list of Throwtime
         Throws in the half
     konas : tuple of (Konatime, Konatime)
         Piled konas from the half
     """
 
+    playoffs: bool
     throws: list[Throwtime] = field(default_factory=list)
     konas: tuple[Konatime, Konatime] = field(default_factory=tuple)
 
@@ -214,10 +226,13 @@ class Game:
 
     Attributes
     ----------
+    playoffs : bool
+        Whether the game was a playoff game
     halfs : tuple of (Half, Half)
         Half of the game
     """
 
+    playoffs: bool
     halfs: tuple[Half, Half] = field(default_factory=tuple)
 
     def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
@@ -368,12 +383,15 @@ class Stream:
         URL of the stream
     pitch : str
         Description of the pitch
+    playoffs : bool
+        Whether the stream was a playoffs stream
     games : list of Game
         Games played on the pitch in the stream
     """
 
     url: str
     pitch: str
+    playoffs: bool
     games: list[Game] = field(default_factory=list)
 
     def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
