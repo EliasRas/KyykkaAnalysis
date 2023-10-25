@@ -120,6 +120,17 @@ class Half:
         """
 
         numbers = np.remainder(np.arange(len(self.throws)), 2) + 1
+        turn_indices = np.zeros(
+            min(16, len(self.throws)), int
+        )  # First 2 throws of each player
+        if len(self.throws) > 16:
+            turn_indices = np.concatenate(
+                (
+                    turn_indices,
+                    np.ones(len(self.throws) - 16, int),  # Last 2 throws of each player
+                )
+            )
+        numbers += 2 * turn_indices
 
         if difference:
             numbers = numbers[1:]
@@ -148,10 +159,14 @@ class Half:
 
         return times
 
-    @property
-    def kona_times(self) -> npt.NDArray[np.timedelta64]:
+    def kona_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
         """
-        Times it took to pile the konas
+        Timestamps of the piled konas in the half
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the times it took to pile the konas
 
         Returns
         -------
@@ -159,11 +174,37 @@ class Half:
             1D array of times
         """
 
-        times = []
-        for kona_time in self.konas:
-            times.append(kona_time.time - self.throws[-1].time)
+        if difference:
+            times = []
+            for kona_time in self.konas:
+                times.append(kona_time.time - self.throws[-1].time)
+            times = np.array(times, dtype=np.timedelta64)
+        else:
+            times = np.array(
+                [kona_time.time for kona_time in self.konas], dtype=np.datetime64
+            )
 
-        return np.array(times, dtype=np.timedelta64)
+        return times
+
+    @property
+    def duration(self) -> np.timedelta64:
+        """
+        Durations of the half
+
+        Returns
+        -------
+        numpy.timedelta64
+            Duration of the half
+        """
+
+        if len(self.throws) < 32:
+            duration = np.timedelta64("NaT")
+        elif np.isfinite(self.kona_times()).sum() < 2:
+            duration = self.throw_times()[-1] - self.throw_times()[0]
+        else:
+            duration = self.kona_times()[-1] - self.throw_times()[0]
+
+        return duration
 
 
 @dataclass
@@ -247,10 +288,14 @@ class Game:
 
         return np.concatenate([half.throw_times(difference) for half in self.halfs])
 
-    @property
-    def kona_times(self) -> npt.NDArray[np.timedelta64]:
+    def kona_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
         """
-        Times it took to pile the konas
+        Timestamps of the piled konas in the game
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the times it took to pile the konas
 
         Returns
         -------
@@ -258,7 +303,58 @@ class Game:
             1D array of times
         """
 
-        return np.concatenate([half.kona_times for half in self.halfs])
+        return np.concatenate([half.kona_times(difference) for half in self.halfs])
+
+    @property
+    def duration(self) -> np.timedelta64:
+        """
+        Durations of the game
+
+        Returns
+        -------
+        numpy.timedelta64
+            Duration of the game
+        """
+
+        if len(self.throw_times()) < 64:
+            duration = np.timedelta64("NaT")
+        elif np.isfinite(self.kona_times()).sum() < 4:
+            duration = self.throw_times()[-1] - self.throw_times()[0]
+        else:
+            duration = self.kona_times()[-1] - self.throw_times()[0]
+
+        return duration
+
+    @property
+    def half_durations(self) -> npt.NDArray[np.timedelta64]:
+        """
+        Durations of the halfs in the stream
+
+        Returns
+        -------
+        numpy.ndarray of numpy.timedelta64
+            1D array of times
+        """
+
+        return np.array([half.duration for half in self.halfs])
+
+    @property
+    def half_break(self) -> np.timedelta64:
+        """
+        The break times between the halfs in the stream
+
+        Returns
+        -------
+        numpy.ndarray of numpy.timedelta64
+            1D array of times
+        """
+
+        if len(self.halfs) > 1:
+            break_time = self.halfs[1].throw_times()[0] - self.halfs[0].kona_times()[-1]
+        else:
+            break_time = np.timedelta64("NaT")
+
+        return break_time
 
 
 @dataclass
@@ -348,10 +444,14 @@ class Stream:
 
         return np.concatenate([game.throw_times(difference) for game in self.games])
 
-    @property
-    def kona_times(self) -> npt.NDArray[np.timedelta64]:
+    def kona_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
         """
-        Times it took to pile the konas in the streams
+        Timestamps of the piled konas in the stream
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the times it took to pile the konas
 
         Returns
         -------
@@ -359,7 +459,7 @@ class Stream:
             1D array of times
         """
 
-        return np.concatenate([game.kona_times for game in self.games])
+        return np.concatenate([game.kona_times(difference) for game in self.games])
 
     @property
     def game_durations(self) -> npt.NDArray[np.timedelta64]:
@@ -372,14 +472,20 @@ class Stream:
             1D array of times
         """
 
-        durations = []
-        for game in self.games:
-            if np.isfinite(game.kona_times) < 4:
-                durations.append(game.throw_times()[-1] - game.throw_times()[0])
-            else:
-                durations.append(game.kona_times[-1] - game.throw_times()[0])
+        return np.array([game.duration for game in self.games])
 
-        return np.array(durations)
+    @property
+    def half_durations(self) -> npt.NDArray[np.timedelta64]:
+        """
+        Durations of the halfs in the stream
+
+        Returns
+        -------
+        numpy.ndarray of numpy.timedelta64
+            1D array of times
+        """
+
+        return np.concatenate([game.half_durations for game in self.games])
 
     @property
     def game_breaks(self) -> npt.NDArray[np.timedelta64]:
@@ -395,10 +501,10 @@ class Stream:
         break_times = []
         for game_index, game in enumerate(self.games[:-1]):
             break_times.append(
-                self.games[game_index + 1].throw_times()[0] - game.kona_times[-1]
+                self.games[game_index + 1].throw_times()[0] - game.kona_times()[-1]
             )
 
-        return np.array(break_times)
+        return np.array(break_times, np.datetime64)
 
     @property
     def half_breaks(self) -> npt.NDArray[np.timedelta64]:
@@ -411,10 +517,4 @@ class Stream:
             1D array of times
         """
 
-        break_times = []
-        for game in self.games:
-            break_times.append(
-                game.halfs[1].throw_times()[0] - game.halfs[0].kona_times[-1]
-            )
-
-        return np.array(break_times)
+        return np.array([game.half_break for game in self.games])
