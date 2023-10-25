@@ -94,6 +94,27 @@ class Half:
 
         return names
 
+    def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
+        """
+        Names of the teams that threw the throws of the half
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the names for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of str
+            1D array of team names
+        """
+
+        names = np.array([throw.team for throw in self.throws], dtype=str)
+        if difference:
+            names = names[1:]
+
+        return names
+
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
         Positions of the players that threw the throws of the half
@@ -251,6 +272,23 @@ class Game:
         """
 
         return np.concatenate([half.players(difference) for half in self.halfs])
+
+    def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
+        """
+        Names of the teams that threw the throws of the game
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the names for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of str
+            1D array of team names
+        """
+
+        return np.concatenate([half.teams(difference) for half in self.halfs])
 
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
@@ -410,6 +448,23 @@ class Stream:
         """
 
         return np.concatenate([game.players(difference) for game in self.games])
+
+    def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
+        """
+        Names of the teams that threw the throws in the stream
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the names for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of numpy.timedelta64
+            1D array of team names
+        """
+
+        return np.concatenate([game.teams(difference) for game in self.games])
 
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
