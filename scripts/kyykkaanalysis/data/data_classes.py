@@ -47,7 +47,6 @@ class Konatime:
     """
 
     time: np.datetime64
-    playoffs: bool
 
 
 @dataclass
@@ -57,15 +56,12 @@ class Half:
 
     Attributes
     ----------
-    playoffs : bool
-        Whether the half is from a playoff game
     throws : list of Throwtime
         Throws in the half
     konas : tuple of (Konatime, Konatime)
         Piled konas from the half
     """
 
-    playoffs: bool
     throws: list[Throwtime] = field(default_factory=list)
     konas: tuple[Konatime, Konatime] = field(default_factory=tuple)
 
@@ -110,6 +106,27 @@ class Half:
         """
 
         names = np.array([throw.team for throw in self.throws], dtype=str)
+        if difference:
+            names = names[1:]
+
+        return names
+
+    def playoffs(self, difference: bool = False) -> npt.NDArray[np.bool_]:
+        """
+        Whether the throws are from playoffs game or not
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the values for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of bool
+            1D array of values
+        """
+
+        names = np.array([throw.playoffs for throw in self.throws], dtype=bool)
         if difference:
             names = names[1:]
 
@@ -247,13 +264,10 @@ class Game:
 
     Attributes
     ----------
-    playoffs : bool
-        Whether the game was a playoff game
     halfs : tuple of (Half, Half)
         Half of the game
     """
 
-    playoffs: bool
     halfs: tuple[Half, Half] = field(default_factory=tuple)
 
     def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
@@ -289,6 +303,23 @@ class Game:
         """
 
         return np.concatenate([half.teams(difference) for half in self.halfs])
+
+    def playoffs(self, difference: bool = False) -> npt.NDArray[np.bool_]:
+        """
+        Whether the throws are from playoffs game or not
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the values for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of bool
+            1D array of values
+        """
+
+        return np.concatenate([half.playoffs(difference) for half in self.halfs])
 
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
@@ -421,15 +452,12 @@ class Stream:
         URL of the stream
     pitch : str
         Description of the pitch
-    playoffs : bool
-        Whether the stream was a playoffs stream
     games : list of Game
         Games played on the pitch in the stream
     """
 
     url: str
     pitch: str
-    playoffs: bool
     games: list[Game] = field(default_factory=list)
 
     def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
@@ -465,6 +493,23 @@ class Stream:
         """
 
         return np.concatenate([game.teams(difference) for game in self.games])
+
+    def playoffs(self, difference: bool = False) -> npt.NDArray[np.bool_]:
+        """
+        Whether the throws are from playoffs game or not
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the values for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of bool
+            1D array of values
+        """
+
+        return np.concatenate([game.playoffs(difference) for game in self.games])
 
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """

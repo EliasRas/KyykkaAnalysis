@@ -104,7 +104,7 @@ def read_times(input_file: Path) -> list[Stream]:
                 pitch = content[1]
                 if pitch == "":
                     pitch = "Kenttä 1"
-                stream = Stream(url, pitch, len(data) >= 13)
+                stream = Stream(url, pitch)
             elif i % 3 == 1:
                 times = content[: _last_valid_time(content) + 1]
             else:
@@ -132,7 +132,7 @@ def _read_stream_times(
     players: list[str],
     playoffs: bool,
 ) -> None:
-    halves = [Half(playoffs)]
+    halves = [Half()]
     konas = []
     for time, player in zip(times, players, strict=True):
         if len(player_ids) == 0:
@@ -148,17 +148,17 @@ def _read_stream_times(
             time = _parse_time(time)
 
         if player == "Kona kasassa":
-            halves, konas = _parse_kona_time(stream, halves, konas, time, playoffs)
+            halves, konas = _parse_kona_time(stream, halves, konas, time)
         else:
             halves[-1].throws.append(
                 Throwtime(player_ids[player], player, time, TEAMS[player], playoffs)
             )
 
     halves[-1].konas = (
-        Konatime(np.datetime64("NaT"), playoffs),
-        Konatime(np.datetime64("NaT"), playoffs),
+        Konatime(np.datetime64("NaT")),
+        Konatime(np.datetime64("NaT")),
     )
-    stream.games.append(Game(playoffs, tuple(halves)))
+    stream.games.append(Game(tuple(halves)))
 
 
 def _parse_time(time_string: str) -> np.datetime64:
@@ -182,18 +182,17 @@ def _parse_kona_time(
     halves: list[Half],
     konas: list[Konatime],
     time: np.datetime64,
-    playoffs: bool,
 ) -> tuple[list[Half], list[Konatime]]:
     if len(konas) == 0:
-        konas.append(Konatime(time, playoffs))
+        konas.append(Konatime(time))
     else:
-        konas.append(Konatime(time, playoffs))
+        konas.append(Konatime(time))
         halves[-1].konas = tuple(konas)
         konas = []
         if len(halves) == 2:
-            stream.games.append(Game(playoffs, tuple(halves)))
-            halves = [Half(playoffs)]
+            stream.games.append(Game(tuple(halves)))
+            halves = [Half()]
         else:
-            halves.append(Half(playoffs))
+            halves.append(Half())
 
     return halves, konas
