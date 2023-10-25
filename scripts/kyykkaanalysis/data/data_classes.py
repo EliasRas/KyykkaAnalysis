@@ -351,7 +351,7 @@ class Stream:
     @property
     def kona_times(self) -> npt.NDArray[np.timedelta64]:
         """
-        Times it took to pile the konas
+        Times it took to pile the konas in the streams
 
         Returns
         -------
@@ -360,3 +360,61 @@ class Stream:
         """
 
         return np.concatenate([game.kona_times for game in self.games])
+
+    @property
+    def game_durations(self) -> npt.NDArray[np.timedelta64]:
+        """
+        Durations of the games in the stream
+
+        Returns
+        -------
+        numpy.ndarray of numpy.timedelta64
+            1D array of times
+        """
+
+        durations = []
+        for game in self.games:
+            if np.isfinite(game.kona_times) < 4:
+                durations.append(game.throw_times()[-1] - game.throw_times()[0])
+            else:
+                durations.append(game.kona_times[-1] - game.throw_times()[0])
+
+        return np.array(durations)
+
+    @property
+    def game_breaks(self) -> npt.NDArray[np.timedelta64]:
+        """
+        The break times between the games in the stream
+
+        Returns
+        -------
+        numpy.ndarray of numpy.timedelta64
+            1D array of times
+        """
+
+        break_times = []
+        for game_index, game in enumerate(self.games[:-1]):
+            break_times.append(
+                self.games[game_index + 1].throw_times()[0] - game.kona_times[-1]
+            )
+
+        return np.array(break_times)
+
+    @property
+    def half_breaks(self) -> npt.NDArray[np.timedelta64]:
+        """
+        The break times between the halfs in the stream
+
+        Returns
+        -------
+        numpy.ndarray of numpy.timedelta64
+            1D array of times
+        """
+
+        break_times = []
+        for game in self.games:
+            break_times.append(
+                game.halfs[1].throw_times()[0] - game.halfs[0].kona_times[-1]
+            )
+
+        return np.array(break_times)
