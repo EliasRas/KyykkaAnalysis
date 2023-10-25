@@ -57,14 +57,18 @@ class Half:
     throws: list[Throwtime] = field(default_factory=list)
     konas: tuple[Konatime, Konatime] = field(default_factory=tuple)
 
-    @property
-    def players(self) -> npt.NDArray[np.str_]:
+    def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
         Names of the players that threw the throws of the half
 
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the names for the times between throws
+
         Returns
         -------
-        numpy.ndarray of numpy.timedelta64
+        numpy.ndarray of str
             1D array of player names
         """
 
@@ -73,12 +77,63 @@ class Half:
         else:
             names = np.array([throw.player for throw in self.throws], dtype=str)
 
+        if difference:
+            names = names[1:]
+
         return names
 
-    @property
-    def throw_times(self) -> npt.NDArray[np.timedelta64]:
+    def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Times between the throws
+        Positions of the players that threw the throws of the half
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the positions for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of int
+            1D array of player positions
+        """
+
+        throw_numbers = np.remainder(np.arange(len(self.throws)), 8) + 1
+
+        if difference:
+            throw_numbers = throw_numbers[1:]
+
+        return np.ceil(throw_numbers / 2)
+
+    def throw_numbers(self, difference: bool = False) -> npt.NDArray[np.int_]:
+        """
+        Whether the throw is the first or second throw
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the numbers for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of int
+            1D array of throw numbers
+        """
+
+        numbers = np.remainder(np.arange(len(self.throws)), 2) + 1
+
+        if difference:
+            numbers = numbers[1:]
+
+        return numbers
+
+    def throw_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+        """
+        Timestamps of the throws in the half
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the times between throws
 
         Returns
         -------
@@ -88,7 +143,10 @@ class Half:
 
         times = np.array([throw.time for throw in self.throws], dtype=np.datetime64)
 
-        return np.diff(times)
+        if difference:
+            times = np.diff(times)
+
+        return times
 
     @property
     def kona_times(self) -> npt.NDArray[np.timedelta64]:
@@ -121,23 +179,65 @@ class Game:
 
     halfs: tuple[Half, Half] = field(default_factory=tuple)
 
-    @property
-    def players(self) -> npt.NDArray[np.str_]:
+    def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
         Names of the players that threw the throws of the game
 
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the names for the times between throws
+
         Returns
         -------
-        numpy.ndarray of numpy.timedelta64
+        numpy.ndarray of str
             1D array of player names
         """
 
-        return np.concatenate([half.players for half in self.halfs])
+        return np.concatenate([half.players(difference) for half in self.halfs])
 
-    @property
-    def throw_times(self) -> npt.NDArray[np.timedelta64]:
+    def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Times between the throws
+        Positions of the players that threw the throws of the game
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the positions for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of int
+            1D array of player positions
+        """
+
+        return np.concatenate([half.positions(difference) for half in self.halfs])
+
+    def throw_numbers(self, difference: bool = False) -> npt.NDArray[np.int_]:
+        """
+        Whether the throw is the first or second throw
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the numbers for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of int
+            1D array of throw numbers
+        """
+
+        return np.concatenate([half.throw_numbers(difference) for half in self.halfs])
+
+    def throw_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+        """
+        Timestamps of the throws in the game
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the times between throws
 
         Returns
         -------
@@ -145,7 +245,7 @@ class Game:
             1D array of times
         """
 
-        return np.concatenate([half.throw_times for half in self.halfs])
+        return np.concatenate([half.throw_times(difference) for half in self.halfs])
 
     @property
     def kona_times(self) -> npt.NDArray[np.timedelta64]:
@@ -180,10 +280,14 @@ class Stream:
     pitch: str
     games: list[Game] = field(default_factory=list)
 
-    @property
-    def players(self) -> npt.NDArray[np.str_]:
+    def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
         Names of the players that threw the throws in the stream
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the names for the times between throws
 
         Returns
         -------
@@ -191,12 +295,50 @@ class Stream:
             1D array of player names
         """
 
-        return np.concatenate([game.players for game in self.games])
+        return np.concatenate([game.players(difference) for game in self.games])
 
-    @property
-    def throw_times(self) -> npt.NDArray[np.timedelta64]:
+    def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Times between the throws
+        Positions of the players that threw the throws in the stream
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the positions for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of int
+            1D array of player positions
+        """
+
+        return np.concatenate([game.positions(difference) for game in self.games])
+
+    def throw_numbers(self, difference: bool = False) -> npt.NDArray[np.int_]:
+        """
+        Whether the throw is the first or second throw
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the numbers for the times between throws
+
+        Returns
+        -------
+        numpy.ndarray of int
+            1D array of throw numbers
+        """
+
+        return np.concatenate([game.throw_numbers(difference) for game in self.games])
+
+    def throw_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+        """
+        Timestamps of the throws in the stream
+
+        Parameters
+        ----------
+        difference : bool, default False
+            Whether to return the times between throws
 
         Returns
         -------
@@ -204,7 +346,7 @@ class Stream:
             Times
         """
 
-        return np.concatenate([game.throw_times for game in self.games])
+        return np.concatenate([game.throw_times(difference) for game in self.games])
 
     @property
     def kona_times(self) -> npt.NDArray[np.timedelta64]:
