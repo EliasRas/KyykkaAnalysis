@@ -1,8 +1,9 @@
 """Visualizations for data"""
+from pathlib import Path
 
 import numpy as np
+from numpy import typing as npt
 from plotly import graph_objects as go, colors
-from plotly.subplots import make_subplots
 
 from ..data.data_classes import Stream
 
@@ -84,7 +85,7 @@ def timeline(data: list[Stream]):
         figure.show()
 
 
-def time_distributions(data: list[Stream]):
+def time_distributions(data: list[Stream], figure_directory: Path):
     """
     Plot the distributions of the various durations
 
@@ -92,32 +93,41 @@ def time_distributions(data: list[Stream]):
     ----------
     data : list of Stream
         Play time data
+    figure_directory : Path
+        Path to the directory in which the figures are saved
     """
 
-    _throw_distributions(data)
-    _game_distributions(data)
+    _throw_distributions(data, figure_directory)
+    _kona_distribution(data, figure_directory)
+    _game_distributions(data, figure_directory)
 
 
-def _throw_distributions(data: list[Stream]) -> None:
-    figure = make_subplots(rows=2, cols=2)
-
+def _throw_distributions(data: list[Stream], figure_directory: Path) -> None:
     throw_times = np.concatenate(
         [stream.throw_times(difference=True) for stream in data]
     )
+
+    _game_throws(data, throw_times, figure_directory)
+    _position_throws(data, throw_times, figure_directory)
+    _order_throws1(data, throw_times, figure_directory)
+    _order_throws2(data, throw_times, figure_directory)
+
+
+def _game_throws(
+    data: list[Stream], throw_times: npt.NDArray[np.timedelta64], figure_directory: Path
+) -> None:
     playoffs = np.concatenate([stream.playoffs(difference=True) for stream in data])
-    figure.add_trace(
+
+    figure = go.Figure(
         go.Histogram(
             x=throw_times[np.isfinite(throw_times) & playoffs].astype(int),
             nbinsx=50,
             histnorm="probability density",
             opacity=0.5,
+            marker_color=PLOT_COLORS[0],
             name="Runkosarjapelit",
-            hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y}",
-            legendgroup="Pelit",
-            legendgrouptitle_text="Pelit",
-        ),
-        row=1,
-        col=1,
+            hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y:.3f}",
+        )
     )
     figure.add_trace(
         go.Histogram(
@@ -125,18 +135,31 @@ def _throw_distributions(data: list[Stream]) -> None:
             nbinsx=50,
             histnorm="probability density",
             opacity=0.5,
+            marker_color=PLOT_COLORS[1],
             name="Playoffspelit",
-            hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y}",
-            legendgroup="Pelit",
-            legendgrouptitle_text="Pelit",
-        ),
-        row=1,
-        col=1,
+            hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y:.3f}",
+        )
     )
 
+    figure.update_layout(
+        barmode="overlay",
+        xaxis_title="Heittojen välinen aika [s]",
+        yaxis_showticklabels=False,
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
+
+    figure.write_html(figure_directory / "heitot1.html")
+
+
+def _position_throws(
+    data: list[Stream], throw_times: npt.NDArray[np.timedelta64], figure_directory: Path
+) -> None:
     player_positions = np.concatenate(
         [stream.positions(difference=True) for stream in data]
     )
+
+    figure = go.Figure()
     for position in range(1, 5):
         figure.add_trace(
             go.Histogram(
@@ -150,16 +173,28 @@ def _throw_distributions(data: list[Stream]) -> None:
                 name=f"{position}. heittäjä",
                 hovertemplate="Heittojen välinen aika: %{x} s<br>"
                 "Suhteellinen yleisyys: %{y:.3f}",
-                legendgroup="Heittopaikka",
-                legendgrouptitle_text="Heittopaikoittain",
             ),
-            row=1,
-            col=2,
         )
 
+    figure.update_layout(
+        barmode="overlay",
+        xaxis_title="Heittojen välinen aika [s]",
+        yaxis_showticklabels=False,
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
+
+    figure.write_html(figure_directory / "heitot2.html")
+
+
+def _order_throws1(
+    data: list[Stream], throw_times: npt.NDArray[np.timedelta64], figure_directory: Path
+) -> None:
     throw_numbers = np.concatenate(
         [stream.throw_numbers(difference=True) for stream in data]
     )
+
+    figure = go.Figure()
     for throw in range(1, 5):
         figure.add_trace(
             go.Histogram(
@@ -173,83 +208,160 @@ def _throw_distributions(data: list[Stream]) -> None:
                 name=f"{throw}. heitto",
                 hovertemplate="Heittojen välinen aika: %{x} s<br>"
                 "Suhteellinen yleisyys: %{y:.3f}",
-                legendgroup="Heitto",
-                legendgrouptitle_text="Heitoittain",
             ),
-            row=2,
-            col=1,
         )
 
+    figure.update_layout(
+        barmode="overlay",
+        xaxis_title="Heittojen välinen aika [s]",
+        yaxis_showticklabels=False,
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
+
+    figure.write_html(figure_directory / "heitot3.html")
+
+
+def _order_throws2(
+    data: list[Stream], throw_times: npt.NDArray[np.timedelta64], figure_directory: Path
+) -> None:
+    throw_numbers = (
+        np.remainder(
+            np.concatenate([stream.throw_numbers(difference=True) for stream in data]),
+            2,
+        )
+        + 1
+    )
+
+    figure = go.Figure()
+    for throw in range(1, 3):
+        figure.add_trace(
+            go.Histogram(
+                x=throw_times[
+                    np.isfinite(throw_times) & (throw_numbers == throw)
+                ].astype(int),
+                nbinsx=50,
+                histnorm="probability density",
+                opacity=0.5,
+                marker_color=PLOT_COLORS[throw - 1],
+                name=f"{throw}. heitto",
+                hovertemplate="Heittojen välinen aika: %{x} s<br>"
+                "Suhteellinen yleisyys: %{y:.3f}",
+            )
+        )
+
+    figure.update_layout(
+        barmode="overlay",
+        xaxis_title="Heittojen välinen aika [s]",
+        yaxis_showticklabels=False,
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
+
+    figure.write_html(figure_directory / "heitot4.html")
+
+
+def _kona_distribution(data: list[Stream], figure_directory: Path) -> None:
     kona_times = np.concatenate([stream.kona_times(difference=True) for stream in data])
     kona_times = kona_times[np.isfinite(kona_times)]
-    figure.add_trace(
+    figure = go.Figure(
         go.Histogram(
             x=kona_times.astype(int),
             nbinsx=25,
             marker_color=PLOT_COLORS[0],
             hovertemplate="Kasausaika: %{x} s<br>Kasausten määrä: %{y}",
             showlegend=False,
-        ),
-        row=2,
-        col=2,
+        )
     )
-    figure.update_xaxes(title_text="Heittojen välinen aika [s]", row=1, col=1)
-    figure.update_xaxes(title_text="Heittojen välinen aika [s]", row=1, col=2)
-    figure.update_xaxes(title_text="Heittojen välinen aika [s]", row=2, col=1)
-    figure.update_xaxes(title_text="Konan kasaukseen käytetty aika [s]", row=2, col=2)
     figure.update_layout(
-        barmode="overlay",
-        legend_groupclick="toggleitem",
+        xaxis_title="Konan kasaukseen käytetty aika [s]",
+        yaxis_showticklabels=False,
         separators=", ",
+        font={"size": 15, "family": "Computer modern"},
     )
-    figure.show()
+    figure.write_html(figure_directory / "konat.html")
 
 
-def _game_distributions(data: list[Stream]) -> None:
-    figure = make_subplots(rows=2, cols=2)
+def _game_distributions(data: list[Stream], figure_directory: Path) -> None:
+    _half_duration(data, figure_directory)
+    _game_duration(data, figure_directory)
+    _half_break(data, figure_directory)
+    _game_break(data, figure_directory)
+
+
+def _half_duration(data: list[Stream], figure_directory: Path) -> None:
     half_durations = np.concatenate([stream.half_durations for stream in data])
     half_durations = half_durations[np.isfinite(half_durations)]
-    figure.add_trace(
+    figure = go.Figure(
         go.Histogram(
             x=half_durations.astype(int),
             nbinsx=25,
             marker_color=PLOT_COLORS[0],
             hovertemplate="Erän kesto: %{x} s<br>Erien määrä: %{y}",
             showlegend=False,
-        ),
-        row=1,
-        col=1,
+        )
     )
+    figure.update_layout(
+        barmode="overlay",
+        xaxis_title="Erien kesto [s]",
+        yaxis_showticklabels=False,
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
+
+    figure.write_html(figure_directory / "pelit1.html")
+
+
+def _game_duration(data: list[Stream], figure_directory: Path) -> None:
     game_durations = np.concatenate([stream.game_durations for stream in data])
     game_durations = game_durations[np.isfinite(game_durations)]
-    figure.add_trace(
+    figure = go.Figure(
         go.Histogram(
             x=game_durations.astype(int),
             nbinsx=25,
             marker_color=PLOT_COLORS[0],
             hovertemplate="Pelin kesto: %{x} s<br>Pelien määrä: %{y}",
             showlegend=False,
-        ),
-        row=1,
-        col=2,
+        )
+    )
+    figure.update_layout(
+        barmode="overlay",
+        xaxis_title="Pelin kesto [s]",
+        yaxis_showticklabels=False,
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
     )
 
+    figure.write_html(figure_directory / "pelit2.html")
+
+
+def _half_break(data: list[Stream], figure_directory: Path) -> None:
     half_breaks = np.concatenate([stream.half_breaks for stream in data])
     half_breaks = half_breaks[np.isfinite(half_breaks)]
-    figure.add_trace(
+    figure = go.Figure(
         go.Histogram(
             x=half_breaks.astype(int),
             nbinsx=25,
             marker_color=PLOT_COLORS[0],
             hovertemplate="Erien välisen tauon kesto: %{x} s<br>Taukojen määrä: %{y}",
             showlegend=False,
-        ),
-        row=2,
-        col=1,
+        )
     )
+    figure.update_layout(
+        barmode="overlay",
+        xaxis_title="Erien välinen aika [s]",
+        yaxis_showticklabels=False,
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
+
+    figure.write_html(figure_directory / "pelit3.html")
+
+
+def _game_break(data: list[Stream], figure_directory: Path) -> None:
     game_breaks = np.concatenate([stream.game_breaks for stream in data])
     game_breaks = game_breaks[np.isfinite(game_breaks)]
-    figure.add_trace(
+    figure = go.Figure(
         go.Histogram(
             x=game_breaks.astype(int),
             nbinsx=25,
@@ -257,22 +369,19 @@ def _game_distributions(data: list[Stream]) -> None:
             hovertemplate="Pelien välisen tauon kesto: %{x} s<br>Taukojen määrä: %{y}",
             showlegend=False,
         ),
-        row=2,
-        col=2,
     )
-    figure.update_xaxes(title_text="Erien kesto [s]", row=1, col=1)
-    figure.update_xaxes(title_text="Pelin kesto [s]", row=1, col=2)
-    figure.update_xaxes(title_text="Erien välinen aika [s]", row=2, col=1)
-    figure.update_xaxes(title_text="Pelien välinen aika [s]", row=2, col=2)
     figure.update_layout(
         barmode="overlay",
-        legend_groupclick="toggleitem",
+        xaxis_title="Pelien välinen aika [s]",
+        yaxis_showticklabels=False,
         separators=", ",
+        font={"size": 15, "family": "Computer modern"},
     )
-    figure.show()
+
+    figure.write_html(figure_directory / "pelit4.html")
 
 
-def averages(data: list[Stream]):
+def averages(data: list[Stream], figure_directory: Path):
     """
     Plot the distribution of the average throw times of players
 
@@ -280,15 +389,15 @@ def averages(data: list[Stream]):
     ----------
     data : list of Stream
         Play time data
+    figure_directory : Path
+        Path to the directory in which the figure is saved
     """
 
-    figure = make_subplots(rows=2, cols=1, subplot_titles=["Pelaajat", "Joukkueet"])
-    _player_averages(data, figure)
-    _team_averages(data, figure)
-    figure.show()
+    _player_averages(data, figure_directory)
+    _team_averages(data, figure_directory)
 
 
-def _player_averages(data: list[Stream], figure: go.Figure) -> None:
+def _player_averages(data: list[Stream], figure_directory: Path) -> None:
     throw_times = np.concatenate(
         [stream.throw_times(difference=True) for stream in data]
     )
@@ -306,20 +415,17 @@ def _player_averages(data: list[Stream], figure: go.Figure) -> None:
         medians.append(np.median(player_times.astype(int)))
     counts = np.array(counts).reshape(-1, 1)
 
-    figure.add_trace(
+    figure = go.Figure(
         go.Box(
             y=averages,
             customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
             name="Kaikki heitot",
             boxpoints="all",
+            marker_color=PLOT_COLORS[0],
             hovertemplate="Heittäjä: %{customdata[0]}<br>"
             "Heiton keskimääräinen kesto: %{y:.1f} s<br>"
             "Heittojen määrä: %{customdata[1]}",
-            legendgroup="players",
-            legendgrouptitle_text="Pelaajat",
-        ),
-        row=1,
-        col=1,
+        )
     )
     figure.add_trace(
         go.Box(
@@ -327,14 +433,11 @@ def _player_averages(data: list[Stream], figure: go.Figure) -> None:
             customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
             name="Kaikki heitot, mediaani",
             boxpoints="all",
+            marker_color=PLOT_COLORS[1],
             hovertemplate="Heittäjä: %{customdata[0]}<br>"
             "Heiton keskimääräinen kesto: %{y:.1f} s<br>"
             "Heittojen määrä: %{customdata[1]}",
-            legendgroup="players",
-            legendgrouptitle_text="Pelaajat",
-        ),
-        row=1,
-        col=1,
+        )
     )
 
     for throw in range(1, 5):
@@ -354,18 +457,23 @@ def _player_averages(data: list[Stream], figure: go.Figure) -> None:
                 customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
                 name=f"{throw}. heitto",
                 boxpoints="all",
+                marker_color=PLOT_COLORS[throw + 1],
                 hovertemplate="Heittäjä: %{customdata[0]}<br>"
                 "Heiton keskimääräinen kesto: %{y:.1f} s<br>"
                 "Heittojen määrä: %{customdata[1]}",
-                legendgroup="players",
-                legendgrouptitle_text="Pelaajat",
-            ),
-            row=1,
-            col=1,
+            )
         )
 
+    figure.update_layout(
+        legend_groupclick="toggleitem",
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
 
-def _team_averages(data: list[Stream], figure: go.Figure) -> None:
+    figure.write_html(figure_directory / "keskiarvot1.html")
+
+
+def _team_averages(data: list[Stream], figure_directory: Path) -> None:
     throw_times = np.concatenate(
         [stream.throw_times(difference=True) for stream in data]
     )
@@ -383,20 +491,17 @@ def _team_averages(data: list[Stream], figure: go.Figure) -> None:
         medians.append(np.median(player_times.astype(int)))
     counts = np.array(counts).reshape(-1, 1)
 
-    figure.add_trace(
+    figure = go.Figure(
         go.Box(
             y=averages,
             customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
             name="Kaikki heitot",
             boxpoints="all",
+            marker_color=PLOT_COLORS[0],
             hovertemplate="Joukkue: %{customdata[0]}<br>"
             "Heiton keskimääräinen kesto: %{y:.1f} s<br>"
             "Heittojen määrä: %{customdata[1]}",
-            legendgroup="teams",
-            legendgrouptitle_text="Joukkueet",
-        ),
-        row=2,
-        col=1,
+        )
     )
     figure.add_trace(
         go.Box(
@@ -404,14 +509,11 @@ def _team_averages(data: list[Stream], figure: go.Figure) -> None:
             customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
             name="Kaikki heitot, mediaani",
             boxpoints="all",
+            marker_color=PLOT_COLORS[1],
             hovertemplate="Joukkue: %{customdata[0]}<br>"
             "Heiton keskimääräinen kesto: %{y:.1f} s<br>"
             "Heittojen määrä: %{customdata[1]}",
-            legendgroup="teams",
-            legendgrouptitle_text="Joukkueet",
-        ),
-        row=2,
-        col=1,
+        )
     )
 
     for throw in range(1, 5):
@@ -431,12 +533,17 @@ def _team_averages(data: list[Stream], figure: go.Figure) -> None:
                 customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
                 name=f"{throw}. heitto",
                 boxpoints="all",
+                marker_color=PLOT_COLORS[throw + 1],
                 hovertemplate="Joukkue: %{customdata[0]}<br>"
                 "Heiton keskimääräinen kesto: %{y:.1f} s<br>"
                 "Heittojen määrä: %{customdata[1]}",
-                legendgroup="teams",
-                legendgrouptitle_text="Joukkueet",
-            ),
-            row=2,
-            col=1,
+            )
         )
+
+    figure.update_layout(
+        legend_groupclick="toggleitem",
+        separators=", ",
+        font={"size": 15, "family": "Computer modern"},
+    )
+
+    figure.write_html(figure_directory / "keskiarvot2.html")
