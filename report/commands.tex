@@ -1,43 +1,11 @@
-\let\Oldsection\section
-\renewcommand{\section}{\FloatBarrier\clearpage\Oldsection}
-\let\Oldsubsection\subsection
-\renewcommand{\subsection}{\FloatBarrier\Oldsubsection}
-\let\Oldsubsubsection\subsubsection
-\renewcommand{\subsubsection}{\FloatBarrier\Oldsubsubsection}
 \newcommand{\para}{\newline	\hspace*{1cm}}
-
-\newenvironment{preface}{%
-	\clearpage\thispagestyle{empty}%
-	\setlength{\parskip}{3ex}
-	\onehalfspacing
-	\section*{ACKNOWLEDGEMENTS}
-}
-
-\newcommand{\mastersthesis}{Master's Thesis}
-\newcommand\personindent{3cm}
-\newenvironment{personlist}[1]{%
-	\begin{list}{}{%
-			\renewcommand\makelabel[1]{#1\hfil}%
-			\setlength\labelwidth{\personindent-\labelsep}%
-			\setlength\leftmargin{\personindent}%
-		}\item[#1]%
-	}{%
-	\end{list}
-}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newcommand{\+}[1]{\ensuremath{\mathbf{#1}}}
-\newcommand{\declarecommand}[1]{\providecommand{#1}{}\renewcommand{#1}}
-
-\newcommand{\matr}[1]{\mathbf{#1}} % undergraduate algebra version
-%\newcommand{\matr}[1]{#1}          % pure math version
-%\newcommand{\matr}[1]{\bm{#1}} 
-
-\newtheorem{de}{Definition}[section]
-\newtheorem{theo}{Theorem}[section]
+\newcommand{\declarecommand}[1]{\providecommand{#1}{}\renewcommand{#1}} 
 
 % Model structure
 \tikzstyle{var} = [rectangle, draw=black]
