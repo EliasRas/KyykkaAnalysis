@@ -228,6 +228,7 @@ def _order_throws1(
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
+    figure.write_html(figure_directory / "heitot3.html")
     write_pdf(figure, figure_directory / "heitot3.pdf")
 
 
@@ -236,7 +237,8 @@ def _order_throws2(
 ) -> None:
     throw_numbers = (
         np.remainder(
-            np.concatenate([stream.throw_numbers(difference=True) for stream in data]),
+            np.concatenate([stream.throw_numbers(difference=True) for stream in data])
+            - 1,
             2,
         )
         + 1
@@ -268,6 +270,7 @@ def _order_throws2(
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
+    figure.write_html(figure_directory / "heitot4.html")
     write_pdf(figure, figure_directory / "heitot4.pdf")
 
 
