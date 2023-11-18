@@ -39,6 +39,7 @@
 
 % Figures
 \usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 \usepackage{caption, subcaption}
 \captionsetup{justification=centering,font=small,labelfont={bf},labelsep=period,singlelinecheck=off}
 \captionsetup[sub]{font=footnotesize,labelfont={}}
@@ -47,6 +48,7 @@
 \usetikzlibrary{arrows.meta, calc, decorations.pathreplacing, decorations.markings, shapes, bayesnet}
 \usetikzlibrary{external} % Convert tikz code into .pdf for faster compiling
 \usepackage[outdir=./]{epstopdf}    % Convert .eps to .pdf
+\usepackage{float}
 
 % Algorithms
 \usepackage{algorithm2e}
