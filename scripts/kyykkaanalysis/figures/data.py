@@ -5,9 +5,13 @@ import numpy as np
 from numpy import typing as npt
 from plotly import graph_objects as go, colors
 
+from .utils import write_pdf
 from ..data.data_classes import Stream
 
 PLOT_COLORS = colors.qualitative.Plotly
+FONT_SIZE_2x2 = 28
+FONT_SIZE_BOXPLOT = 10
+FONT_SIZE = 15
 
 
 def timeline(data: list[Stream]):
@@ -136,7 +140,7 @@ def _game_throws(
             histnorm="probability density",
             opacity=0.5,
             marker_color=PLOT_COLORS[1],
-            name="Playoffspelit",
+            name="Pudotuspelit",
             hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y:.3f}",
         )
     )
@@ -146,10 +150,12 @@ def _game_throws(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
     figure.write_html(figure_directory / "heitot1.html")
+    write_pdf(figure, figure_directory / "heitot1.pdf")
 
 
 def _position_throws(
@@ -181,10 +187,12 @@ def _position_throws(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
     figure.write_html(figure_directory / "heitot2.html")
+    write_pdf(figure, figure_directory / "heitot2.pdf")
 
 
 def _order_throws1(
@@ -216,10 +224,11 @@ def _order_throws1(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
-    figure.write_html(figure_directory / "heitot3.html")
+    write_pdf(figure, figure_directory / "heitot3.pdf")
 
 
 def _order_throws2(
@@ -255,10 +264,11 @@ def _order_throws2(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
-    figure.write_html(figure_directory / "heitot4.html")
+    write_pdf(figure, figure_directory / "heitot4.pdf")
 
 
 def _kona_distribution(data: list[Stream], figure_directory: Path) -> None:
@@ -277,9 +287,10 @@ def _kona_distribution(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Konan kasaukseen käytetty aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "konat.html")
+    write_pdf(figure, figure_directory / "konat.pdf")
 
 
 def _game_distributions(data: list[Stream], figure_directory: Path) -> None:
@@ -306,10 +317,11 @@ def _half_duration(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Erien kesto [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
-    figure.write_html(figure_directory / "pelit1.html")
+    write_pdf(figure, figure_directory / "pelit1.pdf")
 
 
 def _game_duration(data: list[Stream], figure_directory: Path) -> None:
@@ -329,10 +341,12 @@ def _game_duration(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Pelin kesto [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
     figure.write_html(figure_directory / "pelit2.html")
+    write_pdf(figure, figure_directory / "pelit2.pdf")
 
 
 def _half_break(data: list[Stream], figure_directory: Path) -> None:
@@ -352,10 +366,12 @@ def _half_break(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Erien välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
     figure.write_html(figure_directory / "pelit3.html")
+    write_pdf(figure, figure_directory / "pelit3.pdf")
 
 
 def _game_break(data: list[Stream], figure_directory: Path) -> None:
@@ -375,10 +391,12 @@ def _game_break(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Pelien välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
     figure.write_html(figure_directory / "pelit4.html")
+    write_pdf(figure, figure_directory / "pelit4.pdf")
 
 
 def averages(data: list[Stream], figure_directory: Path):
@@ -467,10 +485,13 @@ def _player_averages(data: list[Stream], figure_directory: Path) -> None:
     figure.update_layout(
         legend_groupclick="toggleitem",
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
     figure.write_html(figure_directory / "keskiarvot1.html")
+    figure.update_layout(showlegend=False)
+    write_pdf(figure, figure_directory / "keskiarvot1.pdf")
 
 
 def _team_averages(data: list[Stream], figure_directory: Path) -> None:
@@ -543,7 +564,10 @@ def _team_averages(data: list[Stream], figure_directory: Path) -> None:
     figure.update_layout(
         legend_groupclick="toggleitem",
         separators=", ",
-        font={"size": 15, "family": "Computer modern"},
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+        margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
     figure.write_html(figure_directory / "keskiarvot2.html")
+    figure.update_layout(showlegend=False)
+    write_pdf(figure, figure_directory / "keskiarvot2.pdf")
