@@ -239,7 +239,7 @@ class Half:
     @property
     def duration(self) -> np.timedelta64:
         """
-        Durations of the half
+        Duration of the half
 
         Returns
         -------
@@ -392,7 +392,7 @@ class Game:
     @property
     def duration(self) -> np.timedelta64:
         """
-        Durations of the game
+        Duration of the game
 
         Returns
         -------
@@ -400,12 +400,7 @@ class Game:
             Duration of the game
         """
 
-        if len(self.throw_times()) < 64:
-            duration = np.timedelta64("NaT")
-        elif np.isfinite(self.kona_times()).sum() < 4:
-            duration = self.throw_times()[-1] - self.throw_times()[0]
-        else:
-            duration = self.kona_times()[-1] - self.throw_times()[0]
+        duration = self.half_durations.sum() + self.half_break
 
         return duration
 
