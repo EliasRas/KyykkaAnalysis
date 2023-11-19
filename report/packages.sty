@@ -27,7 +27,18 @@
 \usepackage{bm,bbm}     % \bm for bold math symbols and \mathbbm to use instead of \mathbb
 
 % References
-\usepackage[style=authoryear, autocite=inline, maxbibnames=9,maxcitenames=2, date=year,citestyle=authoryear,sorting=nyt,natbib=true,uniquelist=false,uniquename=false]{biblatex}
+\usepackage[
+    style=authoryear,
+    autocite=inline,
+    maxbibnames=9,
+    maxcitenames=2,
+    date=year,
+    citestyle=authoryear,
+    sorting=nyt,
+    natbib=true,
+    uniquelist=false,
+    uniquename=false
+]{biblatex}
 \DeclareFieldFormat*{title}{\textit{#1}}
 \DeclareFieldFormat*{journal}{\textnormal{#1}}
 \DeclareFieldFormat*{booktitle}{\textnormal{#1}}
@@ -41,11 +52,15 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 \usepackage{caption, subcaption}
-\captionsetup{justification=centering,font=small,labelfont={bf},labelsep=period,singlelinecheck=off}
+\captionsetup{
+    justification=centering,font=small,labelfont={bf},labelsep=period,singlelinecheck=off
+}
 \captionsetup[sub]{font=footnotesize,labelfont={}}
 \usepackage{placeins}   % More control over float positioning with \FloatBarrier
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing, decorations.markings, shapes, bayesnet}
+\usetikzlibrary{
+    arrows.meta, calc, decorations.pathreplacing, decorations.markings, shapes, bayesnet
+}
 \usetikzlibrary{external} % Convert tikz code into .pdf for faster compiling
 \usepackage[outdir=./]{epstopdf}    % Convert .eps to .pdf
 \usepackage{float}
