@@ -66,13 +66,30 @@
         append after command={
             [shorten <= -0.5\pgflinewidth]
             ([shift={(-1.5\pgflinewidth,-0.5\pgflinewidth)}]\tikzlastnode.north east)
-        edge([shift={( 0.5\pgflinewidth,-0.5\pgflinewidth)}]\tikzlastnode.north west) 
+        edge ([shift={( 0.5\pgflinewidth,-0.5\pgflinewidth)}]\tikzlastnode.north west)
             ([shift={( 0.5\pgflinewidth,-0.5\pgflinewidth)}]\tikzlastnode.north west)
-        edge([shift={( 0.5\pgflinewidth,+0.5\pgflinewidth)}]\tikzlastnode.south west)            
+        edge ([shift={( 0.5\pgflinewidth,+0.5\pgflinewidth)}]\tikzlastnode.south west)
             ([shift={( 0.5\pgflinewidth,+0.5\pgflinewidth)}]\tikzlastnode.south west)
-        edge([shift={(-1.0\pgflinewidth,+0.5\pgflinewidth)}]\tikzlastnode.south east)
+        edge ([shift={(-1.0\pgflinewidth,+0.5\pgflinewidth)}]\tikzlastnode.south east)
         }
     }
 }
 \tikzstyle{comment} = [three sided, minimum width=3cm, minimum height=1cm, text centered]
 \newcommand{\fref}[2]{\hyperref[#2]{#1~\ref{#2}}}
+
+% Remove extra ; from bayesnet
+\renewcommand{\factoredge}[4][]{
+    \foreach\f in {#3} {
+        \foreach\x in {#2} {
+            \path(\x) edge[-,#1] (\f);
+        }
+        \foreach\y in {#4} {
+            \path(\f) edge[->, >={triangle 45}, #1] (\y);
+        }
+    }
+}
+\renewcommand{\factor}[5][]{%
+  \node[factor, label={[name=#2-caption]#3}, name=#2, #1,
+  alias=#2-alias] {};
+  \factoredge{#4} {#2-alias} {#5}
+}
