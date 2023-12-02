@@ -136,7 +136,7 @@ def _read_stream_times(
     konas = []
     for time, player in zip(times, players, strict=True):
         if len(player_ids) == 0:
-            player_ids[player] = 1
+            player_ids[player] = 0
         elif player not in player_ids:
             player_ids[player] = max(player_ids.values()) + 1
 
