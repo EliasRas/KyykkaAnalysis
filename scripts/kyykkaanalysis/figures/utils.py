@@ -29,7 +29,7 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
             for col in cols:
                 figure.update_xaxes(showline=True, showgrid=False, row=row, col=col)
                 figure.update_yaxes(showline=True, showgrid=False, row=row, col=col)
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         figure.update_layout(
             xaxis_showline=True,
             xaxis_showgrid=False,
