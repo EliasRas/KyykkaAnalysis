@@ -9,7 +9,7 @@ from .utils import write_pdf
 from ..data.data_classes import Stream
 
 PLOT_COLORS = colors.qualitative.Plotly
-FONT_SIZE_2x2 = 28
+FONT_SIZE_2X2 = 28
 FONT_SIZE_BOXPLOT = 10
 FONT_SIZE = 15
 
@@ -107,7 +107,7 @@ def time_distributions(data: list[Stream], figure_directory: Path):
 
 
 def _throw_distributions(data: list[Stream], figure_directory: Path) -> None:
-    throw_times = np.concatenate(
+    throw_times: npt.NDArray[np.timedelta64] = np.concatenate(
         [stream.throw_times(difference=True) for stream in data]
     )
 
@@ -150,7 +150,7 @@ def _game_throws(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -187,7 +187,7 @@ def _position_throws(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -224,7 +224,7 @@ def _order_throws1(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -266,7 +266,7 @@ def _order_throws2(
         xaxis_title="Heittojen välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -320,7 +320,7 @@ def _half_duration(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Erien kesto [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -344,7 +344,7 @@ def _game_duration(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Pelin kesto [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -369,7 +369,7 @@ def _half_break(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Erien välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -394,7 +394,7 @@ def _game_break(data: list[Stream], figure_directory: Path) -> None:
         xaxis_title="Pelien välinen aika [s]",
         yaxis_showticklabels=False,
         separators=", ",
-        font={"size": FONT_SIZE_2x2, "family": "Computer modern"},
+        font={"size": FONT_SIZE_2X2, "family": "Computer modern"},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
@@ -426,19 +426,19 @@ def _player_averages(data: list[Stream], figure_directory: Path) -> None:
     throws = np.concatenate([stream.throw_numbers(difference=True) for stream in data])
 
     unique_players = np.unique(players)
-    averages = []
+    time_averages = []
     counts = []
     medians = []
     for player in unique_players:
         player_times = throw_times[(players == player) & np.isfinite(throw_times)]
-        averages.append(np.mean(player_times.astype(int)))
+        time_averages.append(np.mean(player_times.astype(int)))
         counts.append(player_times.size)
         medians.append(np.median(player_times.astype(int)))
     counts = np.array(counts).reshape(-1, 1)
 
     figure = go.Figure(
         go.Box(
-            y=averages,
+            y=time_averages,
             customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
             name="Kaikki heitot",
             boxpoints="all",
@@ -462,19 +462,19 @@ def _player_averages(data: list[Stream], figure_directory: Path) -> None:
     )
 
     for throw in range(1, 5):
-        averages = []
+        time_averages = []
         counts = []
         for player in unique_players:
             player_times = throw_times[
                 (players == player) & np.isfinite(throw_times) & (throws == throw)
             ]
-            averages.append(np.nanmean(player_times.astype(int)))
+            time_averages.append(np.nanmean(player_times.astype(int)))
             counts.append(player_times.size)
         counts = np.array(counts).reshape(-1, 1)
 
         figure.add_trace(
             go.Box(
-                y=averages,
+                y=time_averages,
                 customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
                 name=f"{throw}. heitto",
                 boxpoints="all",
@@ -505,19 +505,19 @@ def _team_averages(data: list[Stream], figure_directory: Path) -> None:
     throws = np.concatenate([stream.throw_numbers(difference=True) for stream in data])
 
     unique_players = np.unique(teams)
-    averages = []
+    time_averages = []
     counts = []
     medians = []
     for player in unique_players:
         player_times = throw_times[(teams == player) & np.isfinite(throw_times)]
-        averages.append(np.mean(player_times.astype(int)))
+        time_averages.append(np.mean(player_times.astype(int)))
         counts.append(player_times.size)
         medians.append(np.median(player_times.astype(int)))
     counts = np.array(counts).reshape(-1, 1)
 
     figure = go.Figure(
         go.Box(
-            y=averages,
+            y=time_averages,
             customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
             name="Kaikki heitot",
             boxpoints="all",
@@ -541,19 +541,19 @@ def _team_averages(data: list[Stream], figure_directory: Path) -> None:
     )
 
     for throw in range(1, 5):
-        averages = []
+        time_averages = []
         counts = []
         for player in unique_players:
             player_times = throw_times[
                 (teams == player) & np.isfinite(throw_times) & (throws == throw)
             ]
-            averages.append(np.nanmean(player_times.astype(int)))
+            time_averages.append(np.nanmean(player_times.astype(int)))
             counts.append(player_times.size)
         counts = np.array(counts).reshape(-1, 1)
 
         figure.add_trace(
             go.Box(
-                y=averages,
+                y=time_averages,
                 customdata=np.hstack((unique_players.reshape(-1, 1), counts)),
                 name=f"{throw}. heitto",
                 boxpoints="all",
