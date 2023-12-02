@@ -7,7 +7,8 @@ from plotly import graph_objects as go
 
 def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     """
-    Saving the file twice and waiting in between to fix https://github.com/plotly/plotly.py/issues/3469.
+    Saving the file twice and waiting in between to fix
+    https://github.com/plotly/plotly.py/issues/3469.
     In addition apply pdf specific formatting
 
     Parameters
