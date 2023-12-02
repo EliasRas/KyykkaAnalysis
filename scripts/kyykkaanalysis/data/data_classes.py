@@ -4,8 +4,6 @@ from dataclasses import dataclass, field
 import numpy as np
 from numpy import typing as npt
 
-ANONYMIZE = False
-
 
 @dataclass
 class Throwtime:
@@ -65,7 +63,9 @@ class Half:
     throws: list[Throwtime] = field(default_factory=list)
     konas: tuple[Konatime, Konatime] = field(default_factory=tuple)
 
-    def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
+    def players(
+        self, difference: bool = False, anonymize: bool = False
+    ) -> npt.NDArray[np.str_]:
         """
         Names of the players that threw the throws of the half
 
@@ -73,6 +73,8 @@ class Half:
         ----------
         difference : bool, default False
             Whether to return the names for the times between throws
+        anonymize : bool, default False
+            Whether to return the player IDs instead of names
 
         Returns
         -------
@@ -80,7 +82,7 @@ class Half:
             1D array of player names
         """
 
-        if ANONYMIZE:
+        if anonymize:
             names = np.array([throw.player_id for throw in self.throws], dtype=str)
         else:
             names = np.array([throw.player for throw in self.throws], dtype=str)
@@ -187,7 +189,9 @@ class Half:
 
         return numbers
 
-    def throw_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+    def throw_times(
+        self, difference: bool = False
+    ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
         Timestamps of the throws in the half
 
@@ -209,7 +213,9 @@ class Half:
 
         return times
 
-    def kona_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+    def kona_times(
+        self, difference: bool = False
+    ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
         Timestamps of the piled konas in the half
 
@@ -270,7 +276,9 @@ class Game:
 
     halfs: tuple[Half, Half] = field(default_factory=tuple)
 
-    def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
+    def players(
+        self, difference: bool = False, anonymize: bool = False
+    ) -> npt.NDArray[np.str_]:
         """
         Names of the players that threw the throws of the game
 
@@ -278,6 +286,8 @@ class Game:
         ----------
         difference : bool, default False
             Whether to return the names for the times between throws
+        anonymize : bool, default False
+            Whether to return the player IDs instead of names
 
         Returns
         -------
@@ -285,7 +295,9 @@ class Game:
             1D array of player names
         """
 
-        return np.concatenate([half.players(difference) for half in self.halfs])
+        return np.concatenate(
+            [half.players(difference, anonymize) for half in self.halfs]
+        )
 
     def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
@@ -355,7 +367,9 @@ class Game:
 
         return np.concatenate([half.throw_numbers(difference) for half in self.halfs])
 
-    def throw_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+    def throw_times(
+        self, difference: bool = False
+    ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
         Timestamps of the throws in the game
 
@@ -372,7 +386,9 @@ class Game:
 
         return np.concatenate([half.throw_times(difference) for half in self.halfs])
 
-    def kona_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+    def kona_times(
+        self, difference: bool = False
+    ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
         Timestamps of the piled konas in the game
 
@@ -455,7 +471,9 @@ class Stream:
     pitch: str
     games: list[Game] = field(default_factory=list)
 
-    def players(self, difference: bool = False) -> npt.NDArray[np.str_]:
+    def players(
+        self, difference: bool = False, anonymize: bool = False
+    ) -> npt.NDArray[np.str_]:
         """
         Names of the players that threw the throws in the stream
 
@@ -463,6 +481,8 @@ class Stream:
         ----------
         difference : bool, default False
             Whether to return the names for the times between throws
+        anonymize : bool, default False
+            Whether to return the player IDs instead of names
 
         Returns
         -------
@@ -470,7 +490,9 @@ class Stream:
             1D array of player names
         """
 
-        return np.concatenate([game.players(difference) for game in self.games])
+        return np.concatenate(
+            [game.players(difference, anonymize) for game in self.games]
+        )
 
     def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
@@ -540,7 +562,9 @@ class Stream:
 
         return np.concatenate([game.throw_numbers(difference) for game in self.games])
 
-    def throw_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+    def throw_times(
+        self, difference: bool = False
+    ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
         Timestamps of the throws in the stream
 
@@ -557,7 +581,9 @@ class Stream:
 
         return np.concatenate([game.throw_times(difference) for game in self.games])
 
-    def kona_times(self, difference: bool = False) -> npt.NDArray[np.timedelta64]:
+    def kona_times(
+        self, difference: bool = False
+    ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
         Timestamps of the piled konas in the stream
 
