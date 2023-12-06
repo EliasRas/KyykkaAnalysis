@@ -135,10 +135,11 @@ def _read_stream_times(
     halves = [Half()]
     konas = []
     for time, player in zip(times, players, strict=True):
-        if len(player_ids) == 0:
-            player_ids[player] = 0
-        elif player not in player_ids:
-            player_ids[player] = max(player_ids.values()) + 1
+        if player not in ["Kona kasassa", ""]:
+            if len(player_ids) == 0:
+                player_ids[player] = 0
+            elif player not in player_ids:
+                player_ids[player] = max(player_ids.values()) + 1
 
         if time == "?":
             time = np.datetime64("NaT")
