@@ -462,3 +462,4 @@ TSWLatexianTemp*
 #*Notes.bib
 report/main.pdf
 .vscode/*
+.gv
