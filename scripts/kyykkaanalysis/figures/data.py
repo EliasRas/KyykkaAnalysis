@@ -3,15 +3,10 @@ from pathlib import Path
 
 import numpy as np
 from numpy import typing as npt
-from plotly import graph_objects as go, colors
+from plotly import graph_objects as go
 
-from .utils import write_pdf
+from .utils import write_pdf, PLOT_COLORS, FONT_SIZE_2X2, FONT_SIZE
 from ..data.data_classes import Stream
-
-PLOT_COLORS = colors.qualitative.Plotly
-FONT_SIZE_2X2 = 28
-FONT_SIZE_BOXPLOT = 10
-FONT_SIZE = 15
 
 
 def timeline(data: list[Stream]):
@@ -128,7 +123,7 @@ def _game_throws(
             nbinsx=50,
             histnorm="probability density",
             opacity=0.5,
-            marker_color=PLOT_COLORS[0],
+            marker={"color": PLOT_COLORS[0], "line": {"color": PLOT_COLORS[0]}},
             name="Runkosarjapelit",
             hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y:.3f}",
         )
@@ -139,7 +134,7 @@ def _game_throws(
             nbinsx=50,
             histnorm="probability density",
             opacity=0.5,
-            marker_color=PLOT_COLORS[1],
+            marker={"color": PLOT_COLORS[1], "line": {"color": PLOT_COLORS[1]}},
             name="Pudotuspelit",
             hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y:.3f}",
         )
@@ -175,7 +170,10 @@ def _position_throws(
                 nbinsx=50,
                 histnorm="probability density",
                 opacity=0.5,
-                marker_color=PLOT_COLORS[position - 1],
+                marker={
+                    "color": PLOT_COLORS[position - 1],
+                    "line": {"color": PLOT_COLORS[position - 1]},
+                },
                 name=f"{position}. heittäjä",
                 hovertemplate="Heittojen välinen aika: %{x} s<br>"
                 "Suhteellinen yleisyys: %{y:.3f}",
@@ -212,7 +210,10 @@ def _order_throws1(
                 nbinsx=50,
                 histnorm="probability density",
                 opacity=0.5,
-                marker_color=PLOT_COLORS[throw - 1],
+                marker={
+                    "color": PLOT_COLORS[throw - 1],
+                    "line": {"color": PLOT_COLORS[throw - 1]},
+                },
                 name=f"{throw}. heitto",
                 hovertemplate="Heittojen välinen aika: %{x} s<br>"
                 "Suhteellinen yleisyys: %{y:.3f}",
@@ -254,7 +255,10 @@ def _order_throws2(
                 nbinsx=50,
                 histnorm="probability density",
                 opacity=0.5,
-                marker_color=PLOT_COLORS[throw - 1],
+                marker={
+                    "color": PLOT_COLORS[throw - 1],
+                    "line": {"color": PLOT_COLORS[throw - 1]},
+                },
                 name=f"{throw}. heitto",
                 hovertemplate="Heittojen välinen aika: %{x} s<br>"
                 "Suhteellinen yleisyys: %{y:.3f}",
@@ -281,7 +285,7 @@ def _kona_distribution(data: list[Stream], figure_directory: Path) -> None:
         go.Histogram(
             x=kona_times.astype(int),
             nbinsx=25,
-            marker_color=PLOT_COLORS[0],
+            marker={"color": PLOT_COLORS[0], "line": {"color": PLOT_COLORS[0]}},
             hovertemplate="Kasausaika: %{x} s<br>Kasausten määrä: %{y}",
             showlegend=False,
         )
@@ -310,7 +314,7 @@ def _half_duration(data: list[Stream], figure_directory: Path) -> None:
         go.Histogram(
             x=half_durations.astype(int),
             nbinsx=25,
-            marker_color=PLOT_COLORS[0],
+            marker={"color": PLOT_COLORS[0], "line": {"color": PLOT_COLORS[0]}},
             hovertemplate="Erän kesto: %{x} s<br>Erien määrä: %{y}",
             showlegend=False,
         )
@@ -334,7 +338,7 @@ def _game_duration(data: list[Stream], figure_directory: Path) -> None:
         go.Histogram(
             x=game_durations.astype(int),
             nbinsx=25,
-            marker_color=PLOT_COLORS[0],
+            marker={"color": PLOT_COLORS[0], "line": {"color": PLOT_COLORS[0]}},
             hovertemplate="Pelin kesto: %{x} s<br>Pelien määrä: %{y}",
             showlegend=False,
         )
@@ -359,7 +363,7 @@ def _half_break(data: list[Stream], figure_directory: Path) -> None:
         go.Histogram(
             x=half_breaks.astype(int),
             nbinsx=25,
-            marker_color=PLOT_COLORS[0],
+            marker={"color": PLOT_COLORS[0], "line": {"color": PLOT_COLORS[0]}},
             hovertemplate="Erien välisen tauon kesto: %{x} s<br>Taukojen määrä: %{y}",
             showlegend=False,
         )
@@ -384,7 +388,7 @@ def _game_break(data: list[Stream], figure_directory: Path) -> None:
         go.Histogram(
             x=game_breaks.astype(int),
             nbinsx=25,
-            marker_color=PLOT_COLORS[0],
+            marker={"color": PLOT_COLORS[0], "line": {"color": PLOT_COLORS[0]}},
             hovertemplate="Pelien välisen tauon kesto: %{x} s<br>Taukojen määrä: %{y}",
             showlegend=False,
         ),
