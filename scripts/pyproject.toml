@@ -14,18 +14,12 @@ version = "0.0.1"
 dependencies = [
     "kaleido>=0.2.1",
     "numpy>=1.26.0",
-    "packaging>=23.2",
     "plotly>=5.17.0",
-    "tenacity>=8.2.3",
+    "pymc>=5.10.0",
 ]
 
 
 [project.optional-dependencies]
 dev = [
     "black",
-    "click",
-    "colorama",
-    "mypy-extensions",
-    "pathspec",
-    "platformdirs",
 ]
