@@ -657,3 +657,60 @@ class Stream:
         """
 
         return np.array([game.half_break for game in self.games])
+
+
+class ModelData:
+    """
+    Container for the data needed by the throw time models
+
+    Attributes
+    ----------
+    throw_times : numpy.ndarray of int
+        Throw times
+    players : numpy.ndarray of str
+        Names of the players for each throw
+    player_ids : numpy.ndarray of int
+        IDs of the players for each throw
+    player_names : numpy.ndarray of str
+        Names of the players ordered by the corresponding player IDs. "" for the IDs
+        that are not present in the data
+    first_throw : numpy.ndarray of bool
+        Whether the throw was the player's first throw in a turn
+    """
+
+    def __init__(self, data: list[Stream]) -> None:
+        """
+        Container for the data needed by the throw time models
+
+        Parameters
+        ----------
+        data : list of Stream
+            Throw time data
+        """
+
+        throw_times: npt.NDArray[np.float_] = np.concatenate(
+            [stream.throw_times(difference=True) for stream in data]
+        )
+        players = np.concatenate([stream.players(difference=True) for stream in data])
+        self.player_ids: npt.NDArray[np.int_] = np.concatenate(
+            [stream.players(difference=True, anonymize=True) for stream in data]
+        ).astype(int)
+        player_names = []
+        for player_id in range(self.player_ids.max() + 1):
+            if player_id in self.player_ids:
+                player_names.append(players[self.player_ids == player_id][0])
+            else:
+                player_names.append("")
+        self.player_names = np.array(player_names, str)
+
+        throw_number = np.concatenate(
+            [stream.throw_numbers(difference=True) for stream in data]
+        )
+        self.first_throw: npt.NDArray[np.bool_] = (throw_number == 0) | (
+            throw_number == 3
+        )
+
+        valid_times = np.isfinite(throw_times)
+        self.throw_times = throw_times[valid_times].astype(float)
+        self.player_ids = self.player_ids[valid_times]
+        self.first_throw = self.first_throw[valid_times]
