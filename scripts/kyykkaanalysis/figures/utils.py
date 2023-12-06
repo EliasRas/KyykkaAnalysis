@@ -2,7 +2,21 @@
 from pathlib import Path
 from time import sleep
 
-from plotly import graph_objects as go
+from plotly import graph_objects as go, colors
+
+PLOT_COLORS = colors.qualitative.Plotly
+FONT_SIZE_2X2 = 28
+FONT_SIZE_BOXPLOT = 10
+FONT_SIZE = 15
+LATEX_CONVERSION = {
+    "mu": "$\mu$",
+    "sigma": "$\sigma$",
+    "o": "$o$",
+    "k": "$k$",
+    "theta": r"$\theta$",
+    "y_hat": "$\hat{y}$",
+    "y": "$y$",
+}
 
 
 def write_pdf(figure: go.Figure, figure_path: Path) -> None:
@@ -39,6 +53,8 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
         )
         rows = []
         cols = []
+    if any(isinstance(data, go.Histogram) for data in figure.data):
+        figure.update_traces(marker={"line": {"width": 1}})
     figure.update_layout(plot_bgcolor="white", bargap=0)
 
     figure.write_image(figure_path)
@@ -57,3 +73,21 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
         yaxis_showline=None,
         yaxis_showgrid=None,
     )
+
+
+def parameter_to_latex(parameter: str) -> str:
+    """
+    Convert the name of the parameter to a LaTeX symbol
+
+    Parameters
+    ----------
+    parameter : str
+        Name of the parameter
+
+    Returns
+    -------
+    str
+        LaTeX symbol
+    """
+
+    return LATEX_CONVERSION[parameter]
