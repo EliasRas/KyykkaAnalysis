@@ -105,6 +105,7 @@ def throw_model(data: ModelData) -> pm.Model:
                 pm.Uniform.dist(y_hat, y_hat + 1),
             ],
             dims="throws",
+            observed=data.throw_times,
             transform=logodds,
         )
         # Manually discretize the times, faster than pm.DiscreteUniform
