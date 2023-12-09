@@ -3,7 +3,7 @@ import numpy as np
 import pymc as pm
 from pymc.math import maximum, floor
 from pymc.distributions.transforms import logodds
-from xarray import Dataset, merge
+from xarray import Dataset
 
 from ..data.data_classes import ModelData
 
@@ -39,7 +39,7 @@ class ThrowTimeModel:
 
         Parameters
         ----------
-        sample_count : int
+        sample_count : int, default 500
             Number of samples to draw
 
         Returns
@@ -53,7 +53,7 @@ class ThrowTimeModel:
 
         samples.prior["y"] = samples.prior["y"].astype(int)
 
-        return samples.prior.drop_vars(["k_minus", "y_raw"])
+        return samples.prior.drop_vars(["k_minus"])
 
 
 def throw_model(data: ModelData) -> pm.Model:
@@ -96,6 +96,7 @@ def throw_model(data: ModelData) -> pm.Model:
 
         # Each timestamp have a uniform error distribution from -1 to 1
         # Hence the time between timestamps (y) has a winners' podium like distribution
+        throw_times = pm.MutableData("throw_times", data.throw_times, dims="throws")
         y_raw = pm.Mixture(
             "y_raw",
             w=[5 / 9, 1 / 3, 1 / 9],
@@ -105,7 +106,7 @@ def throw_model(data: ModelData) -> pm.Model:
                 pm.Uniform.dist(y_hat, y_hat + 1),
             ],
             dims="throws",
-            observed=data.throw_times,
+            observed=throw_times,
             transform=logodds,
         )
         # Manually discretize the times, faster than pm.DiscreteUniform
