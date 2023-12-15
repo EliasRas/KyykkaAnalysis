@@ -1,7 +1,10 @@
 """Utility functions for plotly figures"""
+from typing import Any
 from pathlib import Path
 from time import sleep
 
+import numpy as np
+from numpy import typing as npt
 from plotly import graph_objects as go, colors
 
 PLOT_COLORS = colors.qualitative.Plotly
@@ -91,3 +94,103 @@ def parameter_to_latex(parameter: str) -> str:
     """
 
     return LATEX_CONVERSION[parameter]
+
+
+def precalculated_histogram(
+    parameter_samples: npt.NDArray[Any],
+    name: str | None = None,
+    color: str | None = None,
+    normalization: str = "probability",
+) -> go.Bar:
+    """
+    Create a histogram out of bar graph
+
+    Parameters
+    ----------
+    parameter_samples : numpy.ndarray of Any
+        Samples of parameter distribution
+    name : str, optional
+        Name of the trace
+    color : str, optional
+        Color of the trace
+    normalization : str, default "probability"
+        Normalization for the bins. One of "probability", "probability density" and "count"
+
+    Returns
+    -------
+    go.Bar
+        Precalculated histogram
+    """
+    bin_count = min(parameter_samples.size // 200, 200)
+    counts, bins = calculate_histogram(
+        parameter_samples, bin_count, normalization=normalization
+    )
+    if normalization == "probability":
+        hovertemplate = (
+            "Arvo: %{customdata[0]:.1f} - %{customdata[1]:.1f}<br>"
+            "Osuus: %{y:.1f} %<extra></extra>"
+        )
+    elif normalization == "probability density":
+        hovertemplate = (
+            "Arvo: %{customdata[0]:.1f} - %{customdata[1]:.1f}<br>"
+            "Suhteellinen yleisyys: %{y:.1f} %<extra></extra>"
+        )
+    elif normalization == "count":
+        hovertemplate = (
+            "Arvo: %{customdata[0]:.1f} - %{customdata[1]:.1f}<br>"
+            "Näytteet: %{y:.1f} %<extra></extra>"
+        )
+    histogram = go.Bar(
+        x=bins[:-1] + (bins[1] - bins[0]) / 2,
+        y=counts,
+        customdata=np.hstack((bins[:-1].reshape(-1, 1), bins[1:].reshape(-1, 1))),
+        name=name,
+        marker={"line": {"width": 0}, "color": color},
+        hovertemplate=hovertemplate,
+    )
+
+    return histogram
+
+
+def calculate_histogram(
+    values: npt.NDArray[Any], bin_count: int, normalization: str = "probability"
+) -> tuple[npt.NDArray[np.float_], npt.NDArray[Any]]:
+    """
+    Calculate bins and bin counts of a histogram
+
+    Parameters
+    ----------
+    values : numpy.ndarray of Any
+        Values for the histogram
+    bin_count : int
+        Number of bins
+    normalization : str, default "probability"
+        Normalization for the bins. One of "probability", "probability density" and "count"
+
+    Returns
+    -------
+    numpy.ndarray of float
+        Possibly normalized bin heights
+    numpy.ndarray of Any
+        Bin edges
+    """
+    min_value = np.floor(values.min())
+    max_value = np.ceil(values.max())
+    bin_size = (max_value - min_value) / bin_count
+    if np.issubdtype(values.dtype, np.integer):
+        bin_size = round(bin_size)
+    bins = np.arange(min_value, max_value + bin_size, bin_size, dtype=values.dtype)
+    bins = np.round(bins, 5)
+
+    counts, _ = np.histogram(values, bins)
+    if normalization == "probability":
+        counts = counts / counts.sum() * 100
+    elif normalization == "probability density":
+        area = (bins[1] - bins[0]) * counts.sum()
+        counts = counts / area
+    elif normalization == "count":
+        pass
+    else:
+        raise ValueError(f"Invalid normalization {normalization}.")
+
+    return counts, bins
