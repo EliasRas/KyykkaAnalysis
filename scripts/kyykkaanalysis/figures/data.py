@@ -96,6 +96,8 @@ def time_distributions(data: list[Stream], figure_directory: Path):
         Path to the directory in which the figures are saved
     """
 
+    figure_directory.mkdir(parents=True, exist_ok=True)
+
     _throw_distributions(data, figure_directory)
     _kona_distribution(data, figure_directory)
     _game_distributions(data, figure_directory)
@@ -417,6 +419,8 @@ def averages(data: list[Stream], figure_directory: Path):
     figure_directory : Path
         Path to the directory in which the figure is saved
     """
+
+    figure_directory.mkdir(parents=True, exist_ok=True)
 
     _player_averages(data, figure_directory)
     _team_averages(data, figure_directory)
