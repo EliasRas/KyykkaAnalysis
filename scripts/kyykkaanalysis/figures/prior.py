@@ -1,5 +1,4 @@
 """Visualizations for prior predictive checking"""
-from typing import Any
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +9,8 @@ from plotly.subplots import make_subplots
 
 from .utils import (
     parameter_to_latex,
+    precalculated_histogram,
+    calculate_histogram,
     PLOT_COLORS,
     FONT_SIZE,
 )
@@ -36,6 +37,8 @@ def parameter_distributions(
         Path to the directory in which the figures are saved
     """
 
+    figure_directory.mkdir(parents=True, exist_ok=True)
+
     _sample_distributions(samples, first_throw, figure_directory)
     _theta_ranges(samples, figure_directory)
     _throw_time_ranges(samples, figure_directory)
@@ -51,10 +54,10 @@ def _sample_distributions(
         if parameter in ["y", "y_hat"]:
             figure = go.Figure(
                 [
-                    _precalculated_histogram(
+                    precalculated_histogram(
                         parameter_samples[:, :, first_throw].flatten()
                     ),
-                    _precalculated_histogram(
+                    precalculated_histogram(
                         parameter_samples[:, :, ~first_throw].flatten()
                     ),
                 ]
@@ -63,7 +66,7 @@ def _sample_distributions(
             figure.data[1].name = "2. heitto"
             figure.update_traces(marker_opacity=0.7)
         else:
-            figure = go.Figure(_precalculated_histogram(parameter_samples.flatten()))
+            figure = go.Figure(precalculated_histogram(parameter_samples.flatten()))
 
         figure.update_layout(
             xaxis_title=parameter_symbol,
@@ -77,38 +80,6 @@ def _sample_distributions(
             figure_directory / f"{parameter}.html",
             include_mathjax="cdn",
         )
-
-
-def _precalculated_histogram(parameter_samples: npt.NDArray[Any]) -> go.Bar:
-    bin_count = min(parameter_samples.size // 200, 200)
-    counts, bins = _calculate_histogram(parameter_samples, bin_count)
-    histogram = go.Bar(
-        x=bins[:-1] + (bins[1] - bins[0]) / 2,
-        y=counts,
-        customdata=np.hstack((bins[:-1].reshape(-1, 1), bins[1:].reshape(-1, 1))),
-        marker={"line": {"width": 0}},
-        hovertemplate="Arvo: %{customdata[0]:.1f} - %{customdata[1]:.1f}<br>"
-        "Osuus: %{y:.1f} %<extra></extra>",
-    )
-
-    return histogram
-
-
-def _calculate_histogram(
-    values: npt.NDArray[Any], bin_count: int
-) -> tuple[npt.NDArray[np.float_], npt.NDArray[Any]]:
-    min_value = np.floor(values.min())
-    max_value = np.ceil(values.max())
-    bin_size = (max_value - min_value) / bin_count
-    if np.issubdtype(values.dtype, np.integer):
-        bin_size = round(bin_size)
-    bins = np.arange(min_value, max_value + bin_size, bin_size, dtype=values.dtype)
-    bins = np.round(bins, 5)
-
-    counts, _ = np.histogram(values, bins)
-    counts = counts / counts.sum() * 100
-
-    return counts, bins
 
 
 def _theta_ranges(samples: Dataset, figure_directory: Path) -> None:
@@ -145,7 +116,7 @@ def _range_figure(
 ) -> go.Figure:
     bin_count = min(minimum_values.size // 200, 200)
     figure = make_subplots(rows=2, cols=2)
-    min_counts, min_bins = _calculate_histogram(
+    min_counts, min_bins = calculate_histogram(
         minimum_values,
         min(int(minimum_values.max() - minimum_values.min() + 1), bin_count),
     )
@@ -164,7 +135,7 @@ def _range_figure(
         row=1,
         col=1,
     )
-    max_counts, max_bins = _calculate_histogram(
+    max_counts, max_bins = calculate_histogram(
         maximum_values,
         min(int(maximum_values.max() - maximum_values.min() + 1), bin_count),
     )
@@ -184,7 +155,7 @@ def _range_figure(
         col=2,
     )
     ranges = maximum_values - minimum_values
-    range_counts, range_bins = _calculate_histogram(
+    range_counts, range_bins = calculate_histogram(
         ranges, min(int(ranges.max() - ranges.min() + 1), bin_count)
     )
     figure.add_trace(
