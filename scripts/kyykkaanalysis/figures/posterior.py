@@ -88,7 +88,7 @@ def _theta_distributions(
     else:
         prior_sample = None
     if true_values is not None and "theta" in true_values:
-        true_value = true_values["theta"].values[0, 0, :]
+        true_value = true_values["theta"].values[0, :]
     else:
         true_value = None
     figure = go.Figure()
@@ -132,7 +132,8 @@ def _theta_distributions(
                     y=[y],
                     mode="markers",
                     marker={"color": "black", "size": 7},
-                    hovertemplate="Todellinen arvo: %{x:.1f}<extra></extra>",
+                    hovertemplate="Todellinen arvo: %{x:.2f}"
+                    f"<extra>Pelaaja {theta_index+1}</extra>",
                 )
             )
 
@@ -148,7 +149,7 @@ def _theta_distributions(
                 f" - {round(prior_sample.max(),1)}<br>"
                 f"Kvartiiliväli: {round(np.quantile(prior_sample, 0.25),1)} "
                 f"- {round(np.quantile(prior_sample, 0.75),1)}"
-                f"<extra>Pelaaja {theta_index+1}</extra>",
+                f"<extra>Priorijakauma</extra>",
             )
         )
         figure.add_trace(
@@ -213,7 +214,7 @@ def _single_parameter_distribution(
                 name="Todellinen arvo",
                 mode="lines",
                 line={"color": "black", "dash": "dash"},
-                hovertemplate="Todellinen arvo: %{x:.1f}<extra></extra>",
+                hovertemplate="Todellinen arvo: %{x:.2f}<extra></extra>",
             )
         )
 
@@ -278,8 +279,8 @@ def _parameter_correlations(
                             mode="markers",
                             marker={"color": "red", "size": 7},
                             showlegend=False,
-                            hovertemplate=f"{parameter}: %{{x:.1f}}<br>"
-                            f"{parameter2}: %{{y:.1f}}<extra>Todelliset arvot</extra>",
+                            hovertemplate=f"{parameter}: %{{x:.2f}}<br>"
+                            f"{parameter2}: %{{y:.2f}}<extra>Todelliset arvot</extra>",
                         ),
                         row=parameter_index + parameter_index2 + 1,
                         col=parameter_index + 1,
@@ -321,6 +322,7 @@ def chain_plots(
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _traceplot(samples, figure_directory)
+    # Divergence parallel coordinates
 
 
 def _traceplot(samples: Dataset, figure_directory: Path) -> None:
@@ -347,7 +349,7 @@ def _traceplot(samples: Dataset, figure_directory: Path) -> None:
                     mode="lines",
                     marker={"color": PLOT_COLORS[chain_index], "opacity": 0.5},
                     hovertemplate=f"Näyte: %{{x}}<br>"
-                    f"{parameter}: %{{y:.1f}}<extra></extra>",
+                    f"{parameter}: %{{y:.2f}}<extra></extra>",
                 ),
                 row=parameter_index + 1,
                 col=2,
