@@ -20,6 +20,24 @@ LATEX_CONVERSION = {
     "y_hat": "$\hat{y}$",
     "y": "$y$",
 }
+ERROR_LATEX_CONVERSION = {
+    "mu": r"$\mu-\text{virhe}$",
+    "sigma": r"$\sigma-\text{virhe}$",
+    "o": r"$o-\text{virhe}$",
+    "k": r"$k-\text{virhe}$",
+    "theta": r"$\theta-\text{virhe}$",
+    "y_hat": r"$\hat{y}-\text{virhe}$",
+    "y": r"$y-\text{virhe}$",
+}
+PERCENTILE_LATEX_CONVERSION = {
+    "mu": r"$\mu-\text{persentiili}$",
+    "sigma": r"$\sigma-\text{persentiili}$",
+    "o": r"$o-\text{persentiili}$",
+    "k": r"$k-\text{persentiili}$",
+    "theta": r"$\theta-\text{persentiili}$",
+    "y_hat": r"$\hat{y}-\text{persentiili}$",
+    "y": r"$y-\text{persentiili}$",
+}
 
 
 def write_pdf(figure: go.Figure, figure_path: Path) -> None:
@@ -78,7 +96,7 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     )
 
 
-def parameter_to_latex(parameter: str) -> str:
+def parameter_to_latex(parameter: str, type: str = "variable") -> str:
     """
     Convert the name of the parameter to a LaTeX symbol
 
@@ -86,6 +104,11 @@ def parameter_to_latex(parameter: str) -> str:
     ----------
     parameter : str
         Name of the parameter
+    type : str, default "variable"
+        Type of latex string to return. Possible choices:
+            "variable": Symbol of the variable
+            "error": Estimation error
+            "percentile":
 
     Returns
     -------
@@ -93,13 +116,21 @@ def parameter_to_latex(parameter: str) -> str:
         LaTeX symbol
     """
 
-    return LATEX_CONVERSION[parameter]
+    if type == "variable":
+        symbol = LATEX_CONVERSION[parameter]
+    elif type == "error":
+        symbol = ERROR_LATEX_CONVERSION[parameter]
+    elif type == "percentile":
+        symbol = PERCENTILE_LATEX_CONVERSION[parameter]
+
+    return symbol
 
 
 def precalculated_histogram(
     parameter_samples: npt.NDArray[Any],
     name: str | None = None,
     color: str | None = None,
+    bin_count: int | None = None,
     normalization: str = "probability",
 ) -> go.Bar:
     """
@@ -113,6 +144,8 @@ def precalculated_histogram(
         Name of the trace
     color : str, optional
         Color of the trace
+    bin_count : int, optional
+        Number of bins
     normalization : str, default "probability"
         Normalization for the bins. One of "probability", "probability density" and "count"
 
@@ -121,24 +154,26 @@ def precalculated_histogram(
     go.Bar
         Precalculated histogram
     """
-    bin_count = min(parameter_samples.size // 200, 200)
+
+    if bin_count is None:
+        bin_count = min(parameter_samples.size // 200, 200)
     counts, bins = calculate_histogram(
         parameter_samples, bin_count, normalization=normalization
     )
     if normalization == "probability":
         hovertemplate = (
-            "Arvo: %{customdata[0]:.1f} - %{customdata[1]:.1f}<br>"
+            "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
             "Osuus: %{y:.1f} %<extra></extra>"
         )
     elif normalization == "probability density":
         hovertemplate = (
-            "Arvo: %{customdata[0]:.1f} - %{customdata[1]:.1f}<br>"
-            "Suhteellinen yleisyys: %{y:.1f} %<extra></extra>"
+            "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
+            "Suhteellinen yleisyys: %{y:.2f} %<extra></extra>"
         )
     elif normalization == "count":
         hovertemplate = (
-            "Arvo: %{customdata[0]:.1f} - %{customdata[1]:.1f}<br>"
-            "Näytteet: %{y:.1f} %<extra></extra>"
+            "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
+            "Näytteet: %{y} %<extra></extra>"
         )
     histogram = go.Bar(
         x=bins[:-1] + (bins[1] - bins[0]) / 2,
@@ -174,6 +209,7 @@ def calculate_histogram(
     numpy.ndarray of Any
         Bin edges
     """
+
     min_value = np.floor(values.min())
     max_value = np.ceil(values.max())
     bin_size = (max_value - min_value) / bin_count
