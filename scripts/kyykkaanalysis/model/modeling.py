@@ -7,6 +7,7 @@ from scipy.stats import uniform
 import pymc as pm
 from xarray import merge
 from xarray import Dataset
+from arviz import summary
 
 from ..data.data_classes import ModelData
 
@@ -56,9 +57,9 @@ class ThrowTimeModel:
 
         y_hat = samples.prior_predictive["y_hat"]
         errors = self._sample_errors(y_hat.size).reshape(y_hat.shape)
-        y = np.floor(y_hat + errors)
-        y.values[y.values < 0] = 0
-        samples.prior_predictive["y"] = y.astype(int)
+        y = np.floor(y_hat + errors).astype(int)
+        y.values[y.values <= 0] = 1  # Ensure valid values
+        samples.prior_predictive["y"] = y
 
         return merge([samples.prior.drop_vars(["k_minus"]), samples.prior_predictive])
 
@@ -79,6 +80,7 @@ class ThrowTimeModel:
         tune_count: int = 1000,
         chain_count: int = 4,
         parallel_count: int = 1,
+        thin: bool = True,
     ) -> Dataset:
         """
         Sample from the posterior distribution
@@ -93,6 +95,8 @@ class ThrowTimeModel:
             Number of chains to run
         parallel_count : int, default 1
             Number of parallel chains to run
+        thin : bool, default True
+            Whether to thin the chains to reduce autocorrelation
 
         Returns
         -------
@@ -115,10 +119,30 @@ class ThrowTimeModel:
                 chains=chain_count,
                 cores=parallel_count,
                 initvals=starting_point,
-                init="jitter+adapt_diag",  # Testaa muita
+                init="adapt_diag",
             )
 
+        if thin:
+            return self.thin(samples.posterior)
+
         return samples.posterior
+
+    @staticmethod
+    def thin(samples: Dataset) -> Dataset:
+        sample_count = samples.sizes["chain"] * samples.sizes["draw"]
+        max_ess = summary(samples)["ess_bulk"].max()
+        if max_ess > sample_count:
+            # Get rid of negative autocorrelations à la NUTS
+            samples = samples.thin({"draw": 2})
+
+        sample_count = samples.sizes["chain"] * samples.sizes["draw"]
+        min_ess = summary(samples)["ess_bulk"].min()
+        subsample_step = int(sample_count // min_ess)
+        if subsample_step > 1:
+            # Get rid of autocorrelation
+            samples = samples.thin({"draw": subsample_step})
+
+        return samples
 
     def change_observations(self, y: npt.NDArray[np.int_] | None = None) -> Self:
         """
