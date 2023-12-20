@@ -12,6 +12,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 version = "0.0.1"
 dependencies = [
+    "arviz>=0.16.0",
     "kaleido>=0.2.1",
     "numpy>=1.26.0",
     "plotly>=5.17.0",
