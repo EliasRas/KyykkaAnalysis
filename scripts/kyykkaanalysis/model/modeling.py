@@ -129,6 +129,20 @@ class ThrowTimeModel:
 
     @staticmethod
     def thin(samples: Dataset) -> Dataset:
+        """
+        Thin the chains to reduce autocorrelations
+
+        Parameters
+        ----------
+        samples : Dataset
+            Samples from the chains
+
+        Returns
+        -------
+        Dataset
+            Thinned chains
+        """
+
         sample_count = samples.sizes["chain"] * samples.sizes["draw"]
         max_ess = summary(samples)["ess_bulk"].max()
         if max_ess > sample_count:
