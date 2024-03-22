@@ -1,0 +1,30 @@
+\begin{tikzpicture}
+    % Observations
+    \node[obs] (y) {\(\mathbf{y}_i\)};
+    \node[latent, above of=y, yshift=2cm] (y_hat) {\(\hat{\mathbf{y}}_i\)};
+
+    % Parameters
+    \node[latent, above of=y_hat, yshift=2cm] (t) {\(\theta_i\)};
+    \node[latent, left of=t, xshift=-2cm] (o) {\(o\)};
+    \node[latent, above of=y_hat, xshift=1cm, yshift=0.97cm] (k) {\(k\)};
+    \node[latent, above of=t, xshift=-0.5cm, yshift=2cm] (m) {\(\mu\)};
+    \node[latent, above of=t, xshift=0.5cm, yshift=2cm] (s) {\(\sigma\)};
+
+    % Factors
+    \factor[above of=y, yshift=1cm] {meas-f} {left:\(\mathcal{U}\)} {y_hat} {y}
+    \factor[above of=y_hat, yshift=1cm] {y-f} {left:\(\mathcal{G}\)} {k, t} {y_hat}
+    \node[above of=y-f, xshift=0.15cm, yshift=-0.75cm] (tline) {};
+    \factoredge {o} {tline} {}
+    \factor[above of=o, yshift=1cm] {o-f} {left:half-\(\mathcal{N}(0,11^2)\)} {} {o}
+    \factor[above of=t, yshift=1cm] {t-f} {right:truncated \(\mathcal{N}\)} {m, s} {t}
+    \factor[above of=m, yshift=1cm] {m-f} {left:truncated \(\mathcal{N}(28,11^2)\)} {} {m}
+    \factor[above of=s, yshift=1cm] {s-f} {right:half-\(\mathcal{N}(0,11^2)\)} {} {s}
+    \factor[above of=k, yshift=1cm] {o-f} {right:half-\(\mathcal{N}(1,14^2)\)} {} {k}
+
+    % Gates
+    \node[font=\footnotesize, left of=o, xshift=-0.5cm, yshift=0.3cm] (first) {ensimmäinen};
+    \gate {first-gate} {(first)(o)} {}
+
+    % Plates
+    \plate {thrower} {(y)(y_hat)(y-f)(t)} {heittäjä}
+\end{tikzpicture}

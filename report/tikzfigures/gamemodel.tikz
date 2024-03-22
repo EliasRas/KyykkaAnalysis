@@ -1,0 +1,62 @@
+\begin{tikzpicture}
+    % Observations
+    \node[obs] (t) {\(t\)};
+    \node[obs, above of=t, xshift=-1cm, yshift=1.5cm] (peli) {\(t_{\text{peli}}\)};
+    \node[obs, above of=peli, yshift=1.5cm] (era) {\(\mathbf{t}_{\text{erä}}\)};
+
+    \node[obs, above of=era, xshift=-1cm, yshift=2.25cm] (y) {\(\mathbf{y}_i\)};
+    \node[obs, above of=y, xshift=-1cm, yshift=1cm] (n_i) {\(N_i\)};
+    \node[obs, above of=n_i, yshift=1.5cm] (n) {\(N_j\)};
+    \node[const, above of=y, xshift=1cm, yshift=3cm] (i) {\(\{i\}_j\)};
+
+    \node[obs, above of=era, xshift=1.5cm, yshift=1.5cm] (k) {\(\kappa_{j}\)};
+
+    \node[obs, above of=t, xshift=2cm, yshift=1.5cm] (pelitauko) {\(\tau_{\text{peli}}\)};
+    \node[obs, above of=pelitauko, yshift=1.5cm] (eratauko) {\(\tau_{\text{erä}}\)};
+
+    % Parameters
+    \node[const, above of=n, xshift=-1.5cm, yshift=2.25cm] (p16) {\(p_{16}\)};
+    \node[const, above of=n, xshift=-0.5cm, yshift=2.25cm] (p15) {\(p_{15}\)};
+    \node[const, above of=n, xshift=0.5cm, yshift=2.25cm] (dots) {\(\cdots\)};
+    \node[const, above of=n, xshift=1.5cm, yshift=2.25cm] (p5) {\(p_{5}\)};
+
+    \node[latent, right of=k, xshift=4.5cm, yshift=0.4cm] (t_k) {\(\theta_\kappa\)};
+    \node[latent, right of=k, xshift=4.5cm, yshift=-0.4cm] (k_k) {\(k_\kappa\)};
+    \node[latent, right of=eratauko, xshift=4cm, yshift=0.4cm] (t_era) {\(\theta_{\text{erä}}\)};
+    \node[latent, right of=eratauko, xshift=4cm, yshift=-0.4cm] (k_era) {\(k_{\text{erä}}\)};
+    \node[latent, right of=pelitauko, xshift=3cm, yshift=0.5cm] (t_peli) {\(\theta_{\text{peli}}\)};
+    \node[latent, right of=pelitauko, xshift=3cm, yshift=-0.5cm] (k_peli) {\(k_{\text{peli}}\)};
+
+    % Factors
+    \factoredge{} {peli, pelitauko} {t}
+    \factoredge{} {era, eratauko} {peli}
+
+    \factoredge[bend left=25] {} {y} {era}
+    \factoredge[bend right=25] {} {k} {era}
+
+    \factoredge {} {n_i} {y}
+    \factoredge {} {n} {n_i}
+    \factor[above of=n, yshift=1.25cm] {n-f} {left:Categorical} {p16,p15,dots,p5} {n}
+    \factor[above of=y, xshift=1cm, yshift=2cm] {y-f} {right:\fref{Kuva}{fig:throwmodel}} {i} {y}
+
+    \factor[right of=k, xshift=3.5cm] {k-f} {above:\(\mathcal{G}\)} {t_k, k_k} {k}
+    \factor[right of=t_k, xshift=1cm] {t_k-f} {right:truncated \(\mathcal{N}(60,93^2)\)} {} {t_k}
+    \factor[right of=k_k, xshift=1cm] {k_k-f} {right:half-\(\mathcal{N}(1,4^2)\)} {} {k_k}
+    \factor[right of=eratauko, xshift=2cm] {eratauko-f} {above:\(\mathcal{G}\)} {t_era, k_era} {eratauko}
+    \factor[right of=t_era, xshift=1cm] {t_era-f} {right:truncated \(\mathcal{N}(30,105^2)\)} {} {t_era}
+    \factor[right of=k_era, xshift=1cm] {k_era-f} {right:half-\(\mathcal{N}(1,4^2)\)} {} {k_era}
+    \factor[right of=pelitauko, xshift=2cm] {pelitauko-f} {above:\(\mathcal{G}\)} {t_peli, k_peli} {pelitauko}
+    \factor[right of=t_peli, xshift=1cm] {t_peli-f} {right:truncated \(\mathcal{N}(60,210^2)\)} {} {t_peli}
+    \factor[right of=k_peli, xshift=1cm] {k_peli-f} {right:half-\(\mathcal{N}(1,4^2)\)} {} {k_peli}
+
+    % Gates
+    \node[font=\footnotesize, left of=n_i, xshift=-1cm, yshift=0.3cm] (order) {pelijärjestys};
+    \gate {order-gate} {(order)(n_i)} {}
+    \node[font=\footnotesize, right of=k, xshift=0.6cm, yshift=0.75cm] (konamax) {erän maksimi};
+    \gate {kona-gate} {(konamax)(k)} {}
+
+    % Plates
+    \plate {thrower} {(y)(n_i)} {heittäjä}
+    \plate {team} {(thrower)(y-f)(n)(i)(k)} {joukkue}
+    \plate {game} {(peli)(era)(team)(konamax)(eratauko)(pelitauko)} {peli}
+\end{tikzpicture}
