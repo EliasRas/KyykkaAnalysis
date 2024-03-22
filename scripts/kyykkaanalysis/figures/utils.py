@@ -1,4 +1,5 @@
 """Utility functions for plotly figures"""
+
 from typing import Any
 from pathlib import Path
 from time import sleep
@@ -17,7 +18,6 @@ LATEX_CONVERSION = {
     "o": "$o$",
     "k": "$k$",
     "theta": r"$\theta$",
-    "y_hat": "$\hat{y}$",
     "y": "$y$",
 }
 ERROR_LATEX_CONVERSION = {
@@ -26,7 +26,6 @@ ERROR_LATEX_CONVERSION = {
     "o": r"$o-\text{virhe}$",
     "k": r"$k-\text{virhe}$",
     "theta": r"$\theta-\text{virhe}$",
-    "y_hat": r"$\hat{y}-\text{virhe}$",
     "y": r"$y-\text{virhe}$",
 }
 PERCENTILE_LATEX_CONVERSION = {
@@ -35,7 +34,6 @@ PERCENTILE_LATEX_CONVERSION = {
     "o": r"$o-\text{persentiili}$",
     "k": r"$k-\text{persentiili}$",
     "theta": r"$\theta-\text{persentiili}$",
-    "y_hat": r"$\hat{y}-\text{persentiili}$",
     "y": r"$y-\text{persentiili}$",
 }
 
@@ -156,7 +154,9 @@ def precalculated_histogram(
     """
 
     if bin_count is None:
-        bin_count = min(parameter_samples.size // 200, 200)
+        bin_count = max(min(parameter_samples.size // 200, 200), 1)
+    elif bin_count < 1:
+        bin_count = 1
     counts, bins = calculate_histogram(
         parameter_samples, bin_count, normalization=normalization
     )
