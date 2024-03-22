@@ -1,4 +1,5 @@
 """Visualizations for prior predictive checking"""
+
 from pathlib import Path
 
 import numpy as np
@@ -51,7 +52,7 @@ def _sample_distributions(
     for parameter, parameter_samples in samples.items():
         parameter_samples = parameter_samples.values
         parameter_symbol = parameter_to_latex(parameter)
-        if parameter in ["y", "y_hat"]:
+        if parameter == "y":
             figure = go.Figure(
                 [
                     precalculated_histogram(

@@ -1,12 +1,13 @@
 """Construct a playtime model"""
+
 from typing import Self
 
 import numpy as np
 from numpy import typing as npt
-from scipy.stats import uniform
-import pymc as pm
 from xarray import merge
 from xarray import Dataset
+import pymc as pm
+from pymc.math import floor, exp, log
 from arviz import summary
 
 from ..data.data_classes import ModelData
@@ -24,7 +25,9 @@ class ThrowTimeModel:
         Throw time model
     """
 
-    def __init__(self, data: ModelData) -> None:
+    # Should be changed to https://www.pymc.io/projects/examples/en/latest/howto/model_builder.html
+
+    def __init__(self, data: ModelData, naive: bool = False) -> None:
         """
         Container for throw time model
 
@@ -35,7 +38,10 @@ class ThrowTimeModel:
         """
 
         self.data = data
-        self.model = throw_model(data)
+        if not naive:
+            self.model = throw_model(data)
+        else:
+            self.model = naive_throw_model(data)
 
     def sample_prior(self, sample_count: int = 500) -> Dataset:
         """
@@ -55,22 +61,8 @@ class ThrowTimeModel:
         with self.model:
             samples = pm.sample_prior_predictive(samples=sample_count)
 
-        y_hat = samples.prior_predictive["y_hat"]
-        errors = self._sample_errors(y_hat.size).reshape(y_hat.shape)
-        y = np.floor(y_hat + errors).astype(int)
-        y.values[y.values <= 0] = 1  # Ensure valid values
-        samples.prior_predictive["y"] = y
-
-        return merge([samples.prior.drop_vars(["k_minus"]), samples.prior_predictive])
-
-    def _sample_errors(self, count: int) -> npt.NDArray[np.float_]:
-        samples = uniform(0, 1).rvs(count)
-        identifiers = uniform(0, 1).rvs(count)
-        samples[identifiers < 5 / 9] = -3 + 5 * samples[identifiers < 5 / 9]
-        samples[(identifiers >= 5 / 9) & (identifiers < 8 / 9)] = (
-            -2 + 3 * samples[(identifiers >= 5 / 9) & (identifiers < 8 / 9)]
-        )
-        samples[identifiers >= 8 / 9] *= -1
+        samples = merge([samples.prior, samples.prior_predictive])
+        samples["y"] = samples["y"].astype(int)
 
         return samples
 
@@ -109,11 +101,12 @@ class ThrowTimeModel:
                 "mu_interval__": np.array(np.log(28)),
                 "sigma_log__": np.array(np.log(11)),
                 "o_log__": np.array(np.log(1)),
-                "k_minus_log__": np.array(np.log(1)),
+                "k_log__": np.array(np.log(2)),
                 "theta_interval__": np.ones(len(self.model.coords["players"]))
                 * np.log(28),
             }
             samples = pm.sample(
+                nuts_sampler="blackjax",
                 draws=sample_count,
                 tune=tune_count,
                 chains=chain_count,
@@ -204,21 +197,93 @@ def throw_model(data: ModelData) -> pm.Model:
         mu = pm.TruncatedNormal("mu", mu=28, sigma=11, lower=0, upper=np.inf)
         sigma = pm.HalfNormal("sigma", sigma=11)
         o = pm.HalfNormal("o", sigma=11)
-        k_minus = pm.HalfNormal("k_minus", sigma=14)
-        k = pm.Deterministic("k", k_minus + 1)
+        k = pm.TruncatedNormal("k", mu=1, sigma=14, lower=1)
 
         theta = pm.TruncatedNormal("theta", mu=mu, sigma=sigma, lower=0, dims="players")
         player = pm.MutableData("player", data.player_ids, dims="throws")
         is_first = pm.MutableData("is_first", data.first_throw, dims="throws")
         throw_times = pm.MutableData("throw_times", data.throw_times, dims="throws")
 
-        pm.Gamma(
-            "y_hat",
+        pm.CustomDist(
+            "y",
             k,
-            k
-            / (theta[player] + o * is_first),  # pylint: disable=unsubscriptable-object
+            theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+            logp=_podium_gamma_logp,
+            random=_podium_gamma_rng,
             dims="throws",
-            observed=throw_times,  # Use the rounded measurements directly, wrong but seems to be the only way that works
+            observed=throw_times,
         )
 
     return model
+
+
+def _podium_gamma_logp(value, k, theta):
+    dist = pm.Gamma.dist(alpha=k, beta=k / theta)
+
+    density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
+    density2 = exp(pm.logcdf(dist, value + 2)) - exp(pm.logcdf(dist, value - 1))
+    density3 = exp(pm.logcdf(dist, value + 1)) - exp(pm.logcdf(dist, value))
+
+    return log(5 / 9 * density1 + 3 / 9 * density2 + 1 / 9 * density3)
+
+
+def _podium_gamma_rng(
+    k: float,
+    theta: float,
+    rng: np.random.RandomState | np.random.Generator | None = None,
+    size: tuple[int, ...] | None = None,
+) -> npt.NDArray[np.int_]:
+    if rng is None:
+        rng = np.random.default_rng()
+
+    draws = rng.gamma(k, theta / k, size=size)
+    draws += (
+        rng.multinomial(1, [1 / 9, 2 / 9, 3 / 9, 2 / 9, 1 / 9], size=size).argmax(1) - 2
+    )
+
+    return np.floor(draws)
+
+
+def naive_throw_model(data: ModelData) -> pm.Model:
+    """
+    Construct a model for throw times
+
+    Parameters
+    ----------
+    data : ModelData
+        Data for the model
+
+    Returns
+    -------
+    pymc.Model
+        Throw time model
+    """
+
+    coordinates = {
+        "players": data.player_names,
+        "throws": np.arange(data.throw_times.size),
+    }
+    model = pm.Model(coords=coordinates)
+    with model:
+        mu = pm.TruncatedNormal("mu", mu=28, sigma=11, lower=0, upper=np.inf)
+        sigma = pm.HalfNormal("sigma", sigma=11)
+        o = pm.HalfNormal("o", sigma=11)
+        k = pm.TruncatedNormal("k", mu=1, sigma=14, lower=1)
+
+        theta = pm.TruncatedNormal("theta", mu=mu, sigma=sigma, lower=0, dims="players")
+        player = pm.MutableData("player", data.player_ids, dims="throws")
+        is_first = pm.MutableData("is_first", data.first_throw, dims="throws")
+        throw_times = pm.MutableData("throw_times", data.throw_times, dims="throws")
+
+        pm.CustomDist(
+            "y",
+            k,
+            theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+            dist=_floored_gamma,
+            dims="throws",
+            observed=throw_times,
+        )
+
+
+def _floored_gamma(k: float, theta: float, size: int):
+    return floor(pm.Gamma.dist(alpha=k, beta=k / theta, size=size))
