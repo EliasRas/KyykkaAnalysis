@@ -284,6 +284,8 @@ def naive_throw_model(data: ModelData) -> pm.Model:
             observed=throw_times,
         )
 
+    return model
+
 
 def _floored_gamma(k: float, theta: float, size: int):
     return floor(pm.Gamma.dist(alpha=k, beta=k / theta, size=size))
