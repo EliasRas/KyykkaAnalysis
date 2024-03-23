@@ -51,8 +51,6 @@ def _sample_distributions(
     true_values: Dataset | None = None,
 ) -> None:
     for parameter, parameter_samples in samples.items():
-        if parameter in ["k_minus"]:
-            continue
         parameter_samples = parameter_samples.values
         parameter_symbol = parameter_to_latex(parameter)
         if parameter == "theta":
@@ -235,7 +233,7 @@ def _parameter_correlations(
     figure_directory: Path,
     true_values: Dataset | None = None,
 ) -> None:
-    samples = samples.drop_vars(["k_minus", "theta"])
+    samples = samples.drop_vars(["theta"])
     parameter_count = len(samples)
     parameters = sorted(samples.keys())
     bin_count = min((samples["draw"].size * samples["chain"].size) // 200, 100)
@@ -326,7 +324,7 @@ def chain_plots(
 
 
 def _traceplot(samples: Dataset, figure_directory: Path) -> None:
-    samples = samples.drop_vars(["k_minus", "theta"])
+    samples = samples.drop_vars(["theta"])
     parameter_count = len(samples)
 
     figure = make_subplots(rows=parameter_count, cols=2)
@@ -339,6 +337,7 @@ def _traceplot(samples: Dataset, figure_directory: Path) -> None:
                     chain,
                     normalization="probability density",
                     color=PLOT_COLORS[chain_index],
+                    bin_count=min(parameter_samples.size // 100, 200),
                 ),
                 row=parameter_index + 1,
                 col=1,

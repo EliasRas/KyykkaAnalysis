@@ -1,4 +1,5 @@
 """Checking priors and model definition"""
+
 from typing import Any
 from pathlib import Path
 
@@ -50,7 +51,7 @@ def fake_data_simulation(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ):
     """
-    Simulate data from prior and check that the parameter values can be recovered
+    Simulate data from prior and check if the parameter values can be recovered
 
     Parameters
     ----------
@@ -73,14 +74,35 @@ def fake_data_simulation(
         check_priors(data, figure_directory.parent, cache_directory)
         prior = open_dataset(prior_file)
 
-    parameters = sorted(set(prior.keys()) - {"k_minus", "y", "y_hat"})
+    true_values, conditional_means, posterior_stds, percentiles = _fake_data_inference(
+        model, prior, cache_directory, figure_directory
+    )
+
+    simulation_summaries = _summaries_to_dataset(
+        prior, true_values, conditional_means, posterior_stds, percentiles
+    )
+    estimation_plots(simulation_summaries, figure_directory)
+
+
+def _fake_data_inference(
+    model: ThrowTimeModel,
+    prior: Dataset,
+    cache_directory: Path,
+    figure_directory: Path,
+) -> tuple[
+    dict[str, Any | npt.NDArray[Any]],
+    dict[str, list[float | npt.NDArray[Any]]],
+    dict[str, list[float | npt.NDArray[Any]]],
+    dict[str, list[float | npt.NDArray[Any]]],
+]:
+    parameters = sorted(set(prior.keys()) - {"y", "y_true"})
     true_values = {parameter: [] for parameter in parameters}
     conditional_means = {parameter: [] for parameter in parameters}
     posterior_stds = {parameter: [] for parameter in parameters}
     percentiles = {parameter: [] for parameter in parameters}
-    for sample_index in range(len(prior.coords["draw"])):
+    for sample_index in range(min(100, len(prior.coords["draw"]))):
         sample = prior.isel(draw=sample_index)
-        for parameter in parameters:
+        for parameter in true_values.keys():
             true_value = sample[parameter].values
             if true_value.size == 1:
                 true_values[parameter].append(true_value.item())
@@ -91,7 +113,7 @@ def fake_data_simulation(
             sample_index, sample, cache_directory, model
         )
 
-        if sample_index in []:
+        if sample_index in [0, 1, 3]:
             posterior_distribution_plots(
                 posterior_sample,
                 figure_directory / str(sample_index),
@@ -110,10 +132,7 @@ def fake_data_simulation(
             percentiles,
         )
 
-    simulation_summaries = _summaries_to_dataset(
-        parameters, prior, true_values, conditional_means, posterior_stds, percentiles
-    )
-    estimation_plots(simulation_summaries, figure_directory)
+    return true_values, conditional_means, posterior_stds, percentiles
 
 
 def _sample_posterior(
@@ -123,7 +142,7 @@ def _sample_posterior(
     if posterior_file.exists():
         posterior_sample = open_dataset(posterior_file)
     else:
-        model.change_observations(y=sample["y_hat"].values)
+        model.change_observations(y=sample["y"].values)
         posterior_sample = model.sample(
             sample_count=1000, chain_count=4, parallel_count=4, thin=False
         )
@@ -159,7 +178,6 @@ def _summarize_posterior(
 
 
 def _summaries_to_dataset(
-    parameters: list[str],
     prior: Dataset,
     true_values: dict[str, list[Any | npt.NDArray[Any]]],
     conditional_means: dict[str, list[float | npt.NDArray[Any]]],
@@ -167,7 +185,9 @@ def _summaries_to_dataset(
     percentiles: dict[str, list[float | npt.NDArray[Any]]],
 ) -> Dataset:
     data_vars = {}
+    sample_count = 0
     for parameter, parameter_truths in true_values.items():
+        sample_count = max(len(parameter_truths), sample_count)
         if isinstance(parameter_truths[0], np.ndarray):
             data_vars[parameter] = (
                 [
@@ -196,10 +216,11 @@ def _summaries_to_dataset(
                     )
                 ),
             )
+
     simulation_summaries = Dataset(
         data_vars=data_vars,
         coords={
-            "draw": np.arange(len(true_values[parameters[0]])),
+            "draw": np.arange(sample_count),
             "players": prior.coords["players"],
             "summary": [
                 "true value",

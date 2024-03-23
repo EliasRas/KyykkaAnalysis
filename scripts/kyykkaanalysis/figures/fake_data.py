@@ -1,4 +1,5 @@
 """Visualizations for fake data simulations"""
+
 from typing import Any
 from pathlib import Path
 
@@ -35,8 +36,9 @@ def estimation_plots(
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _cm_accuracy(posterior_summaries, figure_directory)
-    _percentiles(posterior_summaries, figure_directory)
     _error_correlations(posterior_summaries, figure_directory)
+    _percentiles(posterior_summaries, figure_directory)
+    # y:n cdfien vertailu
 
 
 def _cm_accuracy(
@@ -58,7 +60,7 @@ def _cm_accuracy(
     )
 
     for parameter_index, parameter in enumerate(parameters):
-        parameter_symbol = parameter_to_latex(parameter, type="error")
+        parameter_symbol = parameter_to_latex(parameter, variable_type="error")
         parameter_summaries = posterior_summaries[parameter]
 
         errors = (
@@ -216,11 +218,14 @@ def _error_correlations(
     )
     for parameter_index, parameter in enumerate(parameters):
         parameter_symbol = parameter_to_latex(parameter)
-        error_symbol = parameter_to_latex(parameter, type="error")
+        error_symbol = parameter_to_latex(parameter, variable_type="error")
         parameter_summaries = posterior_summaries[parameter]
         errors = (
             parameter_summaries.sel(summary="conditional mean").values
             - parameter_summaries.sel(summary="true value").values
+        )
+        errors = (
+            errors / parameter_summaries.sel(summary="posterior std").values
         ).flatten()
 
         for parameter_index2, parameter2 in enumerate(parameters):
@@ -320,11 +325,11 @@ def _percentiles(
     figure = make_subplots(rows=parameter_count, cols=2)
 
     for parameter_index, parameter in enumerate(parameters):
-        parameter_symbol = parameter_to_latex(parameter, type="percentile")
+        parameter_symbol = parameter_to_latex(parameter, variable_type="percentile")
         parameter_percentiles = (
             posterior_summaries[parameter].sel(summary="percentile").values.flatten()
         )
-        bin_count = min(parameter_percentiles.size // 20, 20)
+        bin_count = max(min(parameter_percentiles.size // 20, 20), 1)
         _percentile_variation(parameter_percentiles, bin_count, figure, parameter_index)
         figure.add_trace(
             precalculated_histogram(

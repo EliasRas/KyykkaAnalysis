@@ -13,8 +13,8 @@ FONT_SIZE_2X2 = 28
 FONT_SIZE_BOXPLOT = 10
 FONT_SIZE = 15
 LATEX_CONVERSION = {
-    "mu": "$\mu$",
-    "sigma": "$\sigma$",
+    "mu": r"$\mu$",
+    "sigma": r"$\sigma$",
     "o": "$o$",
     "k": "$k$",
     "theta": r"$\theta$",
@@ -42,7 +42,7 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     """
     Saving the file twice and waiting in between to fix
     https://github.com/plotly/plotly.py/issues/3469.
-    In addition apply pdf specific formatting
+    Also apply pdf specific formatting
 
     Parameters
     ----------
@@ -94,7 +94,7 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     )
 
 
-def parameter_to_latex(parameter: str, type: str = "variable") -> str:
+def parameter_to_latex(parameter: str, variable_type: str = "variable") -> str:
     """
     Convert the name of the parameter to a LaTeX symbol
 
@@ -102,7 +102,7 @@ def parameter_to_latex(parameter: str, type: str = "variable") -> str:
     ----------
     parameter : str
         Name of the parameter
-    type : str, default "variable"
+    variable_type : str, default "variable"
         Type of latex string to return. Possible choices:
             "variable": Symbol of the variable
             "error": Estimation error
@@ -114,11 +114,11 @@ def parameter_to_latex(parameter: str, type: str = "variable") -> str:
         LaTeX symbol
     """
 
-    if type == "variable":
+    if variable_type == "variable":
         symbol = LATEX_CONVERSION[parameter]
-    elif type == "error":
+    elif variable_type == "error":
         symbol = ERROR_LATEX_CONVERSION[parameter]
-    elif type == "percentile":
+    elif variable_type == "percentile":
         symbol = PERCENTILE_LATEX_CONVERSION[parameter]
 
     return symbol
