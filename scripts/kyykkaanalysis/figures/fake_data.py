@@ -38,6 +38,7 @@ def estimation_plots(
     _cm_accuracy(posterior_summaries, figure_directory)
     _error_correlations(posterior_summaries, figure_directory)
     _percentiles(posterior_summaries, figure_directory)
+    _sample_sizes(posterior_summaries, figure_directory)
     # y:n cdfien vertailu
 
 
@@ -397,7 +398,7 @@ def _percentile_variation(
         col=1,
     )
 
-    # Percentiles are a uniform variable on [0,1 ], whose kth order statistic (basically
+    # Percentiles are a uniform variable on [0,1], whose kth order statistic (basically
     # the inverse CDF) is beta-distributed
     lower_bound = np.linspace(0, 1, 1000)
     higher_bound = lower_bound.copy()
@@ -422,3 +423,108 @@ def _percentile_variation(
         row=parameter_index + 1,
         col=2,
     )
+
+
+def _sample_sizes(
+    posterior_summaries: Dataset,
+    figure_directory: Path,
+) -> None:
+    parameters = sorted(posterior_summaries.keys())
+    parameter_count = len(parameters)
+
+    figure = make_subplots(
+        rows=parameter_count,
+        cols=parameter_count,
+    )
+    customdata, theta_customdata, extra_hover, theta_hover = _simulation_infos(
+        posterior_summaries, parameters
+    )
+    for parameter_index, parameter in enumerate(parameters):
+        parameter_symbol = parameter_to_latex(parameter)
+        sample_size = (
+            posterior_summaries[parameter].sel(summary="sample size").values.flatten()
+        )
+
+        for parameter_index2, parameter2 in enumerate(parameters):
+            parameter_truths = (
+                posterior_summaries[parameter2].sel(summary="true value").values
+            ).flatten()
+
+            if "theta" in [parameter, parameter2]:
+                figure.add_trace(
+                    _sample_size_plot(
+                        np.repeat(
+                            parameter_truths,
+                            max(sample_size.size // parameter_truths.size, 1),
+                            0,
+                        ),
+                        np.repeat(
+                            sample_size,
+                            max(parameter_truths.size // sample_size.size, 1),
+                            0,
+                        ),
+                        theta_customdata,
+                        f"Otoksen koko: %{{y:.2f}}{theta_hover}<extra>{parameter}</extra>",
+                    ),
+                    row=parameter_index + 1,
+                    col=parameter_index2 + 1,
+                )
+            else:
+                figure.add_trace(
+                    _sample_size_plot(
+                        parameter_truths,
+                        sample_size,
+                        customdata,
+                        f"Otoksen koko: %{{y:.2f}}{extra_hover}<extra>{parameter}</extra>",
+                    ),
+                    row=parameter_index + 1,
+                    col=parameter_index2 + 1,
+                )
+        figure.update_yaxes(
+            title_text="Otoksen koko",
+            row=parameter_index + 1,
+            col=1,
+        )
+        figure.update_xaxes(
+            title_text=parameter_symbol,
+            row=parameter_count,
+            col=parameter_index + 1,
+        )
+
+    figure.update_layout(
+        showlegend=False,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "sample_sizes.html", include_mathjax="cdn")
+
+
+def _sample_size_plot(
+    x: npt.NDArray[Any],
+    y: npt.NDArray[Any],
+    customdata: npt.NDArray[Any],
+    hover: str,
+) -> go.Scatter | go.Histogram2d:
+    if x.size < 1000:
+        trace = go.Scatter(
+            x=x,
+            y=y,
+            customdata=customdata,
+            mode="markers",
+            marker_color=PLOT_COLORS[0],
+            hovertemplate=hover,
+        )
+    else:
+        bin_count = min(x.size // 50, 200)
+        trace = go.Histogram2d(
+            x=x,
+            y=y,
+            nbinsx=bin_count,
+            nbinsy=bin_count,
+            colorscale="thermal",
+            showscale=False,
+            hovertemplate="Todellinen arvo: %{x}<br>"
+            "Otoksen koko: %{y}<br>Näytteitä: %{z}<extra></extra>",
+        )
+
+    return trace
