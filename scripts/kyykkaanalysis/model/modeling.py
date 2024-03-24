@@ -104,7 +104,7 @@ class ThrowTimeModel:
                 "mu_interval__": np.array(np.log(28)),
                 "sigma_log__": np.array(np.log(11)),
                 "o_log__": np.array(np.log(1)),
-                "k_log__": np.array(np.log(2)),
+                "k_interval__": np.array(np.log(2)),
                 "theta_interval__": np.ones(len(self.model.coords["players"]))
                 * np.log(28),
             }
