@@ -220,7 +220,7 @@ def throw_model(data: ModelData) -> pm.Model:
     return model
 
 
-def _podium_gamma_logp(value, k, theta):
+def _podium_gamma_logp(value, k: float, theta: float):
     dist = pm.Gamma.dist(alpha=k, beta=k / theta)
 
     density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
