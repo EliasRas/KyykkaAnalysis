@@ -1,10 +1,8 @@
 """Checking priors and model definition"""
 
-from typing import Any
 from pathlib import Path
 
 import numpy as np
-from numpy import typing as npt
 from xarray import Dataset, open_dataset
 
 from .modeling import ThrowTimeModel
@@ -74,12 +72,8 @@ def fake_data_simulation(
         check_priors(data, figure_directory.parent, cache_directory)
         prior = open_dataset(prior_file)
 
-    true_values, conditional_means, posterior_stds, percentiles = _fake_data_inference(
+    simulation_summaries = _fake_data_inference(
         model, prior, cache_directory, figure_directory
-    )
-
-    simulation_summaries = _summaries_to_dataset(
-        prior, true_values, conditional_means, posterior_stds, percentiles
     )
     estimation_plots(simulation_summaries, figure_directory)
 
@@ -89,25 +83,48 @@ def _fake_data_inference(
     prior: Dataset,
     cache_directory: Path,
     figure_directory: Path,
-) -> tuple[
-    dict[str, Any | npt.NDArray[Any]],
-    dict[str, list[float | npt.NDArray[Any]]],
-    dict[str, list[float | npt.NDArray[Any]]],
-    dict[str, list[float | npt.NDArray[Any]]],
-]:
-    parameters = sorted(set(prior.keys()) - {"y", "y_true"})
-    true_values = {parameter: [] for parameter in parameters}
-    conditional_means = {parameter: [] for parameter in parameters}
-    posterior_stds = {parameter: [] for parameter in parameters}
-    percentiles = {parameter: [] for parameter in parameters}
-    for sample_index in range(min(100, len(prior.coords["draw"]))):
+) -> Dataset:
+    parameters = sorted(set(prior.keys()) - {"y"})
+    sample_count = min(100, len(prior.coords["draw"]))
+    data_vars = {}
+    for parameter in parameters:
+        if "players" in prior[parameter].coords:
+            data_vars[parameter] = (
+                ["draw", "summary", "players"],
+                np.zeros((sample_count, 5, prior[parameter].shape[-1])),
+            )
+        else:
+            data_vars[parameter] = (
+                ["draw", "summary"],
+                np.zeros((sample_count, 5)),
+            )
+    posterior_summaries = Dataset(
+        data_vars=data_vars,
+        coords={
+            "draw": np.arange(sample_count),
+            "players": prior.coords["players"],
+            "summary": [
+                "true value",
+                "conditional mean",
+                "posterior std",
+                "percentile",
+                "sample size",
+            ],
+        },
+    )
+
+    for sample_index in range(sample_count):
         sample = prior.isel(draw=sample_index)
-        for parameter in true_values.keys():
-            true_value = sample[parameter].values
-            if true_value.size == 1:
-                true_values[parameter].append(true_value.item())
+        for parameter in parameters:
+            true_value = sample[parameter]
+            if "players" not in true_value.coords:
+                posterior_summaries[parameter].sel(summary="true value")[
+                    sample_index
+                ] = true_value.values.item()
             else:
-                true_values[parameter].append(true_value.squeeze())
+                posterior_summaries[parameter].sel(summary="true value")[
+                    sample_index
+                ] = true_value.values.squeeze()
 
         posterior_sample = _sample_posterior(
             sample_index, sample, cache_directory, model
@@ -123,16 +140,17 @@ def _fake_data_inference(
             chain_plots(posterior_sample, figure_directory / str(sample_index))
 
         posterior_sample = model.thin(posterior_sample)
-        _summarize_posterior(
-            parameters,
-            {parameter: true_values[parameter][-1] for parameter in parameters},
-            posterior_sample,
-            conditional_means,
-            posterior_stds,
-            percentiles,
-        )
+        for parameter in parameters:
+            sample = posterior_sample[parameter]
+            posterior_summaries[parameter].sel(summary="sample size").values[
+                sample_index
+            ] = (
+                sample.shape[0] * sample.shape[1]  # pylint: disable=superfluous-parens
+            )
 
-    return true_values, conditional_means, posterior_stds, percentiles
+        _summarize_posterior(posterior_summaries, posterior_sample, sample_index)
+
+    return posterior_summaries
 
 
 def _sample_posterior(
@@ -152,83 +170,39 @@ def _sample_posterior(
 
 
 def _summarize_posterior(
-    parameters: list[str],
-    true_values: dict[str, Any | npt.NDArray[Any]],
+    posterior_summaries: Dataset,
     posterior_sample: Dataset,
-    conditional_means: dict[str, list[float | npt.NDArray[Any]]],
-    posterior_stds: dict[str, list[float | npt.NDArray[Any]]],
-    percentiles: dict[str, list[float | npt.NDArray[Any]]],
+    sample_index: int,
 ) -> None:
-    for parameter in parameters:
-        parameter_sample = posterior_sample[parameter].values
-        if len(parameter_sample.shape) == 2:
-            conditional_means[parameter].append(parameter_sample.mean())
-            posterior_stds[parameter].append(parameter_sample.std())
-            percentiles[parameter].append(
-                (parameter_sample < true_values[parameter]).sum()
-                / parameter_sample.size
-            )
+    for parameter in posterior_summaries.keys():
+        parameter_sample = posterior_sample[parameter]
+        true_value = (
+            posterior_summaries[parameter]
+            .sel(summary="true value")[sample_index]
+            .values
+        )
+
+        if "players" not in parameter_sample.coords:
+            parameter_sample = parameter_sample.values
+
+            posterior_summaries[parameter].sel(summary="conditional mean")[
+                sample_index
+            ] = parameter_sample.mean()
+            posterior_summaries[parameter].sel(summary="posterior std")[
+                sample_index
+            ] = parameter_sample.std()
+            posterior_summaries[parameter].sel(summary="percentile")[sample_index] = (
+                parameter_sample < true_value
+            ).sum() / parameter_sample.size
         else:
-            conditional_means[parameter].append(parameter_sample.mean((0, 1)))
-            posterior_stds[parameter].append(parameter_sample.std((0, 1)))
-            percentiles[parameter].append(
-                (parameter_sample < true_values[parameter]).sum((0, 1))
-                / (parameter_sample.shape[0] * parameter_sample.shape[1])
-            )
+            parameter_sample = parameter_sample.values
 
-
-def _summaries_to_dataset(
-    prior: Dataset,
-    true_values: dict[str, list[Any | npt.NDArray[Any]]],
-    conditional_means: dict[str, list[float | npt.NDArray[Any]]],
-    posterior_stds: dict[str, list[float | npt.NDArray[Any]]],
-    percentiles: dict[str, list[float | npt.NDArray[Any]]],
-) -> Dataset:
-    data_vars = {}
-    sample_count = 0
-    for parameter, parameter_truths in true_values.items():
-        sample_count = max(len(parameter_truths), sample_count)
-        if isinstance(parameter_truths[0], np.ndarray):
-            data_vars[parameter] = (
-                [
-                    "draw",
-                    "summary",
-                    "players",
-                ],
-                np.hstack(
-                    (
-                        np.expand_dims(parameter_truths, 1),
-                        np.expand_dims(conditional_means[parameter], 1),
-                        np.expand_dims(posterior_stds[parameter], 1),
-                        np.expand_dims(percentiles[parameter], 1),
-                    )
-                ),
-            )
-        else:
-            data_vars[parameter] = (
-                ["draw", "summary"],
-                np.hstack(
-                    (
-                        np.array(parameter_truths).reshape(-1, 1),
-                        np.array(conditional_means[parameter]).reshape(-1, 1),
-                        np.array(posterior_stds[parameter]).reshape(-1, 1),
-                        np.array(percentiles[parameter]).reshape(-1, 1),
-                    )
-                ),
-            )
-
-    simulation_summaries = Dataset(
-        data_vars=data_vars,
-        coords={
-            "draw": np.arange(sample_count),
-            "players": prior.coords["players"],
-            "summary": [
-                "true value",
-                "conditional mean",
-                "posterior std",
-                "percentile",
-            ],
-        },
-    )
-
-    return simulation_summaries
+            posterior_summaries[parameter].sel(summary="conditional mean")[
+                sample_index
+            ] = parameter_sample.mean((0, 1))
+            posterior_summaries[parameter].sel(summary="posterior std")[
+                sample_index
+            ] = parameter_sample.std((0, 1))
+            posterior_summaries[parameter].sel(summary="percentile")[sample_index] = (
+                parameter_sample < true_value
+            ).sum((0, 1)) / (parameter_sample.shape[0] * parameter_sample.shape[1])
