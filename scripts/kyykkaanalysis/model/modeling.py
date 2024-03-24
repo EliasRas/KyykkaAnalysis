@@ -197,7 +197,7 @@ def throw_model(data: ModelData) -> pm.Model:
     }
     model = pm.Model(coords=coordinates)
     with model:
-        mu = pm.TruncatedNormal("mu", mu=28, sigma=11, lower=0, upper=np.inf)
+        mu = pm.TruncatedNormal("mu", mu=28, sigma=11, lower=0)
         sigma = pm.HalfNormal("sigma", sigma=11)
         o = pm.HalfNormal("o", sigma=11)
         k = pm.TruncatedNormal("k", mu=1, sigma=14, lower=1)
