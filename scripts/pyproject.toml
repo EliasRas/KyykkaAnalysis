@@ -29,4 +29,5 @@ dependencies = [
 dev = [
     "black",
     "pylint",
+    "pydot",    # For debugging pytensor graphs
 ]
