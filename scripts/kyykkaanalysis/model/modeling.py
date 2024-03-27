@@ -22,7 +22,7 @@ class ThrowTimeModel:
     data : ModelData
         Data for the model
     naive : bool
-        Whether the model uses only floor rounding in likelihood
+        Whether the model uses simple floor rounding in likelihood
     model : pymc.Model
         Throw time model
     """
