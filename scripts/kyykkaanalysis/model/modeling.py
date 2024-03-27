@@ -171,7 +171,16 @@ class ThrowTimeModel:
 
         if y is not None:
             with self.model:
-                pm.set_data({"throw_times": y.flatten()})
+                y = y.flatten()
+
+                # Ensure that measurement error bounds are within Gamma distribution domain
+                # Otherwise gradient calculation fails
+                if self.naive:
+                    y[y < 1] = 1
+                else:
+                    y[y < 3] = 3
+
+                pm.set_data({"throw_times": y})
 
         return self
 
