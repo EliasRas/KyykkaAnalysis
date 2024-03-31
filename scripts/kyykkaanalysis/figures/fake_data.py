@@ -20,6 +20,7 @@ from .utils import (
 
 def estimation_plots(
     posterior_summaries: Dataset,
+    posterior_predictive_summaries: Dataset,
     figure_directory: Path,
 ) -> None:
     """
@@ -29,6 +30,8 @@ def estimation_plots(
     ----------
     posterior_summaries : xarray.Dataset
         Summaries of posterior samples relative to the true values
+    posterior_predictive_summaries : xarray.Dataset
+        Summaries of posterior predictive samples relative to the true values
     figure_directory : Path
         Path to the directory in which the figures are saved
     """
@@ -39,7 +42,7 @@ def estimation_plots(
     _error_correlations(posterior_summaries, figure_directory)
     _percentiles(posterior_summaries, figure_directory)
     _sample_sizes(posterior_summaries, figure_directory)
-    # y:n cdfien vertailu
+    _KS_distances(posterior_summaries, posterior_predictive_summaries, figure_directory)
 
 
 def _cm_accuracy(
@@ -528,3 +531,72 @@ def _sample_size_plot(
         )
 
     return trace
+
+
+def _KS_distances(
+    posterior_summaries: Dataset,
+    posterior_predictive_summaries: Dataset,
+    figure_directory: Path,
+):
+    observed_variables = sorted(posterior_predictive_summaries.keys())
+    parameters = sorted(posterior_summaries.keys())
+    parameter_count = len(parameters)
+    for variable in observed_variables:
+        distance = (
+            posterior_predictive_summaries[variable].sel(summary="KS distance").values
+        )
+
+        figure = make_subplots(
+            rows=1,
+            cols=parameter_count,
+        )
+        customdata, theta_customdata, extra_hover, theta_hover = _simulation_infos(
+            posterior_summaries, parameters
+        )
+        for parameter_index, parameter in enumerate(parameters):
+            parameter_symbol = parameter_to_latex(parameter)
+            parameter_truths = (
+                posterior_summaries[parameter].sel(summary="true value").values
+            ).flatten()
+
+            if parameter == "theta":
+                figure.add_trace(
+                    _sample_size_plot(
+                        np.repeat(
+                            parameter_truths,
+                            max(distance.size // parameter_truths.size, 1),
+                            0,
+                        ),
+                        np.repeat(
+                            distance,
+                            max(parameter_truths.size // distance.size, 1),
+                            0,
+                        ),
+                        theta_customdata,
+                        f"KS-testin etäisyys: %{{y:.2f}}{theta_hover}<extra>{parameter}</extra>",
+                    ),
+                    row=1,
+                    col=parameter_index + 1,
+                )
+            else:
+                figure.add_trace(
+                    _sample_size_plot(
+                        parameter_truths,
+                        distance,
+                        customdata,
+                        f"KS-testin etäisyys: %{{y:.2f}}{extra_hover}<extra>{parameter}</extra>",
+                    ),
+                    row=1,
+                    col=parameter_index + 1,
+                )
+            figure.update_yaxes(title_text="KS-testin etäisyys", row=1, col=1)
+            figure.update_xaxes(
+                title_text=parameter_symbol, row=1, col=parameter_index + 1
+            )
+
+        figure.update_layout(
+            showlegend=False,
+            separators=", ",
+            font={"size": FONT_SIZE, "family": "Computer modern"},
+        )
+        figure.write_html(figure_directory / "ks_test.html", include_mathjax="cdn")
