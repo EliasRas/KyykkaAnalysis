@@ -22,6 +22,16 @@ def _parse_arguments() -> Namespace:
         help="Path to the CSV file which contains the input data",
         type=Path,
     )
+    parser.add_argument(
+        "cache_directory",
+        help="Path to the directory to which the cached data is saved",
+        type=Path,
+    )
+    parser.add_argument(
+        "figure_directory",
+        help="Path to the directory to which the visualizations are saved",
+        type=Path,
+    )
 
     args = parser.parse_args()
 
