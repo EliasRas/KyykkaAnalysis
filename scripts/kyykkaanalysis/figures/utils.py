@@ -296,7 +296,7 @@ def ecdf(
                 )
             ),
             fill="toself",
-            fillcolor=f"rgba({','.join(hex_to_rgb(color))},0.2)",
+            fillcolor=f"rgba({','.join(hex_to_rgb(color))},0.4)",
             line_color="rgba(0,0,0,0)",
             hoverinfo="skip",
             showlegend=False,
