@@ -1,4 +1,5 @@
 """Visualizations for posterior distributions"""
+
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +11,7 @@ from plotly.subplots import make_subplots
 from .utils import (
     parameter_to_latex,
     precalculated_histogram,
+    ecdf,
     PLOT_COLORS,
     FONT_SIZE,
 )
@@ -300,6 +302,95 @@ def _parameter_correlations(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "correlations.html", include_mathjax="cdn")
+
+
+def predictive_distributions(
+    samples: Dataset,
+    figure_directory: Path,
+    prior_samples: Dataset | None = None,
+) -> None:
+    """
+    Plot the distributions of the sampled parameters
+
+    Parameters
+    ----------
+    sample : xarray.Dataset
+        Posterior predictive samples
+    figure_directory : Path
+        Path to the directory in which the figures are saved
+    prior_samples : xarray.Dataset, optional
+        Prior predictive samples
+    """
+
+    _data_distribution(samples, figure_directory, prior_samples=prior_samples)
+
+
+def _data_distribution(
+    samples: Dataset, figure_directory: Path, prior_samples: Dataset | None = None
+):
+    figure = make_subplots(rows=1, cols=2, subplot_titles=["Jakauma", "Kertymäfunktio"])
+
+    samples = samples["y"].values.flatten()
+    figure.add_trace(
+        precalculated_histogram(
+            samples,
+            name="Posteriorijakauma",
+            color=PLOT_COLORS[0],
+            normalization="probability density",
+            legendgroup="Jakauma",
+        ),
+        row=1,
+        col=1,
+    )
+    figure.add_trace(
+        ecdf(
+            samples,
+            name="Posteriorijakauma",
+            color=PLOT_COLORS[0],
+            legendgroup="Kertymäfunktio",
+        ),
+        row=1,
+        col=2,
+    )
+
+    if prior_samples is not None:
+        prior_samples = prior_samples["y"].values.flatten()
+        figure.add_trace(
+            precalculated_histogram(
+                prior_samples,
+                name="Priorijakauma",
+                color=PLOT_COLORS[1],
+                normalization="probability density",
+                legendgroup="Jakauma",
+            ),
+            row=1,
+            col=1,
+        )
+
+        figure.add_trace(
+            ecdf(
+                prior_samples,
+                "Priorijakauma",
+                color=PLOT_COLORS[1],
+                legendgroup="Kertymäfunktio",
+            ),
+            row=1,
+            col=2,
+        )
+
+    figure.update_xaxes(title_text=parameter_to_latex("y"), row=1, col=1)
+    figure.update_yaxes(showticklabels=False, row=1, col=1)
+    figure.update_xaxes(title_text=parameter_to_latex("y"), row=1, col=2)
+    figure.update_yaxes(title_text="Kumulatiivinen yleisyys", row=1, col=2)
+    figure.update_traces(opacity=0.7)
+    figure.update_layout(
+        legend={"groupclick": "toggleitem"},
+        barmode="overlay",
+        bargap=0,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "y.html", include_mathjax="cdn")
 
 
 def chain_plots(
