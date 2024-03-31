@@ -214,7 +214,7 @@ def calculate_histogram(
     max_value = np.ceil(values.max())
     bin_size = (max_value - min_value) / bin_count
     if np.issubdtype(values.dtype, np.integer):
-        bin_size = round(bin_size)
+        bin_size = max(round(bin_size), 1)
     bins = np.arange(min_value, max_value + bin_size, bin_size, dtype=values.dtype)
     bins = np.round(bins, 5)
 
