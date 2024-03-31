@@ -15,7 +15,12 @@ from ..figures.posterior import (
 from ..figures.fake_data import estimation_plots
 
 
-def check_priors(data: list[Stream], figure_directory: Path, cache_directory: Path):
+def check_priors(
+    data: list[Stream],
+    figure_directory: Path,
+    cache_directory: Path,
+    naive: bool = False,
+):
     """
     Sample data from prior distribution and analyze it
 
@@ -27,13 +32,18 @@ def check_priors(data: list[Stream], figure_directory: Path, cache_directory: Pa
         Path to the directory in which the figures are saved
     cache_directory : Path
         Path to the directory in which the sampled prior is saved
+    naive : bool, default False
+        Whether to use simple floor rounding in likelihood
     """
 
     figure_directory = figure_directory / "Prior"
     cache_directory.mkdir(parents=True, exist_ok=True)
 
-    model = ThrowTimeModel(ModelData(data))
-    cache_file = cache_directory / "priori.nc"
+    model = ThrowTimeModel(ModelData(data), naive=naive)
+    if naive:
+        cache_file = cache_directory / "naive_prior.nc"
+    else:
+        cache_file = cache_directory / "prior.nc"
     if cache_file.exists():
         samples = open_dataset(cache_file)
     else:
