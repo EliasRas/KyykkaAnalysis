@@ -42,7 +42,7 @@ def estimation_plots(
     _error_correlations(posterior_summaries, figure_directory)
     _percentiles(posterior_summaries, figure_directory)
     _sample_sizes(posterior_summaries, figure_directory)
-    _KS_distances(posterior_summaries, posterior_predictive_summaries, figure_directory)
+    _ks_distances(posterior_summaries, posterior_predictive_summaries, figure_directory)
 
 
 def _cm_accuracy(
@@ -533,7 +533,7 @@ def _sample_size_plot(
     return trace
 
 
-def _KS_distances(
+def _ks_distances(
     posterior_summaries: Dataset,
     posterior_predictive_summaries: Dataset,
     figure_directory: Path,
