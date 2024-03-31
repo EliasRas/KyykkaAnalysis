@@ -123,6 +123,29 @@ class ThrowTimeModel:
 
         return samples.posterior
 
+    def sample_posterior_predictive(self, posterior_sample: Dataset) -> Dataset:
+        """
+        Sample from the posterior predictive distribution
+
+        Parameters
+        ----------
+        posterior_sample : xarray.Dataset
+            Posterior samples
+
+        Returns
+        -------
+        xarray.Dataset
+            Posterior predictive samples
+        """
+
+        with self.model:
+            samples = pm.sample_posterior_predictive(posterior_sample)
+
+        samples = samples.posterior_predictive
+        samples["y"] = samples["y"].astype(int)
+
+        return samples
+
     @staticmethod
     def thin(samples: Dataset) -> Dataset:
         """
