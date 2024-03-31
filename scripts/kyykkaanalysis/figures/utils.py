@@ -242,7 +242,7 @@ def ecdf(
     name: str | None = None,
     color: str | None = None,
     legendgroup: str | None = None,
-) -> go.Scatter:
+) -> go.Scatter | tuple[go.Scatter, go.Scatter]:
     """
     Create an empirical CDF plot
 
@@ -261,14 +261,18 @@ def ecdf(
     -------
     go.Scatter
         Empirical CDF
+    go.Scatter, optional
+        Variation interval for the empirical CDF. Returned if parameter_samples has
+        more than 1 dimensions
     """
 
-    parameter_samples = np.sort(parameter_samples[np.isfinite(parameter_samples)])
-    if parameter_samples.size > 10000:
-        parameter_samples = parameter_samples[:: parameter_samples.size // 10000]
+    conditional_mean = np.sort(parameter_samples.flatten())
+    conditional_mean = conditional_mean[np.isfinite(conditional_mean)]
+    if conditional_mean.size > 10000:
+        conditional_mean = conditional_mean[:: conditional_mean.size // 10000]
     cdf = go.Scatter(
-        x=parameter_samples,
-        y=np.linspace(0, 1, parameter_samples.size),
+        x=conditional_mean,
+        y=np.linspace(0, 1, conditional_mean.size),
         mode="lines",
         name=name,
         line_color=color,
@@ -277,4 +281,47 @@ def ecdf(
         legendgrouptitle_text=legendgroup,
     )
 
+    if len(parameter_samples.shape) > 1:
+        parameter_samples = np.sort(
+            parameter_samples.reshape(-1, parameter_samples.shape[-1]), axis=-1
+        )
+        lower_bound = np.nanmin(parameter_samples, 0)
+        upper_bound = np.nanmax(parameter_samples, 0)
+        interval = go.Scatter(
+            x=np.concatenate((lower_bound, upper_bound[::-1])),
+            y=np.concatenate(
+                (
+                    np.linspace(0, 1, lower_bound.size),
+                    np.linspace(1, 0, lower_bound.size),
+                )
+            ),
+            fill="toself",
+            fillcolor=f"rgba({','.join(hex_to_rgb(color))},0.2)",
+            line_color="rgba(0,0,0,0)",
+            hoverinfo="skip",
+            showlegend=False,
+        )
+
+        return cdf, interval
+
     return cdf
+
+
+def hex_to_rgb(hex: str) -> tuple[str, str, str]:
+    """
+    Convert hex valued color to rgb representation
+
+    Parameters
+    ----------
+    hex : str
+        Color in hexadecimal format
+
+    Returns
+    -------
+    tuple of (str, str, str)
+        Red, blue and green components of the color
+    """
+
+    hex = hex.strip("#")
+
+    return tuple(str(int(hex[i : i + 2], 16)) for i in (0, 2, 4))
