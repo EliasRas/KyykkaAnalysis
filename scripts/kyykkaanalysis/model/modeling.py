@@ -184,6 +184,19 @@ class ThrowTimeModel:
 
         return self
 
+    @property
+    def observed_variables(self) -> set[str]:
+        """
+        Names of the observed variables
+
+        Returns
+        -------
+        set of str
+            Observed variables
+        """
+
+        return {"y"}
+
 
 def throw_model(data: ModelData) -> pm.Model:
     """
