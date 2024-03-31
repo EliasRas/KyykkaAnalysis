@@ -330,10 +330,10 @@ def _data_distribution(
 ):
     figure = make_subplots(rows=1, cols=2, subplot_titles=["Jakauma", "Kertymäfunktio"])
 
-    samples = samples["y"].values.flatten()
+    samples = samples["y"].values.squeeze()
     figure.add_trace(
         precalculated_histogram(
-            samples,
+            samples.flatten(),
             name="Posteriorijakauma",
             color=PLOT_COLORS[0],
             normalization="probability density",
@@ -342,22 +342,22 @@ def _data_distribution(
         row=1,
         col=1,
     )
-    figure.add_trace(
+    figure.add_traces(
         ecdf(
             samples,
             name="Posteriorijakauma",
             color=PLOT_COLORS[0],
             legendgroup="Kertymäfunktio",
         ),
-        row=1,
-        col=2,
+        rows=1,
+        cols=2,
     )
 
     if prior_samples is not None:
-        prior_samples = prior_samples["y"].values.flatten()
+        prior_samples = prior_samples["y"].values.squeeze()
         figure.add_trace(
             precalculated_histogram(
-                prior_samples,
+                prior_samples.flatten(),
                 name="Priorijakauma",
                 color=PLOT_COLORS[1],
                 normalization="probability density",
@@ -367,15 +367,15 @@ def _data_distribution(
             col=1,
         )
 
-        figure.add_trace(
+        figure.add_traces(
             ecdf(
                 prior_samples,
                 "Priorijakauma",
                 color=PLOT_COLORS[1],
                 legendgroup="Kertymäfunktio",
             ),
-            row=1,
-            col=2,
+            rows=1,
+            cols=2,
         )
 
     figure.update_xaxes(title_text=parameter_to_latex("y"), row=1, col=1)
