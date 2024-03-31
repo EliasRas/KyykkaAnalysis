@@ -130,6 +130,7 @@ def precalculated_histogram(
     color: str | None = None,
     bin_count: int | None = None,
     normalization: str = "probability",
+    legendgroup: str | None = None,
 ) -> go.Bar:
     """
     Create a histogram out of bar graph
@@ -146,6 +147,8 @@ def precalculated_histogram(
         Number of bins
     normalization : str, default "probability"
         Normalization for the bins. One of "probability", "probability density" and "count"
+    legendgroup : str, optional
+        Title of the legendgroup for this trace
 
     Returns
     -------
@@ -182,6 +185,8 @@ def precalculated_histogram(
         name=name,
         marker={"line": {"width": 0}, "color": color},
         hovertemplate=hovertemplate,
+        legendgroup=legendgroup,
+        legendgrouptitle_text=legendgroup,
     )
 
     return histogram
