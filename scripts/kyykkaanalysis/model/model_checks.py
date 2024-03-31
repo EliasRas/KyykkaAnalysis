@@ -71,21 +71,43 @@ def fake_data_simulation(
         Path to the directory in which the sampled prior is saved
     """
 
+    naive_figure_directory = figure_directory / "naive_SimulatedData"
     figure_directory = figure_directory / "SimulatedData"
-    cache_directory.mkdir(parents=True, exist_ok=True)
+    naive_cache_directory = cache_directory / "naive"
+    naive_cache_directory.mkdir(parents=True, exist_ok=True)
 
     model = ThrowTimeModel(ModelData(data))
-    prior_file = cache_directory / "priori.nc"
+    naive_model = ThrowTimeModel(ModelData(data), naive=True)
+
+    prior_file = cache_directory / "prior.nc"
     if prior_file.exists():
         prior = open_dataset(prior_file)
     else:
         check_priors(data, figure_directory.parent, cache_directory)
         prior = open_dataset(prior_file)
-
     simulation_summaries = _fake_data_inference(
         model, prior, cache_directory, figure_directory
     )
     estimation_plots(simulation_summaries, figure_directory)
+    simulation_summaries = _fake_data_inference(
+        naive_model, prior, cache_directory, figure_directory
+    )
+    estimation_plots(simulation_summaries, figure_directory / "naive")
+
+    naive_prior_file = cache_directory / "naive_prior.nc"
+    if naive_prior_file.exists():
+        naive_prior = open_dataset(naive_prior_file)
+    else:
+        check_priors(data, figure_directory.parent, cache_directory, naive=True)
+        naive_prior = open_dataset(naive_prior_file)
+    simulation_summaries = _fake_data_inference(
+        model, naive_prior, naive_cache_directory, naive_figure_directory
+    )
+    estimation_plots(simulation_summaries, naive_figure_directory)
+    simulation_summaries = _fake_data_inference(
+        naive_model, naive_prior, naive_cache_directory, naive_figure_directory
+    )
+    estimation_plots(simulation_summaries, naive_figure_directory / "naive")
 
 
 def _fake_data_inference(
