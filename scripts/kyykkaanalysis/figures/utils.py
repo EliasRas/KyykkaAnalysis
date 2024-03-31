@@ -235,3 +235,46 @@ def calculate_histogram(
         raise ValueError(f"Invalid normalization {normalization}.")
 
     return counts, bins
+
+
+def ecdf(
+    parameter_samples: npt.NDArray[Any],
+    name: str | None = None,
+    color: str | None = None,
+    legendgroup: str | None = None,
+) -> go.Scatter:
+    """
+    Create an empirical CDF plot
+
+    Parameters
+    ----------
+    parameter_samples : numpy.ndarray of Any
+        Samples of parameter distribution
+    name : str, optional
+        Name of the trace
+    color : str, optional
+        Color of the trace
+    legendgroup : str, optional
+        Title of the legendgroup for this trace
+
+    Returns
+    -------
+    go.Scatter
+        Empirical CDF
+    """
+
+    parameter_samples = np.sort(parameter_samples[np.isfinite(parameter_samples)])
+    if parameter_samples.size > 10000:
+        parameter_samples = parameter_samples[:: parameter_samples.size // 10000]
+    cdf = go.Scatter(
+        x=parameter_samples,
+        y=np.linspace(0, 1, parameter_samples.size),
+        mode="lines",
+        name=name,
+        line_color=color,
+        hovertemplate="Arvo: %{x:.2f}<br>Kumulatiivinen yleisyys: %{y:.2f}<extra></extra>",
+        legendgroup=legendgroup,
+        legendgrouptitle_text=legendgroup,
+    )
+
+    return cdf
