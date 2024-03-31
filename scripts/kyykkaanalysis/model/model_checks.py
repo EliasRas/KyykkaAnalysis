@@ -140,14 +140,18 @@ def _fake_data_inference(
             sample_index, sample, cache_directory, model
         )
 
-        if sample_index in [0, 1, 3]:
+        if sample_index in [0, 1, 4]:
+            if model.naive:
+                sample_directory = figure_directory / f"naive_{sample_index}"
+            else:
+                sample_directory = figure_directory / str(sample_index)
             posterior_distribution_plots(
                 posterior_sample,
-                figure_directory / str(sample_index),
+                sample_directory,
                 prior_samples=prior,
                 true_values=sample,
             )
-            chain_plots(posterior_sample, figure_directory / str(sample_index))
+            chain_plots(posterior_sample, sample_directory)
 
         posterior_sample = model.thin(posterior_sample)
         for parameter in parameters:
@@ -166,7 +170,10 @@ def _fake_data_inference(
 def _sample_posterior(
     sample_index: int, sample: Dataset, cache_directory: Path, model: ThrowTimeModel
 ) -> Dataset:
-    posterior_file = cache_directory / f"posterior_{sample_index}.nc"
+    if model.naive:
+        posterior_file = cache_directory / f"naive_posterior_{sample_index}.nc"
+    else:
+        posterior_file = cache_directory / f"posterior_{sample_index}.nc"
     if posterior_file.exists():
         posterior_sample = open_dataset(posterior_file)
     else:
