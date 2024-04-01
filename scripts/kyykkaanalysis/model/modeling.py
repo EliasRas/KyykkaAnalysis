@@ -220,6 +220,28 @@ class ThrowTimeModel:
 
         return {"y"}
 
+    @property
+    def dataset(self) -> Dataset:
+        """
+        Data for the model as xarray.Dataset
+
+        Returns
+        -------
+        xarray.Dataset
+            Data for the model
+        """
+
+        data = Dataset(
+            {
+                "player": (["throws"], self.model.player.container.data),
+                "is_first": (["throws"], self.model.is_first.container.data),
+                "y": (["throws"], self.model.throw_times.container.data),
+            },
+            coords={"throws": np.array(self.model.coords["throws"])},
+        )
+
+        return data
+
 
 def throw_model(data: ModelData) -> pm.Model:
     """
