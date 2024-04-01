@@ -1,4 +1,5 @@
 """Containers for play time data"""
+
 from dataclasses import dataclass, field
 
 import numpy as np
