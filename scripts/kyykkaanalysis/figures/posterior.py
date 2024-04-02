@@ -308,7 +308,7 @@ def _parameter_correlations(
 def predictive_distributions(
     samples: Dataset,
     figure_directory: Path,
-    prior_samples: Dataset | None = None,
+    data: Dataset | None = None,
 ) -> None:
     """
     Plot the distributions of the sampled parameters
@@ -319,15 +319,15 @@ def predictive_distributions(
         Posterior predictive samples
     figure_directory : Path
         Path to the directory in which the figures are saved
-    prior_samples : xarray.Dataset, optional
-        Prior predictive samples
+    data : xarray.Dataset, optional
+        Observed data
     """
 
-    _data_distribution(samples, figure_directory, prior_samples=prior_samples)
+    _data_distribution(samples, figure_directory, data=data)
 
 
 def _data_distribution(
-    samples: Dataset, figure_directory: Path, prior_samples: Dataset | None = None
+    samples: Dataset, figure_directory: Path, data: Dataset | None = None
 ):
     figure = make_subplots(rows=1, cols=2, subplot_titles=["Jakauma", "Kertymäfunktio"])
 
@@ -354,13 +354,13 @@ def _data_distribution(
         cols=2,
     )
 
-    if prior_samples is not None:
-        prior_samples = prior_samples["y"].values.squeeze()
+    if data is not None:
+        data = data["y"].values.squeeze()
         figure.add_traces(
             precalculated_histogram(
-                prior_samples.flatten(),
+                data.flatten(),
                 PLOT_COLORS[1],
-                name="Priorijakauma",
+                name="Data",
                 normalization="probability density",
                 legendgroup="Jakauma",
             ),
@@ -370,8 +370,8 @@ def _data_distribution(
 
         figure.add_traces(
             ecdf(
-                prior_samples,
-                "Priorijakauma",
+                data,
+                "Data",
                 color=PLOT_COLORS[1],
                 legendgroup="Kertymäfunktio",
             ),
