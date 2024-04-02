@@ -125,24 +125,24 @@ def parameter_to_latex(parameter: str, variable_type: str = "variable") -> str:
 
 
 def precalculated_histogram(
-    parameter_samples: npt.NDArray[Any],
+    samples: npt.NDArray[Any],
+    color: str,
     name: str | None = None,
-    color: str | None = None,
     bin_count: int | None = None,
     normalization: str = "probability",
     legendgroup: str | None = None,
-) -> go.Bar:
+) -> tuple[go.Bar, go.Scatter]:
     """
     Create a histogram out of bar graph
 
     Parameters
     ----------
-    parameter_samples : numpy.ndarray of Any
+    samples : numpy.ndarray of Any
         Samples of parameter distribution
+    color : str
+        Color of the trace
     name : str, optional
         Name of the trace
-    color : str, optional
-        Color of the trace
     bin_count : int, optional
         Number of bins
     normalization : str, default "probability"
@@ -154,42 +154,62 @@ def precalculated_histogram(
     -------
     go.Bar
         Precalculated histogram
+    go.Scatter
+        Line visualizing the mean of the sample
     """
 
     if bin_count is None:
-        bin_count = max(min(parameter_samples.size // 200, 200), 1)
+        bin_count = max(min(samples.size // 200, 200), 1)
     elif bin_count < 1:
         bin_count = 1
-    counts, bins = calculate_histogram(
-        parameter_samples, bin_count, normalization=normalization
-    )
+    counts, bins = calculate_histogram(samples, bin_count, normalization=normalization)
     if normalization == "probability":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
-            "Osuus: %{y:.1f} %<extra></extra>"
+            "Osuus: %{y:.1f} %"
+            f"<extra>Keskiarvo: {round(samples.mean(),2)}</extra>"
         )
     elif normalization == "probability density":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
-            "Suhteellinen yleisyys: %{y:.2f} %<extra></extra>"
+            "Suhteellinen yleisyys: %{y:.2f} %"
+            f"<extra>Keskiarvo: {round(samples.mean(),2)}</extra>"
         )
     elif normalization == "count":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
-            "Näytteet: %{y} %<extra></extra>"
+            "Näytteet: %{y} %"
+            f"<extra>{round(samples.mean(),2)}</extra>"
         )
     histogram = go.Bar(
         x=bins[:-1] + (bins[1] - bins[0]) / 2,
         y=counts,
         customdata=np.hstack((bins[:-1].reshape(-1, 1), bins[1:].reshape(-1, 1))),
         name=name,
-        marker={"line": {"width": 0}, "color": color},
+        marker={"line": {"width": 0}, "color": color, "opacity": 0.7},
         hovertemplate=hovertemplate,
         legendgroup=legendgroup,
         legendgrouptitle_text=legendgroup,
+        showlegend=name is not None,
+    )
+    mean = _mean_line(samples, histogram, color)
+
+    return histogram, mean
+
+
+def _mean_line(samples: npt.NDArray[Any], histogram: go.Bar, color: str) -> go.Scatter:
+    mean = samples.mean()
+    max_height = histogram.y.max()
+    mean_line = go.Scatter(
+        x=[mean, mean],
+        y=[0, max_height],
+        mode="lines",
+        line={"color": color, "dash": "dash"},
+        hoverinfo="skip",
+        showlegend=False,
     )
 
-    return histogram
+    return mean_line
 
 
 def calculate_histogram(

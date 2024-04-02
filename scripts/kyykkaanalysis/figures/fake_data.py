@@ -124,23 +124,21 @@ def _cm_accuracy(
                 row=1,
                 col=3,
             )
-        figure.add_trace(
+        figure.add_traces(
             precalculated_histogram(
-                errors.flatten(),
-                color=PLOT_COLORS[0],
-                bin_count=min(errors.size // 20, 100),
+                errors.flatten(), PLOT_COLORS[0], bin_count=min(errors.size // 20, 100)
             ),
-            row=parameter_index + 1,
-            col=2,
+            rows=parameter_index + 1,
+            cols=2,
         )
-        figure.add_trace(
+        figure.add_traces(
             precalculated_histogram(
                 normalized_errors.flatten(),
-                color=PLOT_COLORS[0],
+                PLOT_COLORS[0],
                 bin_count=min(errors.size // 20, 100),
             ),
-            row=parameter_index + 1,
-            col=4,
+            rows=parameter_index + 1,
+            cols=4,
         )
 
         figure.update_xaxes(title_text=parameter_symbol, row=parameter_index + 1, col=2)
@@ -335,12 +333,12 @@ def _percentiles(
         )
         bin_count = max(min(parameter_percentiles.size // 20, 20), 1)
         _percentile_variation(parameter_percentiles, bin_count, figure, parameter_index)
-        figure.add_trace(
+        figure.add_traces(
             precalculated_histogram(
-                parameter_percentiles, color=PLOT_COLORS[0], bin_count=bin_count
+                parameter_percentiles, PLOT_COLORS[0], bin_count=bin_count
             ),
-            row=parameter_index + 1,
-            col=1,
+            rows=parameter_index + 1,
+            cols=1,
         )
 
         parameter_percentiles = np.sort(parameter_percentiles)

@@ -191,19 +191,20 @@ def _single_parameter_distribution(
     figure = go.Figure(
         precalculated_histogram(
             samples.flatten(),
+            PLOT_COLORS[0],
             name="Posteriorijakauma",
             normalization="probability density",
         )
     )
     if prior_samples is not None and parameter in prior_samples:
-        figure.add_trace(
+        figure.add_traces(
             precalculated_histogram(
                 prior_samples[parameter].values.flatten(),
+                PLOT_COLORS[1],
                 name="Priorijakauma",
                 normalization="probability density",
             )
         )
-        figure.update_traces(opacity=0.7)
     if true_values is not None and parameter in true_values:
         true_value = true_values[parameter].values.item()
         max_height = figure.data[0].y.max()
@@ -331,16 +332,16 @@ def _data_distribution(
     figure = make_subplots(rows=1, cols=2, subplot_titles=["Jakauma", "Kertymäfunktio"])
 
     samples = samples["y"].values.squeeze()
-    figure.add_trace(
+    figure.add_traces(
         precalculated_histogram(
             samples.flatten(),
+            PLOT_COLORS[0],
             name="Posteriorijakauma",
-            color=PLOT_COLORS[0],
             normalization="probability density",
             legendgroup="Jakauma",
         ),
-        row=1,
-        col=1,
+        rows=1,
+        cols=1,
     )
     figure.add_traces(
         ecdf(
@@ -355,16 +356,16 @@ def _data_distribution(
 
     if prior_samples is not None:
         prior_samples = prior_samples["y"].values.squeeze()
-        figure.add_trace(
+        figure.add_traces(
             precalculated_histogram(
                 prior_samples.flatten(),
+                PLOT_COLORS[1],
                 name="Priorijakauma",
-                color=PLOT_COLORS[1],
                 normalization="probability density",
                 legendgroup="Jakauma",
             ),
-            row=1,
-            col=1,
+            rows=1,
+            cols=1,
         )
 
         figure.add_traces(
@@ -382,7 +383,6 @@ def _data_distribution(
     figure.update_yaxes(showticklabels=False, row=1, col=1)
     figure.update_xaxes(title_text=parameter_to_latex("y"), row=1, col=2)
     figure.update_yaxes(title_text="Kumulatiivinen yleisyys", row=1, col=2)
-    figure.update_traces(opacity=0.7)
     figure.update_layout(
         legend={"groupclick": "toggleitem"},
         barmode="overlay",
@@ -423,15 +423,15 @@ def _traceplot(samples: Dataset, figure_directory: Path) -> None:
         parameter_symbol = parameter_to_latex(parameter)
         parameter_samples = samples[parameter].values
         for chain_index, chain in enumerate(parameter_samples):
-            figure.add_trace(
+            figure.add_traces(
                 precalculated_histogram(
                     chain,
+                    PLOT_COLORS[chain_index],
                     normalization="probability density",
-                    color=PLOT_COLORS[chain_index],
                     bin_count=min(parameter_samples.size // 100, 200),
                 ),
-                row=parameter_index + 1,
-                col=1,
+                rows=parameter_index + 1,
+                cols=1,
             )
             figure.add_trace(
                 go.Scatter(
