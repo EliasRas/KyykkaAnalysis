@@ -1,5 +1,6 @@
 """Visualizations for prior predictive checking"""
 
+from typing import Any
 from pathlib import Path
 
 import numpy as np
@@ -99,8 +100,8 @@ def _theta_ranges(samples: Dataset, figure_directory: Path) -> None:
 
 
 def _range_figure(
-    minimum_values: npt.NDArray[np.int_],
-    maximum_values: npt.NDArray[np.int_],
+    minimum_values: npt.NDArray[Any],
+    maximum_values: npt.NDArray[Any],
     values_name: str,
 ) -> go.Figure:
     figure = make_subplots(rows=2, cols=2)
