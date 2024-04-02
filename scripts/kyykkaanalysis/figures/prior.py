@@ -18,7 +18,7 @@ from .utils import (
 
 def parameter_distributions(
     samples: Dataset,
-    player_ids: npt.NDArray[np.str_],
+    players: npt.NDArray[np.str_],
     first_throw: npt.NDArray[np.bool_],
     figure_directory: Path,
 ) -> None:
@@ -29,7 +29,7 @@ def parameter_distributions(
     ----------
     samples : xarray.Dataset
         Prior samples
-    player_ids : numpy.ndarray of str
+    players : numpy.ndarray of str
         Names of the players for each throw
     first_throw : numpy.ndarray of bool
         Whether the throw was the player's first throw in a turn
@@ -42,7 +42,7 @@ def parameter_distributions(
     _sample_distributions(samples, first_throw, figure_directory)
     _theta_ranges(samples, figure_directory)
     _throw_time_ranges(samples, figure_directory)
-    _player_time_ranges(samples, player_ids, figure_directory)
+    _player_time_ranges(samples, players, figure_directory)
 
 
 def _sample_distributions(
@@ -171,13 +171,13 @@ def _throw_time_ranges(samples: Dataset, figure_directory: Path) -> None:
 
 
 def _player_time_ranges(
-    samples: Dataset, player_ids: npt.NDArray[np.str_], figure_directory: Path
+    samples: Dataset, players: npt.NDArray[np.str_], figure_directory: Path
 ) -> None:
     throw_times = samples["y"].values
     minimum_times = []
     maximum_times = []
-    for player in np.unique(player_ids):
-        from_player = player_ids == player
+    for player in np.unique(players):
+        from_player = players == player
         player_times = throw_times[:, :, from_player].reshape(-1, from_player.sum())
         minimum_times.extend(player_times.min(1))
         maximum_times.extend(player_times.max(1))
