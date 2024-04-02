@@ -150,9 +150,15 @@ def _fake_data_inference(
                 summaries[parameter].sel(summary="true value")[sample_index] = (
                     true_value.values.item()
                 )
+                summaries[parameter].sel(summary="prior std")[sample_index] = prior[
+                    parameter
+                ].values.std()
             else:
                 summaries[parameter].sel(summary="true value")[sample_index] = (
                     true_value.values.squeeze()
+                )
+                summaries[parameter].sel(summary="prior std")[sample_index] = (
+                    prior[parameter].values.squeeze().std(0)
                 )
 
         posterior_sample = _sample_posterior(
@@ -192,30 +198,35 @@ def _fake_data_inference(
 def _generate_summaries(
     parameters: list[str], sample_count: int, prior: Dataset, model: ThrowTimeModel
 ) -> tuple[Dataset, Dataset]:
+    summary_statistics = [
+        "true value",
+        "conditional mean",
+        "posterior std",
+        "percentile",
+        "sample size",
+        "prior std",
+    ]
+
     data_vars = {}
     for parameter in parameters:
         if "players" in prior[parameter].coords:
             data_vars[parameter] = (
                 ["draw", "summary", "players"],
-                np.zeros((sample_count, 5, prior[parameter].shape[-1])),
+                np.zeros(
+                    (sample_count, len(summary_statistics), prior[parameter].shape[-1])
+                ),
             )
         else:
             data_vars[parameter] = (
                 ["draw", "summary"],
-                np.zeros((sample_count, 5)),
+                np.zeros((sample_count, len(summary_statistics))),
             )
     summaries = Dataset(
         data_vars=data_vars,
         coords={
             "draw": np.arange(sample_count),
             "players": prior.coords["players"],
-            "summary": [
-                "true value",
-                "conditional mean",
-                "posterior std",
-                "percentile",
-                "sample size",
-            ],
+            "summary": summary_statistics,
         },
     )
     predictive_summaries = Dataset(

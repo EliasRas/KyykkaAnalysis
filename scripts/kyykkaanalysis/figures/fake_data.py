@@ -42,13 +42,12 @@ def estimation_plots(
     _error_correlations(posterior_summaries, figure_directory)
     _percentiles(posterior_summaries, figure_directory)
     _sample_sizes(posterior_summaries, figure_directory)
+    _contraction(posterior_summaries, figure_directory)
+
     _ks_distances(posterior_summaries, posterior_predictive_summaries, figure_directory)
 
 
-def _cm_accuracy(
-    posterior_summaries: Dataset,
-    figure_directory: Path,
-) -> None:
+def _cm_accuracy(posterior_summaries: Dataset, figure_directory: Path) -> None:
     parameters = sorted(posterior_summaries.keys())
     parameter_count = len(parameters)
 
@@ -204,10 +203,7 @@ def _simulation_infos(
     return customdata, theta_customdata, extra_hover, theta_hover
 
 
-def _error_correlations(
-    posterior_summaries: Dataset,
-    figure_directory: Path,
-) -> None:
+def _error_correlations(posterior_summaries: Dataset, figure_directory: Path) -> None:
     parameters = sorted(posterior_summaries.keys())
     parameter_count = len(parameters)
 
@@ -317,10 +313,7 @@ def _error_correlation_plot(
     return trace
 
 
-def _percentiles(
-    posterior_summaries: Dataset,
-    figure_directory: Path,
-) -> None:
+def _percentiles(posterior_summaries: Dataset, figure_directory: Path) -> None:
     parameters = sorted(posterior_summaries.keys())
     parameter_count = len(parameters)
 
@@ -426,10 +419,7 @@ def _percentile_variation(
     )
 
 
-def _sample_sizes(
-    posterior_summaries: Dataset,
-    figure_directory: Path,
-) -> None:
+def _sample_sizes(posterior_summaries: Dataset, figure_directory: Path) -> None:
     parameters = sorted(posterior_summaries.keys())
     parameter_count = len(parameters)
 
@@ -529,6 +519,80 @@ def _sample_size_plot(
         )
 
     return trace
+
+
+def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
+    parameters = sorted(posterior_summaries.keys())
+    parameter_count = len(parameters)
+    col_count = int(np.ceil(np.sqrt(parameter_count)))
+    row_count = int(np.ceil(parameter_count / col_count))
+    figure = make_subplots(
+        rows=row_count,
+        cols=col_count,
+        subplot_titles=parameters,
+    )
+    customdata, theta_customdata, extra_hover, theta_hover = _simulation_infos(
+        posterior_summaries, parameters
+    )
+    for parameter_index, parameter in enumerate(parameters):
+        parameter_symbol = parameter_to_latex(parameter)
+        parameter_summaries = posterior_summaries[parameter]
+        mean = parameter_summaries.sel(summary="conditional mean").values.flatten()
+        truth = parameter_summaries.sel(summary="true value").values.flatten()
+        posterior_std = parameter_summaries.sel(
+            summary="posterior std"
+        ).values.flatten()
+        prior_std = parameter_summaries.sel(summary="prior std").values.flatten()
+
+        z_score = (mean - truth) / posterior_std
+        contraction = 1 - np.square(posterior_std) / np.square(prior_std)
+
+        row = parameter_index // col_count + 1
+        col = parameter_index % col_count + 1
+        if parameter == "theta":
+            figure.add_trace(
+                go.Scatter(
+                    x=contraction,
+                    y=z_score,
+                    customdata=theta_customdata,
+                    name=parameter_symbol,
+                    mode="markers",
+                    marker={"color": PLOT_COLORS[0], "opacity": 0.7},
+                    hovertemplate=(
+                        f"Posteriorin supistuma: %{{x:.2f}}<br>Normalisoitu virhe:%{{y:.2f}}"
+                        f"{theta_hover}<extra>{parameter}</extra>"
+                    ),
+                ),
+                row=row,
+                col=col,
+            )
+        else:
+            figure.add_trace(
+                go.Scatter(
+                    x=contraction,
+                    y=z_score,
+                    customdata=customdata,
+                    name=parameter_symbol,
+                    mode="markers",
+                    marker={"color": PLOT_COLORS[0], "opacity": 0.7},
+                    hovertemplate=(
+                        f"Posteriorin supistuma: %{{x:.2f}}<br>Normalisoitu virhe:%{{y:.2f}}"
+                        f"{extra_hover}<extra>{parameter}</extra>"
+                    ),
+                ),
+                row=row,
+                col=col,
+            )
+            figure.update_xaxes(title_text="Posteriorin supistuma", row=row, col=col)
+            figure.update_yaxes(title_text="Normalisoitu virhe", row=row, col=col)
+
+    figure.update_layout(
+        showlegend=False,
+        bargap=0,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "contraction.html", include_mathjax="cdn")
 
 
 def _ks_distances(
