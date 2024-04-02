@@ -272,7 +272,7 @@ def _visualize_sample(
     predictive_distributions(
         posterior_predictive,
         sample_directory,
-        prior_samples=prior[posterior_predictive.keys()].isel(draw=sample_index),
+        data=prior[posterior_predictive.keys()].isel(draw=sample_index),
     )
     chain_plots(posterior_sample, sample_directory)
 
