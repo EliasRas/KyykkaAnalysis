@@ -5,6 +5,7 @@ from pathlib import Path
 from xarray import Dataset, open_dataset
 
 from .modeling import ThrowTimeModel
+from .model_checks import check_priors
 from ..data.data_classes import ModelData, Stream
 from ..figures.posterior import (
     parameter_distributions,
@@ -32,11 +33,19 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
     naive_figure_directory.mkdir(parents=True, exist_ok=True)
     cache_directory.mkdir(parents=True, exist_ok=True)
 
+    prior_file = cache_directory / "prior.nc"
+    if prior_file.exists():
+        prior = open_dataset(prior_file)
+    else:
+        check_priors(data, figure_directory.parent, cache_directory)
+        prior = open_dataset(prior_file)
+
     model = ThrowTimeModel(ModelData(data))
     posterior, thinned_posterior, posterior_predictive = _sample_posterior(
         model, cache_directory
     )
     _visualize_sample(
+        prior,
         model.dataset,
         posterior,
         thinned_posterior,
@@ -49,7 +58,8 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
         _sample_posterior(naive_model, cache_directory)
     )
     _visualize_sample(
-        model.dataset,
+        prior,
+        naive_model.dataset,
         naive_posterior,
         naive_thinned_posterior,
         naive_posterior_predictive,
@@ -69,7 +79,7 @@ def _sample_posterior(
         posterior = open_dataset(posterior_file)
     else:
         posterior = model.sample(
-            sample_count=1000, chain_count=4, parallel_count=4, thin=False
+            sample_count=10000, chain_count=4, parallel_count=4, thin=False
         )
         posterior.to_netcdf(posterior_file)
 
@@ -80,6 +90,7 @@ def _sample_posterior(
 
 
 def _visualize_sample(
+    prior: Dataset,
     data: Dataset,
     posterior: Dataset,
     thinned_posterior: Dataset,
@@ -88,10 +99,10 @@ def _visualize_sample(
 ) -> None:
     raw_directory = figure_directory / "raw"
     raw_directory.mkdir(parents=True, exist_ok=True)
-    parameter_distributions(posterior, raw_directory)
+    parameter_distributions(posterior, raw_directory, prior)
     chain_plots(posterior, raw_directory)
 
-    parameter_distributions(thinned_posterior, figure_directory)
+    parameter_distributions(thinned_posterior, figure_directory, prior)
     chain_plots(thinned_posterior, figure_directory)
 
     predictive_distributions(posterior_predictive, figure_directory, data)
