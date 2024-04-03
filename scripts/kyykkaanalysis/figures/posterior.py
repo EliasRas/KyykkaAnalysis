@@ -1013,6 +1013,7 @@ def _range_heatmap(
 
 def chain_plots(
     samples: Dataset,
+    sample_stats: Dataset,
     figure_directory: Path,
 ) -> None:
     """
@@ -1022,6 +1023,8 @@ def chain_plots(
     ----------
     samples : xarray.Dataset
         Posterior samples
+    sample_stats : xarray.Dataset
+        Information about posterior samples
     figure_directory : Path
         Path to the directory in which the figures are saved
     """
@@ -1029,6 +1032,7 @@ def chain_plots(
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _traceplot(samples, figure_directory)
+    _divergences(samples, sample_stats, figure_directory)
 
 
 def _traceplot(samples: Dataset, figure_directory: Path) -> None:
@@ -1090,3 +1094,69 @@ def _traceplot(samples: Dataset, figure_directory: Path) -> None:
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "chains.html", include_mathjax="cdn")
+
+
+def _divergences(
+    samples: Dataset, sample_stats: Dataset, figure_directory: Path
+) -> None:
+
+    dimensions = []
+    for parameter in sorted(samples.keys()):
+        if parameter == "theta":
+            parameter_samples = samples[parameter].values
+            parameter_samples = parameter_samples.reshape(
+                -1, parameter_samples.shape[-1]
+            )
+
+            for player_index in range(parameter_samples.shape[-1]):
+                player_samples = parameter_samples[:, player_index]
+                min_value = player_samples.min()
+                max_value = player_samples.max()
+                margin = (max_value - min_value) * 0.1
+                dimensions.append(
+                    {
+                        "range": [
+                            np.floor(min_value - margin),
+                            np.ceil(max_value + margin),
+                        ],
+                        "label": f"theta_{player_index}",
+                        "values": player_samples,
+                        "tickvals": [],
+                    }
+                )
+        else:
+            parameter_samples = samples[parameter].values.flatten()
+
+            min_value = parameter_samples.min()
+            max_value = parameter_samples.max()
+            margin = (max_value - min_value) * 0.1
+            dimensions.append(
+                {
+                    "range": [
+                        np.floor(min_value - margin),
+                        np.ceil(max_value + margin),
+                    ],
+                    "label": parameter,
+                    "values": parameter_samples,
+                    "tickvals": [],
+                }
+            )
+
+    divergences = sample_stats["diverging"].values.flatten().astype(int)
+    if divergences.size > samples["draw"].size:
+        sub_sampling_step = divergences.size // samples["draw"].size
+        divergences = divergences[::sub_sampling_step]
+    figure = go.Figure(
+        go.Parcoords(
+            line={
+                "color": divergences,
+                "colorscale": [(0, "black"), (1, "red")],
+            },
+            dimensions=dimensions,
+        )
+    )
+    figure.update_layout(
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "divergences.html", include_mathjax="cdn")
