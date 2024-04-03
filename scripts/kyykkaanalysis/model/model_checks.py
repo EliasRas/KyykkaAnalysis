@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 from xarray import Dataset, open_dataset
+from arviz import InferenceData
 from scipy.stats import kstest
 
 from .modeling import ThrowTimeModel
@@ -164,8 +165,12 @@ def _fake_data_inference(
         posterior_sample = _sample_posterior(
             sample_index, sample, cache_directory, model
         )
-        thinned_sample = model.thin(posterior_sample)
-        posterior_predictive = model.sample_posterior_predictive(thinned_sample)
+        posterior_sample.thinned_sample = model.thin_posterior(
+            posterior_sample.posterior
+        )
+        posterior_sample.posterior_predictive = model.sample_posterior_predictive(
+            posterior_sample.thinned_sample
+        )
 
         if sample_index in [0, 1, 4]:
             _visualize_sample(
@@ -175,11 +180,10 @@ def _fake_data_inference(
                 prior,
                 sample,
                 posterior_sample,
-                posterior_predictive,
             )
 
         for parameter in parameters:
-            sample = thinned_sample[parameter]
+            sample = posterior_sample.thinned_sample[parameter]
             summaries[parameter].sel(summary="sample size").values[sample_index] = (
                 sample.shape[0] * sample.shape[1]
             )
@@ -187,8 +191,8 @@ def _fake_data_inference(
         _summarize_posterior(summaries, posterior_sample, sample_index)
         _summarize_posterior_predictive(
             predictive_summaries,
-            posterior_predictive,
-            prior[posterior_predictive.keys()].isel(draw=sample_index),
+            posterior_sample.posterior_predictive,
+            prior[posterior_sample.posterior_predictive.keys()].isel(draw=sample_index),
             sample_index,
         )
 
@@ -242,7 +246,7 @@ def _generate_summaries(
 
 def _sample_posterior(
     sample_index: int, sample: Dataset, cache_directory: Path, model: ThrowTimeModel
-) -> Dataset:
+) -> InferenceData:
     if model.naive:
         posterior_file = cache_directory / f"naive_posterior_{sample_index}.nc"
     else:
@@ -250,6 +254,10 @@ def _sample_posterior(
 
     if posterior_file.exists():
         posterior_sample = open_dataset(posterior_file)
+        if len(posterior_sample.keys()) > 0:
+            posterior_sample = InferenceData(posterior=posterior_sample)
+        else:
+            posterior_sample = InferenceData.from_netcdf(posterior_file)
     else:
         model.change_observations(y=sample["y"].values)
         posterior_sample = model.sample(
@@ -266,8 +274,7 @@ def _visualize_sample(
     sample_index: int,
     prior: Dataset,
     sample: Dataset,
-    posterior_sample: Dataset,
-    posterior_predictive: Dataset,
+    posterior_sample: InferenceData,
 ) -> None:
     if model.naive:
         sample_directory = figure_directory / f"naive_{sample_index}"
@@ -275,17 +282,23 @@ def _visualize_sample(
         sample_directory = figure_directory / str(sample_index)
 
     posterior_distribution_plots(
-        posterior_sample,
+        posterior_sample.posterior,
         sample_directory,
         prior_samples=prior,
         true_values=sample,
     )
     predictive_distributions(
-        posterior_predictive,
+        posterior_sample.posterior_predictive,
         sample_directory,
-        true_values=prior[posterior_predictive.keys()].isel(draw=sample_index),
+        true_values=prior[posterior_sample.posterior_predictive.keys()].isel(
+            draw=sample_index
+        ),
     )
-    chain_plots(posterior_sample, sample_directory)
+    chain_plots(
+        posterior_sample.posterior,
+        posterior_sample.get("sample_stats", None),
+        sample_directory,
+    )
 
 
 def _summarize_posterior(

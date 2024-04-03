@@ -8,7 +8,7 @@ from xarray import merge
 from xarray import Dataset
 import pymc as pm
 from pymc.math import floor, exp, log
-from arviz import summary
+from arviz import summary, InferenceData
 
 from ..data.data_classes import ModelData
 
@@ -76,7 +76,7 @@ class ThrowTimeModel:
         chain_count: int = 4,
         parallel_count: int = 1,
         thin: bool = True,
-    ) -> Dataset:
+    ) -> InferenceData:
         """
         Sample from the posterior distribution
 
@@ -95,7 +95,7 @@ class ThrowTimeModel:
 
         Returns
         -------
-        xarray.Dataset
+        arviz.InferenceData
             Posterior samples
         """
 
@@ -119,9 +119,9 @@ class ThrowTimeModel:
             )
 
         if thin:
-            return self.thin(samples.posterior)
+            return self.thin(samples)
 
-        return samples.posterior
+        return samples
 
     def sample_posterior_predictive(self, posterior_sample: Dataset) -> Dataset:
         """
@@ -147,18 +147,55 @@ class ThrowTimeModel:
         return samples
 
     @staticmethod
-    def thin(samples: Dataset) -> Dataset:
+    def thin(samples: InferenceData) -> InferenceData:
         """
         Thin the chains to reduce autocorrelations
 
         Parameters
         ----------
-        samples : Dataset
+        samples : arviz.InferenceData
             Samples from the chains
 
         Returns
         -------
-        Dataset
+        arviz.InferenceData
+            Thinned chains
+        """
+
+        sample_count = (
+            samples.posterior.sizes["chain"] * samples.posterior.sizes["draw"]
+        )
+        max_ess = summary(samples)["ess_bulk"].max()
+        if max_ess > sample_count:
+            # Get rid of negative autocorrelations à la NUTS
+            samples.posterior = samples.posterior.thin({"draw": 2})
+            samples.sample_stats = samples.sample_stats.thin({"draw": 2})
+
+        sample_count = (
+            samples.posterior.sizes["chain"] * samples.posterior.sizes["draw"]
+        )
+        min_ess = summary(samples)["ess_bulk"].min()
+        subsample_step = int(sample_count // min_ess)
+        if subsample_step > 1:
+            # Get rid of autocorrelation
+            samples.posterior = samples.posterior.thin({"draw": subsample_step})
+            samples.sample_stats = samples.sample_stats.thin({"draw": subsample_step})
+
+        return samples
+
+    @staticmethod
+    def thin_posterior(samples: Dataset) -> Dataset:
+        """
+        Thin the chains to reduce autocorrelations
+
+        Parameters
+        ----------
+        samples : xarray.Dataset
+            Samples from the chains
+
+        Returns
+        -------
+        xarray.Dataset
             Thinned chains
         """
 

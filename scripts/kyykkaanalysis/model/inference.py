@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from xarray import Dataset, open_dataset
+from arviz import summary, InferenceData
 
 from .modeling import ThrowTimeModel
 from .model_checks import check_priors
@@ -41,9 +42,7 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
         prior = open_dataset(prior_file)
 
     model = ThrowTimeModel(ModelData(data))
-    posterior, thinned_posterior, posterior_predictive = _sample_posterior(
-        model, cache_directory
-    )
+    posterior = _sample_posterior(model, cache_directory)
     _visualize_sample(
         prior,
         model.dataset,
@@ -54,9 +53,7 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
     )
 
     naive_model = ThrowTimeModel(ModelData(data), naive=True)
-    naive_posterior, naive_thinned_posterior, naive_posterior_predictive = (
-        _sample_posterior(naive_model, cache_directory)
-    )
+    naive_posterior = _sample_posterior(naive_model, cache_directory)
     _visualize_sample(
         prior,
         naive_model.dataset,
@@ -67,42 +64,41 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
     )
 
 
-def _sample_posterior(
-    model: ThrowTimeModel, cache_directory: Path
-) -> tuple[Dataset, Dataset, Dataset]:
+def _sample_posterior(model: ThrowTimeModel, cache_directory: Path) -> InferenceData:
     if model.naive:
         posterior_file = cache_directory / "naive_posterior.nc"
     else:
         posterior_file = cache_directory / "posterior.nc"
 
+    model.sample_prior()
     if posterior_file.exists():
-        posterior = open_dataset(posterior_file)
+        posterior = InferenceData.from_netcdf(posterior_file)
     else:
         posterior = model.sample(
             sample_count=10000, chain_count=4, parallel_count=4, thin=False
         )
         posterior.to_netcdf(posterior_file)
 
-    thinned_posterior = model.thin(posterior)
-    posterior_predictive = model.sample_posterior_predictive(posterior)
+    posterior.thinned_posterior = model.thin_posterior(posterior.posterior)
+    posterior.posterior_predictive = model.sample_posterior_predictive(
+        posterior.thinned_posterior
+    )
 
-    return posterior, thinned_posterior, posterior_predictive
+    return posterior
 
 
 def _visualize_sample(
     prior: Dataset,
     data: Dataset,
-    posterior: Dataset,
-    thinned_posterior: Dataset,
-    posterior_predictive: Dataset,
+    posterior: InferenceData,
     figure_directory: Path,
 ) -> None:
     raw_directory = figure_directory / "raw"
     raw_directory.mkdir(parents=True, exist_ok=True)
-    parameter_distributions(posterior, raw_directory, prior)
-    chain_plots(posterior, raw_directory)
+    parameter_distributions(posterior.posterior, raw_directory, prior)
+    chain_plots(posterior.posterior, posterior.sample_stats, raw_directory)
 
-    parameter_distributions(thinned_posterior, figure_directory, prior)
-    chain_plots(thinned_posterior, figure_directory)
+    parameter_distributions(posterior.thinned_posterior, figure_directory, prior)
+    chain_plots(posterior.thinned_posterior, posterior.sample_stats, figure_directory)
 
-    predictive_distributions(posterior_predictive, figure_directory, data)
+    predictive_distributions(posterior.posterior_predictive, figure_directory, data)
