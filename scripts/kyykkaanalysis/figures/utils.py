@@ -235,14 +235,7 @@ def calculate_histogram(
         Bin edges
     """
 
-    min_value = np.floor(values.min())
-    max_value = np.ceil(values.max())
-    bin_size = (max_value - min_value) / bin_count
-    if np.issubdtype(values.dtype, np.integer):
-        bin_size = max(round(bin_size), 1)
-    bins = np.arange(min_value, max_value + bin_size, bin_size, dtype=values.dtype)
-    bins = np.round(bins, 5)
-
+    bins = create_bins(values, bin_count)
     counts, _ = np.histogram(values, bins)
     if normalization == "probability":
         counts = counts / counts.sum() * 100
@@ -255,6 +248,33 @@ def calculate_histogram(
         raise ValueError(f"Invalid normalization {normalization}.")
 
     return counts, bins
+
+
+def create_bins(values: npt.NDArray[Any], bin_count: int) -> npt.NDArray[Any]:
+    """
+    Create evenly distributed bins for data
+
+    Parameters
+    ----------
+    values : numpy.ndarray of Any
+        Values for the histogram
+    bin_count : int
+        Number of bins
+
+    Returns
+    -------
+    numpy.ndarray of Any
+        Bin edges
+    """
+    min_value = np.floor(values.min())
+    max_value = np.ceil(values.max())
+    bin_size = (max_value - min_value) / bin_count
+    if np.issubdtype(values.dtype, np.integer):
+        bin_size = max(round(bin_size), 1)
+    bins = np.arange(min_value, max_value + bin_size, bin_size, dtype=values.dtype)
+    bins = np.round(bins, 5)
+
+    return bins
 
 
 def ecdf(
