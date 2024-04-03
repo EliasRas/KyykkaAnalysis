@@ -470,6 +470,7 @@ def predictive_distributions(
     _data_moments(samples, figure_directory, true_values=true_values)
     _throw_time_ranges(samples, figure_directory, true_values=true_values)
     if true_values is not None:
+        _player_data_moments(samples, figure_directory, true_values)
         _player_time_ranges(samples, figure_directory, true_values)
 
 
@@ -656,6 +657,44 @@ def _data_moments(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "y_moments.html", include_mathjax="cdn")
+
+
+def _player_data_moments(
+    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+):
+    samples = samples["y"].values.reshape(-1, samples["y"].shape[-1])
+    player_ids = true_values["player"].values
+    true_values = true_values["y"].values
+
+    figure = make_subplots(rows=1, cols=2)
+    for player_id in np.unique(player_ids):
+        from_player = player_ids == player_id
+        player_samples = samples[:, from_player]
+        y = f"Pelaaja {player_id}"
+
+        figure.add_traces(
+            _player_range(player_samples.mean(1), y, true_values[from_player].mean()),
+            rows=1,
+            cols=1,
+        )
+        figure.add_traces(
+            _player_range(player_samples.std(1), y, true_values[from_player].std()),
+            rows=1,
+            cols=2,
+        )
+
+    figure.update_traces(opacity=0.7)
+
+    figure.update_xaxes(title_text="Keskiarvo", row=1, col=1)
+    figure.update_yaxes(showticklabels=False, row=1, col=1)
+    figure.update_xaxes(title_text="Keskihajonta", row=1, col=2)
+    figure.update_yaxes(showticklabels=False, row=1, col=2)
+    figure.update_layout(
+        showlegend=False,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "player_y_moments.html", include_mathjax="cdn")
 
 
 def _throw_time_ranges(
