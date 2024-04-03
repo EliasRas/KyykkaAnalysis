@@ -470,6 +470,7 @@ def predictive_distributions(
     _data_moments(samples, figure_directory, true_values=true_values)
     _throw_time_ranges(samples, figure_directory, true_values=true_values)
     if true_values is not None:
+        _throw_data_distribution(samples, figure_directory, true_values)
         _player_data_moments(samples, figure_directory, true_values)
         _player_time_ranges(samples, figure_directory, true_values)
 
@@ -539,6 +540,119 @@ def _data_distribution(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "y.html", include_mathjax="cdn")
+
+
+def _throw_data_distribution(
+    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+):
+    figure = make_subplots(rows=2, cols=2)
+
+    samples = samples["y"].values.reshape(-1, samples["y"].shape[-1])
+    is_first = true_values["is_first"].values.flatten()
+    true_values = true_values["y"].values.flatten()
+
+    figure.add_traces(
+        precalculated_histogram(
+            samples[:, is_first].flatten(),
+            PLOT_COLORS[0],
+            name="Posteriorijakauma",
+            normalization="probability density",
+            legendgroup="Jakauma, 1.",
+        ),
+        rows=1,
+        cols=1,
+    )
+    figure.add_traces(
+        ecdf(
+            samples[:, is_first],
+            name="Posteriorijakauma",
+            color=PLOT_COLORS[0],
+            legendgroup="Kertymäfunktio, 1.",
+        ),
+        rows=1,
+        cols=2,
+    )
+    figure.add_traces(
+        precalculated_histogram(
+            samples[:, ~is_first].flatten(),
+            PLOT_COLORS[0],
+            name="Posteriorijakauma",
+            normalization="probability density",
+            legendgroup="Jakauma, 2.",
+        ),
+        rows=2,
+        cols=1,
+    )
+    figure.add_traces(
+        ecdf(
+            samples[:, ~is_first],
+            name="Posteriorijakauma",
+            color=PLOT_COLORS[0],
+            legendgroup="Kertymäfunktio, 2.",
+        ),
+        rows=2,
+        cols=2,
+    )
+
+    figure.add_traces(
+        precalculated_histogram(
+            true_values[is_first],
+            PLOT_COLORS[1],
+            name="Data",
+            normalization="probability density",
+            legendgroup="Jakauma, 1.",
+        ),
+        rows=1,
+        cols=1,
+    )
+    figure.add_traces(
+        ecdf(
+            true_values[is_first],
+            "Data",
+            color=PLOT_COLORS[1],
+            legendgroup="Kertymäfunktio, 1.",
+        ),
+        rows=1,
+        cols=2,
+    )
+    figure.add_traces(
+        precalculated_histogram(
+            true_values[~is_first],
+            PLOT_COLORS[1],
+            name="Data",
+            normalization="probability density",
+            legendgroup="Jakauma, 2.",
+        ),
+        rows=2,
+        cols=1,
+    )
+    figure.add_traces(
+        ecdf(
+            true_values[~is_first],
+            "Data",
+            color=PLOT_COLORS[1],
+            legendgroup="Kertymäfunktio, 2.",
+        ),
+        rows=2,
+        cols=2,
+    )
+
+    figure.update_xaxes(title_text=parameter_to_latex("y"), row=1, col=1)
+    figure.update_yaxes(title_text="1. heitto", showticklabels=False, row=1, col=1)
+    figure.update_xaxes(title_text=parameter_to_latex("y"), row=1, col=2)
+    figure.update_yaxes(title_text="Kumulatiivinen yleisyys", row=1, col=2)
+    figure.update_xaxes(title_text=parameter_to_latex("y"), row=2, col=1)
+    figure.update_yaxes(title_text="2. heitto", showticklabels=False, row=2, col=1)
+    figure.update_xaxes(title_text=parameter_to_latex("y"), row=2, col=2)
+    figure.update_yaxes(title_text="Kumulatiivinen yleisyys", row=2, col=2)
+    figure.update_layout(
+        legend={"groupclick": "toggleitem"},
+        barmode="overlay",
+        bargap=0,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "throw_y.html", include_mathjax="cdn")
 
 
 def _data_moments(
