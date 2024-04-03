@@ -234,8 +234,11 @@ class ThrowTimeModel:
         data = Dataset(
             {
                 "player": (["throws"], self.model.player.container.data),
-                "is_first": (["throws"], self.model.is_first.container.data),
-                "y": (["throws"], self.model.throw_times.container.data),
+                "is_first": (
+                    ["throws"],
+                    self.model.is_first.container.data.astype(bool),
+                ),
+                "y": (["throws"], self.model.throw_times.container.data.astype(int)),
             },
             coords={"throws": np.array(self.model.coords["throws"])},
         )
