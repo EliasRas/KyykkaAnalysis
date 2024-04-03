@@ -451,10 +451,8 @@ def _range_style(figure: go.Figure, values_name: str) -> None:
 
 
 def _contraction(
-    samples: Dataset,
-    prior_samples: Dataset,
-    figure_directory: Path,
-):
+    samples: Dataset, prior_samples: Dataset, figure_directory: Path
+) -> None:
     parameters = []
     contractions = []
     for parameter, parameter_samples in samples.items():
@@ -524,7 +522,7 @@ def predictive_distributions(
 
 def _data_distribution(
     samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
-):
+) -> None:
     figure = make_subplots(rows=1, cols=2)
 
     samples = samples["y"].values.squeeze()
@@ -591,7 +589,7 @@ def _data_distribution(
 
 def _throw_data_distribution(
     samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
-):
+) -> None:
     figure = make_subplots(rows=2, cols=2)
 
     samples = samples["y"].values.reshape(-1, samples["y"].shape[-1])
@@ -704,7 +702,7 @@ def _throw_data_distribution(
 
 def _data_moments(
     samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
-):
+) -> None:
     figure = make_subplots(rows=2, cols=2)
 
     samples = samples["y"].values.reshape(-1, samples["y"].shape[-1])
@@ -822,7 +820,7 @@ def _data_moments(
 
 def _player_data_moments(
     samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
-):
+) -> None:
     samples = samples["y"].values.reshape(-1, samples["y"].shape[-1])
     player_ids = true_values["player"].values
     true_values = true_values["y"].values
@@ -878,9 +876,7 @@ def _throw_time_ranges(
 
 
 def _player_time_ranges(
-    samples: Dataset,
-    figure_directory: Path,
-    true_values: Dataset,
+    samples: Dataset, figure_directory: Path, true_values: Dataset
 ) -> None:
     throw_times = samples["y"].values
     player_ids = true_values["player"].values
@@ -1033,7 +1029,6 @@ def chain_plots(
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _traceplot(samples, figure_directory)
-    # Divergence parallel coordinates
 
 
 def _traceplot(samples: Dataset, figure_directory: Path) -> None:
