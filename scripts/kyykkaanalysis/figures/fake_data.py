@@ -588,7 +588,6 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
 
     figure.update_layout(
         showlegend=False,
-        bargap=0,
         separators=", ",
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
