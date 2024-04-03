@@ -48,6 +48,8 @@ def parameter_distributions(
     )
     _parameter_correlations(samples, figure_directory, true_values=true_values)
     _theta_ranges(samples, figure_directory, true_values=true_values)
+    if prior_samples is not None:
+        _contraction(samples, prior_samples, figure_directory)
 
 
 def _sample_distributions(
@@ -446,6 +448,51 @@ def _range_style(figure: go.Figure, values_name: str) -> None:
         separators=", ",
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
+
+
+def _contraction(
+    samples: Dataset,
+    prior_samples: Dataset,
+    figure_directory: Path,
+):
+    parameters = []
+    contractions = []
+    for parameter, parameter_samples in samples.items():
+        parameter_samples = parameter_samples.values
+        prior_sample = prior_samples[parameter].values
+        if parameter == "theta":
+            parameter_samples = parameter_samples.reshape(
+                -1, parameter_samples.shape[-1]
+            )
+            prior_sample = prior_sample.reshape(-1, prior_sample.shape[-1])
+            parameters.extend(
+                [
+                    f"theta_{player_index+1}"
+                    for player_index in range(parameter_samples.shape[-1])
+                ]
+            )
+            contractions.extend(1 - parameter_samples.var(0) / prior_sample.var(0))
+        else:
+            parameters.append(parameter)
+            contractions.append(1 - parameter_samples.var() / prior_sample.var())
+
+    figure = go.Figure(
+        go.Scatter(
+            x=contractions,
+            y=np.random.random(len(contractions)),
+            customdata=parameters,
+            mode="markers",
+            hovertemplate="Posteriorin supistuma: %{x:.2f}<extra>%{customdata}:</extra>",
+        )
+    )
+    figure.update_layout(
+        xaxis_title="Posteriorin supistuma",
+        yaxis_showticklabels=False,
+        showlegend=False,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "contraction.html", include_mathjax="cdn")
 
 
 def predictive_distributions(
