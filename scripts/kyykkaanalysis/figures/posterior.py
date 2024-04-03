@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 from numpy import typing as npt
+from scipy.stats import skew, kurtosis
 from xarray import Dataset
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
@@ -466,6 +467,7 @@ def predictive_distributions(
     """
 
     _data_distribution(samples, figure_directory, true_values=true_values)
+    _data_moments(samples, figure_directory, true_values=true_values)
     _throw_time_ranges(samples, figure_directory, true_values=true_values)
     if true_values is not None:
         _player_time_ranges(samples, figure_directory, true_values)
@@ -474,7 +476,7 @@ def predictive_distributions(
 def _data_distribution(
     samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
 ):
-    figure = make_subplots(rows=1, cols=2, subplot_titles=["Jakauma", "Kertymäfunktio"])
+    figure = make_subplots(rows=1, cols=2)
 
     samples = samples["y"].values.squeeze()
     figure.add_traces(
@@ -536,6 +538,124 @@ def _data_distribution(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "y.html", include_mathjax="cdn")
+
+
+def _data_moments(
+    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+):
+    figure = make_subplots(rows=2, cols=2)
+
+    samples = samples["y"].values.reshape(-1, samples["y"].shape[-1])
+    figure.add_traces(
+        precalculated_histogram(
+            samples.mean(0),
+            PLOT_COLORS[0],
+            name="Posteriorijakauma",
+            normalization="probability density",
+        ),
+        rows=1,
+        cols=1,
+    )
+    figure.add_traces(
+        precalculated_histogram(
+            samples.std(0),
+            PLOT_COLORS[0],
+            name="Posteriorijakauma",
+            normalization="probability density",
+        ),
+        rows=1,
+        cols=2,
+    )
+    figure.add_traces(
+        precalculated_histogram(
+            skew(samples, 0),
+            PLOT_COLORS[0],
+            name="Posteriorijakauma",
+            normalization="probability density",
+        ),
+        rows=2,
+        cols=1,
+    )
+    figure.add_traces(
+        precalculated_histogram(
+            kurtosis(samples, 0),
+            PLOT_COLORS[0],
+            name="Posteriorijakauma",
+            normalization="probability density",
+        ),
+        rows=2,
+        cols=2,
+    )
+
+    if true_values is not None:
+        histogram_traces = [trace for trace in figure.data if isinstance(trace, go.Bar)]
+        true_values = true_values["y"].values.flatten()
+
+        figure.add_trace(
+            go.Scatter(
+                x=true_values.mean() * np.ones(1000),
+                y=np.linspace(0, histogram_traces[0].y.max(), 1000),
+                name="Todellinen arvo",
+                mode="lines",
+                line={"color": "black", "dash": "dash"},
+                hovertemplate="Todellinen arvo: %{x:.2f}<extra></extra>",
+            ),
+            row=1,
+            col=1,
+        )
+        figure.add_trace(
+            go.Scatter(
+                x=true_values.std() * np.ones(1000),
+                y=np.linspace(0, histogram_traces[1].y.max(), 1000),
+                name="Todellinen arvo",
+                mode="lines",
+                line={"color": "black", "dash": "dash"},
+                hovertemplate="Todellinen arvo: %{x:.2f}<extra></extra>",
+            ),
+            row=1,
+            col=2,
+        )
+        figure.add_trace(
+            go.Scatter(
+                x=skew(true_values) * np.ones(1000),
+                y=np.linspace(0, histogram_traces[2].y.max(), 1000),
+                name="Todellinen arvo",
+                mode="lines",
+                line={"color": "black", "dash": "dash"},
+                hovertemplate="Todellinen arvo: %{x:.2f}<extra></extra>",
+            ),
+            row=2,
+            col=1,
+        )
+        figure.add_trace(
+            go.Scatter(
+                x=kurtosis(true_values) * np.ones(1000),
+                y=np.linspace(0, histogram_traces[3].y.max(), 1000),
+                name="Todellinen arvo",
+                mode="lines",
+                line={"color": "black", "dash": "dash"},
+                hovertemplate="Todellinen arvo: %{x:.2f}<extra></extra>",
+            ),
+            row=2,
+            col=2,
+        )
+
+    figure.update_xaxes(title_text="Keskiarvo", row=1, col=1)
+    figure.update_yaxes(showticklabels=False, row=1, col=1)
+    figure.update_xaxes(title_text="Keskihajonta", row=1, col=2)
+    figure.update_yaxes(showticklabels=False, row=1, col=2)
+    figure.update_xaxes(title_text="Vinous", row=2, col=1)
+    figure.update_yaxes(showticklabels=False, row=2, col=1)
+    figure.update_xaxes(title_text="Huipukkuus", row=2, col=2)
+    figure.update_yaxes(showticklabels=False, row=2, col=2)
+    figure.update_layout(
+        showlegend=False,
+        barmode="overlay",
+        bargap=0,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "y_moments.html", include_mathjax="cdn")
 
 
 def _throw_time_ranges(
