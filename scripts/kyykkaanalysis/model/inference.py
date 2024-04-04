@@ -13,6 +13,7 @@ from ..figures.posterior import (
     predictive_distributions,
 )
 from ..figures.chains import chain_plots
+from ..figures.cross_validation import cross_validation_plots
 
 
 def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path):
@@ -47,8 +48,6 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
         prior,
         model.dataset,
         posterior,
-        thinned_posterior,
-        posterior_predictive,
         figure_directory,
     )
 
@@ -58,8 +57,6 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
         prior,
         naive_model.dataset,
         naive_posterior,
-        naive_thinned_posterior,
-        naive_posterior_predictive,
         naive_figure_directory,
     )
 
@@ -82,6 +79,9 @@ def _sample_posterior(model: ThrowTimeModel, cache_directory: Path) -> Inference
     posterior.posterior_predictive = model.sample_posterior_predictive(
         posterior.thinned_posterior
     )
+    posterior.loo_result = model.psis_loo(
+        posterior.thinned_posterior, posterior.posterior_predictive
+    )
 
     return posterior
 
@@ -101,3 +101,4 @@ def _visualize_sample(
     chain_plots(posterior.thinned_posterior, posterior.sample_stats, figure_directory)
 
     predictive_distributions(posterior.posterior_predictive, figure_directory, data)
+    cross_validation_plots(data, posterior.loo_result, figure_directory)
