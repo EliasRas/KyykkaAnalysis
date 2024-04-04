@@ -1031,11 +1031,12 @@ def chain_plots(
 
     figure_directory.mkdir(parents=True, exist_ok=True)
 
-    _traceplot(samples, figure_directory)
+    _trace_plot(samples, figure_directory)
     _divergences(samples, sample_stats, figure_directory)
+    _energy_plot(sample_stats, figure_directory)
 
 
-def _traceplot(samples: Dataset, figure_directory: Path) -> None:
+def _trace_plot(samples: Dataset, figure_directory: Path) -> None:
     samples = samples.drop_vars(["theta"])
     parameter_count = len(samples)
 
@@ -1160,3 +1161,44 @@ def _divergences(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "divergences.html", include_mathjax="cdn")
+
+
+def _energy_plot(sample_stats: Dataset, figure_directory: Path) -> None:
+    energies = sample_stats["energy"].values
+    energy_transitions = np.diff(energies)
+
+    chain_count = energies.shape[0]
+    col_count = int(np.ceil(np.sqrt(chain_count)))
+    row_count = int(np.ceil(chain_count / col_count))
+    figure = make_subplots(
+        rows=row_count,
+        cols=col_count,
+        subplot_titles=[f"Ketju {chain_index+1}" for chain_index in range(chain_count)],
+    )
+    for chain_index in range(chain_count):
+        figure.add_traces(
+            precalculated_histogram(
+                energies[chain_index, :],
+                PLOT_COLORS[0],
+                name="Reunaenergia",
+                normalization="probability density",
+                legendgroup=f"Ketju {chain_index +1}",
+            )
+        )
+        figure.add_traces(
+            precalculated_histogram(
+                energy_transitions[chain_index, :],
+                PLOT_COLORS[1],
+                name="Energiasiirtymät",
+                normalization="probability density",
+                legendgroup=f"Ketju {chain_index +1}",
+            )
+        )
+    figure.update_layout(
+        showlegend=False,
+        barmode="overlay",
+        bargap=0,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "energies.html", include_mathjax="cdn")
