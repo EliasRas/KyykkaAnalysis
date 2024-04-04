@@ -70,7 +70,6 @@ def _sample_posterior(model: ThrowTimeModel, cache_directory: Path) -> Inference
     else:
         posterior_file = cache_directory / "posterior.nc"
 
-    model.sample_prior()
     if posterior_file.exists():
         posterior = InferenceData.from_netcdf(posterior_file)
     else:
