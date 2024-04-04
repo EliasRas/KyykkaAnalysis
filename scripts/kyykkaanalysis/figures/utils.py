@@ -6,6 +6,7 @@ from time import sleep
 
 import numpy as np
 from numpy import typing as npt
+from scipy.stats import binom, beta
 from plotly import graph_objects as go, colors
 
 PLOT_COLORS = colors.qualitative.Plotly
@@ -197,21 +198,6 @@ def precalculated_histogram(
     return histogram, mean
 
 
-def _mean_line(samples: npt.NDArray[Any], histogram: go.Bar, color: str) -> go.Scatter:
-    mean = samples.mean()
-    max_height = histogram.y.max()
-    mean_line = go.Scatter(
-        x=[mean, mean],
-        y=[0, max_height],
-        mode="lines",
-        line={"color": color, "dash": "dash"},
-        hoverinfo="skip",
-        showlegend=False,
-    )
-
-    return mean_line
-
-
 def calculate_histogram(
     values: npt.NDArray[Any], bin_count: int, normalization: str = "probability"
 ) -> tuple[npt.NDArray[np.float_], npt.NDArray[Any]]:
@@ -275,6 +261,21 @@ def create_bins(values: npt.NDArray[Any], bin_count: int) -> npt.NDArray[Any]:
     bins = np.round(bins, 5)
 
     return bins
+
+
+def _mean_line(samples: npt.NDArray[Any], histogram: go.Bar, color: str) -> go.Scatter:
+    mean = samples.mean()
+    max_height = histogram.y.max()
+    mean_line = go.Scatter(
+        x=[mean, mean],
+        y=[0, max_height],
+        mode="lines",
+        line={"color": color, "dash": "dash"},
+        hoverinfo="skip",
+        showlegend=False,
+    )
+
+    return mean_line
 
 
 def ecdf(
@@ -345,6 +346,67 @@ def ecdf(
         return cdf, interval
 
     return cdf
+
+
+def uniform_variation(
+    sample_size: int, bin_count: int
+) -> tuple[go.Scatter, go.Scatter]:
+    """
+    Visualize 99 % variation intervals for uniformly distributed data
+
+    Parameters
+    ----------
+    sample_size : int
+        Sample size
+    bin_count : int
+        Number of bins in the histogram
+
+    Returns
+    -------
+    go.Scatter
+        Variation interval for histgram
+    go.Scatter
+        Variation interval for ecdf
+    """
+
+    # Bin counts are binomially distributed
+    bar_dist = binom(sample_size, 1 / bin_count)
+    bar_bounds = [
+        bar_dist.ppf(0.005) / sample_size * 100,
+        bar_dist.ppf(0.995) / sample_size * 100,
+    ]
+    histogram_variation = go.Scatter(
+        x=[0, 1, 1, 0],
+        y=[bar_bounds[0], bar_bounds[0], bar_bounds[1], bar_bounds[1]],
+        fill="toself",
+        fillcolor="rgba(0,0,0,0.2)",
+        line_color="rgba(0,0,0,0)",
+        hoverinfo="skip",
+    )
+
+    # The kth order statistic (basically the inverse CDF) of a uniform variable on [0,1]
+    # is beta-distributed
+    lower_bound = np.linspace(0, 1, 1000)
+    higher_bound = lower_bound.copy()
+    left_bound = []
+    right_bound = []
+    for percentile_index in range(lower_bound.size):
+        rank = percentile_index / lower_bound.size * sample_size
+        cdf_dist = beta(rank, sample_size + 1 - rank)
+        left_bound.append(cdf_dist.ppf(0.005))
+        right_bound.append(cdf_dist.ppf(0.995))
+        higher_bound[percentile_index] -= left_bound[-1]
+        lower_bound[percentile_index] -= right_bound[-1]
+    cdf_variation = go.Scatter(
+        x=left_bound + right_bound[::-1],
+        y=np.concatenate((higher_bound, lower_bound[::-1])),
+        fill="toself",
+        fillcolor="rgba(0,0,0,0.2)",
+        line_color="rgba(0,0,0,0)",
+        hoverinfo="skip",
+    )
+
+    return histogram_variation, cdf_variation
 
 
 def hex_to_rgb(hex_value: str) -> tuple[str, str, str]:
