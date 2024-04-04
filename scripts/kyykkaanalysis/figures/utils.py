@@ -347,13 +347,13 @@ def ecdf(
     return cdf
 
 
-def hex_to_rgb(hex: str) -> tuple[str, str, str]:
+def hex_to_rgb(hex_value: str) -> tuple[str, str, str]:
     """
     Convert hex valued color to rgb representation
 
     Parameters
     ----------
-    hex : str
+    hex_value : str
         Color in hexadecimal format
 
     Returns
@@ -362,6 +362,6 @@ def hex_to_rgb(hex: str) -> tuple[str, str, str]:
         Red, blue and green components of the color
     """
 
-    hex = hex.strip("#")
+    hex_value = hex_value.strip("#")
 
-    return tuple(str(int(hex[i : i + 2], 16)) for i in (0, 2, 4))
+    return tuple(str(int(hex_value[i : i + 2], 16)) for i in (0, 2, 4))
