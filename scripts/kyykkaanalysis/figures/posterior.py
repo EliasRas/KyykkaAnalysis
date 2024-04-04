@@ -27,7 +27,7 @@ def parameter_distributions(
     true_values: Dataset | None = None,
 ) -> None:
     """
-    Plot the distributions of the sampled parameters
+    Plot information about the sampled parameters
 
     Parameters
     ----------
@@ -499,7 +499,7 @@ def predictive_distributions(
     true_values: Dataset | None = None,
 ) -> None:
     """
-    Plot the distributions of the sampled parameters
+    Plot the information about the sampled data
 
     Parameters
     ----------
