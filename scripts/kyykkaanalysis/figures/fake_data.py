@@ -6,13 +6,13 @@ from pathlib import Path
 import numpy as np
 from numpy import typing as npt
 from xarray import Dataset
-from scipy.stats import binom, beta
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 
 from .utils import (
     parameter_to_latex,
     precalculated_histogram,
+    uniform_variation,
     PLOT_COLORS,
     FONT_SIZE,
 )
@@ -325,7 +325,14 @@ def _percentiles(posterior_summaries: Dataset, figure_directory: Path) -> None:
             posterior_summaries[parameter].sel(summary="percentile").values.flatten()
         )
         bin_count = max(min(parameter_percentiles.size // 20, 20), 1)
-        _percentile_variation(parameter_percentiles, bin_count, figure, parameter_index)
+        histogram_variation, cdf_variation = uniform_variation(
+            parameter_percentiles.size, bin_count
+        )
+        figure.add_trace(
+            histogram_variation,
+            row=parameter_index + 1,
+            col=1,
+        )
         figure.add_traces(
             precalculated_histogram(
                 parameter_percentiles, PLOT_COLORS[0], bin_count=bin_count
@@ -334,6 +341,11 @@ def _percentiles(posterior_summaries: Dataset, figure_directory: Path) -> None:
             cols=1,
         )
 
+        figure.add_trace(
+            cdf_variation,
+            row=parameter_index + 1,
+            col=2,
+        )
         parameter_percentiles = np.sort(parameter_percentiles)
         cdf_errors = (
             np.linspace(0, 1, parameter_percentiles.size) - parameter_percentiles
@@ -365,58 +377,6 @@ def _percentiles(posterior_summaries: Dataset, figure_directory: Path) -> None:
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "percentiles.html", include_mathjax="cdn")
-
-
-def _percentile_variation(
-    percentiles: npt.NDArray[np.float_],
-    bin_count: int,
-    figure: go.Figure,
-    parameter_index: int,
-) -> None:
-    # Bin counts are binomially distributed
-    bar_dist = binom(percentiles.size, 1 / bin_count)
-    bar_bounds = [
-        bar_dist.ppf(0.005) / percentiles.size * 100,
-        bar_dist.ppf(0.995) / percentiles.size * 100,
-    ]
-    figure.add_trace(
-        go.Scatter(
-            x=[0, 1, 1, 0],
-            y=[bar_bounds[0], bar_bounds[0], bar_bounds[1], bar_bounds[1]],
-            fill="toself",
-            fillcolor="rgba(0,0,0,0.2)",
-            line_color="rgba(0,0,0,0)",
-            hoverinfo="skip",
-        ),
-        row=parameter_index + 1,
-        col=1,
-    )
-
-    # Percentiles are a uniform variable on [0,1], whose kth order statistic (basically
-    # the inverse CDF) is beta-distributed
-    lower_bound = np.linspace(0, 1, 1000)
-    higher_bound = lower_bound.copy()
-    left_bound = []
-    right_bound = []
-    for percentile_index in range(lower_bound.size):
-        rank = percentile_index / lower_bound.size * percentiles.size
-        cdf_dist = beta(rank, percentiles.size + 1 - rank)
-        left_bound.append(cdf_dist.ppf(0.005))
-        right_bound.append(cdf_dist.ppf(0.995))
-        higher_bound[percentile_index] -= left_bound[-1]
-        lower_bound[percentile_index] -= right_bound[-1]
-    figure.add_trace(
-        go.Scatter(
-            x=left_bound + right_bound[::-1],
-            y=np.concatenate((higher_bound, lower_bound[::-1])),
-            fill="toself",
-            fillcolor="rgba(0,0,0,0.2)",
-            line_color="rgba(0,0,0,0)",
-            hoverinfo="skip",
-        ),
-        row=parameter_index + 1,
-        col=2,
-    )
 
 
 def _sample_sizes(posterior_summaries: Dataset, figure_directory: Path) -> None:
