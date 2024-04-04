@@ -5,10 +5,10 @@ from typing import Self
 import numpy as np
 from numpy import typing as npt
 from xarray import merge
-from xarray import Dataset
+from xarray import Dataset, DataArray
 import pymc as pm
 from pymc.math import floor, exp, log
-from arviz import summary, InferenceData
+from arviz import summary, loo, loo_pit, psislw, ess, InferenceData, ELPDData
 
 from ..data.data_classes import ModelData
 
@@ -146,6 +146,94 @@ class ThrowTimeModel:
 
         return samples
 
+    def psis_loo(
+        self, posterior_samples: Dataset, posterior_predictive: Dataset
+    ) -> ELPDData:
+        """
+        Carry out Pareto smoothed importance sampling leave-one-out cross-validation
+
+        Parameters
+        ----------
+        posterior_samples : xarray.Dataset
+            Posterior samples
+        posterior_predictive : xarray.Dataset
+            Posterior predictive samples
+
+        Returns
+        -------
+        arviz.ELPDData
+            Cross-validation results
+        """
+
+        posterior = InferenceData(posterior=posterior_samples)
+        with self.model:
+            pm.compute_log_likelihood(posterior)
+
+        loo_result = loo(posterior, pointwise=True)
+
+        y_hat = posterior_predictive["y"].stack(__sample__=("chain", "draw"))
+        pit = loo_pit(
+            y=self.model.throw_times.container.data,
+            y_hat=y_hat,
+            log_weights=self._psis_weights(
+                posterior_samples, posterior.log_likelihood  # pylint: disable=no-member
+            ),
+        )
+        loo_result.pit = DataArray(
+            data=pit, dims=["throws"], coords={"throws": loo_result.loo_i.throws}
+        )
+
+        return loo_result
+
+    def _psis_weights(
+        self, posterior_samples: Dataset, log_likelihood: Dataset
+    ) -> None:
+        log_likelihood = log_likelihood["y"].stack(__sample__=("chain", "draw"))
+
+        if posterior_samples["chain"].size > 1:
+            sample_count = log_likelihood.__sample__.size
+            ess_p = ess(posterior_samples, method="mean")
+            reff = (
+                np.hstack([ess_p[v].values.flatten() for v in ess_p.data_vars]).mean()
+                / sample_count
+            )
+        else:
+            reff = 1
+
+        weights = psislw(-log_likelihood, reff=reff)[0].values
+
+        return weights
+
+    def change_observations(self, y: npt.NDArray[np.int_] | None = None) -> Self:
+        """
+        Change the observed data in the model
+
+        Parameters
+        ----------
+        y : numpy.ndarray of int or None
+            Throw times
+
+        Returns
+        -------
+        ThrowTimeModel
+            Model with updated observations
+        """
+
+        if y is not None:
+            with self.model:
+                y = y.flatten()
+
+                # Ensure that measurement error bounds are within Gamma distribution domain
+                # Otherwise gradient calculation fails
+                if self.naive:
+                    y[y < 1] = 1
+                else:
+                    y[y < 3] = 3
+
+                pm.set_data({"throw_times": y})
+
+        return self
+
     @staticmethod
     def thin(samples: InferenceData) -> InferenceData:
         """
@@ -213,36 +301,6 @@ class ThrowTimeModel:
             samples = samples.thin({"draw": subsample_step})
 
         return samples
-
-    def change_observations(self, y: npt.NDArray[np.int_] | None = None) -> Self:
-        """
-        Change the observed data in the model
-
-        Parameters
-        ----------
-        y : numpy.ndarray of int or None
-            Throw times
-
-        Returns
-        -------
-        ThrowTimeModel
-            Model with updated observations
-        """
-
-        if y is not None:
-            with self.model:
-                y = y.flatten()
-
-                # Ensure that measurement error bounds are within Gamma distribution domain
-                # Otherwise gradient calculation fails
-                if self.naive:
-                    y[y < 1] = 1
-                else:
-                    y[y < 3] = 3
-
-                pm.set_data({"throw_times": y})
-
-        return self
 
     @property
     def observed_variables(self) -> set[str]:
