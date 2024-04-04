@@ -13,8 +13,8 @@ from ..figures.prior import parameter_distributions as prior_distribution_plots
 from ..figures.posterior import (
     parameter_distributions as posterior_distribution_plots,
     predictive_distributions,
-    chain_plots,
 )
+from ..figures.chains import chain_plots
 from ..figures.fake_data import estimation_plots
 
 

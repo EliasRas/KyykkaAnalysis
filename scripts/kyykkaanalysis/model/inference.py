@@ -11,8 +11,8 @@ from ..data.data_classes import ModelData, Stream
 from ..figures.posterior import (
     parameter_distributions,
     predictive_distributions,
-    chain_plots,
 )
+from ..figures.chains import chain_plots
 
 
 def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path):
