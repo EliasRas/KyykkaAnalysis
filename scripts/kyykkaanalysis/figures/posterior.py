@@ -806,7 +806,7 @@ def _data_moments(
     figure.update_yaxes(showticklabels=False, row=1, col=2)
     figure.update_xaxes(title_text="Vinous", row=2, col=1)
     figure.update_yaxes(showticklabels=False, row=2, col=1)
-    figure.update_xaxes(title_text="Huipukkuus", row=2, col=2)
+    figure.update_xaxes(title_text="Kurtoosi", row=2, col=2)
     figure.update_yaxes(showticklabels=False, row=2, col=2)
     figure.update_layout(
         showlegend=False,
