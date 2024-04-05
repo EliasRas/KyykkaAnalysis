@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from xarray import Dataset, open_dataset
-from arviz import summary, InferenceData
+from arviz import InferenceData
 
 from .modeling import ThrowTimeModel
 from .model_checks import check_priors
@@ -13,7 +13,7 @@ from ..figures.posterior import (
     predictive_distributions,
 )
 from ..figures.chains import chain_plots
-from ..figures.cross_validation import cross_validation_plots
+from ..figures.cross_validation import cross_validation_plots, model_comparison
 
 
 def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path):
@@ -57,6 +57,12 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
         naive_model.dataset,
         naive_posterior,
         naive_figure_directory,
+    )
+
+    _compare_models(
+        model.dataset,
+        {"Palkintopallivirhe": posterior, "Alaspäin pyöristys": naive_posterior},
+        figure_directory,
     )
 
 
@@ -110,3 +116,14 @@ def _visualize_sample(
     )
 
 
+def _compare_models(
+    data: Dataset, posteriors: dict[str, InferenceData], figure_directory: Path
+) -> None:
+    model_comparison(
+        data,
+        {
+            model_name: posterior.loo_result
+            for model_name, posterior in posteriors.items()
+        },
+        figure_directory / "cross_validation",
+    )
