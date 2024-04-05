@@ -111,20 +111,22 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
 def _log_likelihoods(
     data: Dataset, loo_results: ELPDData, figure_directory: Path
 ) -> None:
+    customdata = np.hstack(
+        [
+            data["throws"].values.reshape(-1, 1),
+            data["player"].values.reshape(-1, 1),
+        ]
+    )
+
     figure = go.Figure()
     figure.add_trace(
         go.Scatter(
             x=data["y"].values[data["is_first"]],
             y=loo_results.loo_i.values[data["is_first"]],
-            customdata=np.hstack(
-                [
-                    data["throws"].values.reshape(-1, 1),
-                    data["player"].values.reshape(-1, 1),
-                ]
-            ),
+            customdata=customdata[data["is_first"], :],
             name="1. heitto",
             mode="markers",
-            hovertemplate="Heittoaika: %{x}<br>Pisteittäinen log-uskottavuus: %{y:.2f}"
+            hovertemplate="Heittoaika: %{x} s<br>Pisteittäinen log-uskottavuus: %{y:.2f}"
             "<br>Heiton indeksi: %{customdata[0]}<br>"
             "Heittäjän indeksi: %{customdata[1]}<extra></extra>",
         )
@@ -133,12 +135,7 @@ def _log_likelihoods(
         go.Scatter(
             x=data["y"].values[~data["is_first"]],
             y=loo_results.loo_i.values[~data["is_first"]],
-            customdata=np.hstack(
-                [
-                    data["player"].values.reshape(-1, 1),
-                    data["throws"].values.reshape(-1, 1),
-                ]
-            ),
+            customdata=customdata[~data["is_first"], :],
             name="2. heitto",
             mode="markers",
             hovertemplate="Heittoaika: %{x} s<br>Pisteittäinen log-uskottavuus: %{y:.2f}"
