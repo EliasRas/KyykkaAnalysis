@@ -19,8 +19,8 @@ def main():
 
     print_description(data)
 
-    data_figures.time_distributions(data, args.figure_directory)
-    data_figures.averages(data, args.figure_directory)
+    data_figures.time_distributions(data, args.figure_directory / "Data")
+    data_figures.averages(data, args.figure_directory / "Data")
 
     model_checks.check_priors(data, args.figure_directory, args.cache_directory)
     model_checks.fake_data_simulation(data, args.figure_directory, args.cache_directory)
