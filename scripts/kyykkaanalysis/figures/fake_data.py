@@ -543,7 +543,12 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
                 row=row,
                 col=col,
             )
-            figure.update_xaxes(title_text="Posteriorin supistuma", row=row, col=col)
+            figure.update_xaxes(
+                title_text="Posteriorin supistuma",
+                range=[0, 1] if contraction.min() > 0 else None,
+                row=row,
+                col=col,
+            )
             figure.update_yaxes(title_text="Normalisoitu virhe", row=row, col=col)
 
     figure.update_layout(
