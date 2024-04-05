@@ -182,12 +182,14 @@ def _energy_plot(sample_stats: Dataset, figure_directory: Path) -> None:
     for chain_index in range(chain_count):
         figure.add_traces(
             precalculated_histogram(
-                energies[chain_index, :],
+                energies[chain_index, :] - energies.mean(),
                 PLOT_COLORS[0],
                 name="Reunaenergia",
                 normalization="probability density",
                 legendgroup=f"Ketju {chain_index +1}",
-            )
+            ),
+            rows=chain_index // col_count + 1,
+            cols=chain_index % col_count + 1,
         )
         figure.add_traces(
             precalculated_histogram(
@@ -196,7 +198,9 @@ def _energy_plot(sample_stats: Dataset, figure_directory: Path) -> None:
                 name="Energiasiirtymät",
                 normalization="probability density",
                 legendgroup=f"Ketju {chain_index +1}",
-            )
+            ),
+            rows=chain_index // col_count + 1,
+            cols=chain_index % col_count + 1,
         )
     figure.update_layout(
         showlegend=False,
