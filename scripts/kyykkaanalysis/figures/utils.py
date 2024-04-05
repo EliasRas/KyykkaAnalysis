@@ -30,12 +30,12 @@ ERROR_LATEX_CONVERSION = {
     "y": r"$y-\text{virhe}$",
 }
 PERCENTILE_LATEX_CONVERSION = {
-    "mu": r"$\mu-\text{persentiili}$",
-    "sigma": r"$\sigma-\text{persentiili}$",
-    "o": r"$o-\text{persentiili}$",
-    "k": r"$k-\text{persentiili}$",
-    "theta": r"$\theta-\text{persentiili}$",
-    "y": r"$y-\text{persentiili}$",
+    "mu": r"$\mu-\text{prosenttipiste}$",
+    "sigma": r"$\sigma-\text{prosenttipiste}$",
+    "o": r"$o-\text{prosenttipiste}$",
+    "k": r"$k-\text{prosenttipiste}$",
+    "theta": r"$\theta-\text{prosenttipiste}$",
+    "y": r"$y-\text{prosenttipiste}$",
 }
 
 
@@ -207,7 +207,11 @@ def precalculated_histogram(
 
 
 def calculate_histogram(
-    values: npt.NDArray[Any], bin_count: int, normalization: str = "probability"
+    values: npt.NDArray[Any],
+    bin_count: int,
+    normalization: Literal[
+        "probability", "probability density", "count"
+    ] = "probability",
 ) -> tuple[npt.NDArray[np.float_], npt.NDArray[Any]]:
     """
     Calculate bins and bin counts of a histogram
