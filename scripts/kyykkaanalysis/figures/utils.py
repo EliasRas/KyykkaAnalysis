@@ -1,6 +1,6 @@
 """Utility functions for plotly figures"""
 
-from typing import Any
+from typing import Any, Literal
 from pathlib import Path
 from time import sleep
 
@@ -95,7 +95,10 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     )
 
 
-def parameter_to_latex(parameter: str, variable_type: str = "variable") -> str:
+def parameter_to_latex(
+    parameter: str,
+    variable_type: Literal["variable", "error", "percentile"] = "variable",
+) -> str:
     """
     Convert the name of the parameter to a LaTeX symbol
 
@@ -107,7 +110,7 @@ def parameter_to_latex(parameter: str, variable_type: str = "variable") -> str:
         Type of latex string to return. Possible choices:
             "variable": Symbol of the variable
             "error": Estimation error
-            "percentile":
+            "percentile": Percentile of variable
 
     Returns
     -------
@@ -130,7 +133,9 @@ def precalculated_histogram(
     color: str,
     name: str | None = None,
     bin_count: int | None = None,
-    normalization: str = "probability",
+    normalization: Literal[
+        "probability", "probability density", "count"
+    ] = "probability",
     legendgroup: str | None = None,
 ) -> tuple[go.Bar, go.Scatter]:
     """
