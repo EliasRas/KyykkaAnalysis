@@ -484,7 +484,7 @@ def _contraction(
         )
     )
     figure.update_layout(
-        xaxis_title="Posteriorin supistuma",
+        xaxis={"title":"Posteriorin supistuma","range":[0,1] if min(contractions) > 0 else None},
         yaxis_showticklabels=False,
         showlegend=False,
         separators=", ",
