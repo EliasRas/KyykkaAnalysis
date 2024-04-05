@@ -197,3 +197,159 @@ def _log_likelihood_percentiles(loo_results: ELPDData, figure_directory: Path) -
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "pit.html", include_mathjax="cdn")
+
+
+def model_comparison(
+    data: Dataset, loo_results: dict[str, ELPDData], figure_directory: Path
+) -> None:
+    """
+    Plot information about model comparisons
+
+    Parameters
+    ----------
+    data : xarray.Dataset
+        Observed data
+    loo_result : arviz.ELPDData
+        Results of cross validation
+    figure_directory : Path
+        Path to the directory in which the figures are saved
+    """
+
+    _log_likelihood_comparison(data, loo_results, figure_directory)
+    _log_likelihood_difference(data, loo_results, figure_directory)
+
+
+def _log_likelihood_comparison(
+    data: Dataset, loo_results: dict[str, ELPDData], figure_directory: Path
+) -> None:
+    model_names = sorted(loo_results.keys())
+    customdata = np.hstack(
+        [
+            data["y"].values.reshape(-1, 1),
+            data["throws"].values.reshape(-1, 1),
+            data["player"].values.reshape(-1, 1),
+        ]
+    )
+
+    figure = make_subplots(rows=len(model_names) - 1, cols=len(model_names) - 1)
+    for model_index, model in enumerate(model_names[:-1]):
+        model_results = loo_results[model]
+        for model_index2, model2 in enumerate(model_names[model_index + 1 :]):
+            model2_results = loo_results[model2]
+            figure.add_trace(
+                go.Scatter(
+                    x=model_results.loo_i.values[data["is_first"]],
+                    y=model2_results.loo_i.values[data["is_first"]],
+                    customdata=customdata[data["is_first"], :],
+                    mode="markers",
+                    hovertemplate=f"{model} log-uskottavuus: %{{x:.2f}}<br>{model2} "
+                    "log-uskottavuus: %{y:.2f}<br>Heittoaika: %{customdata[0]} s<br>"
+                    "Heiton indeksi: %{customdata[1]}<br>"
+                    "Heittäjän indeksi: %{customdata[2]}<extra>1. heitto</extra>",
+                ),
+                row=model_index + model_index2 + 1,
+                col=model_index + 1,
+            )
+            figure.add_trace(
+                go.Scatter(
+                    x=model_results.loo_i.values[~data["is_first"]],
+                    y=model2_results.loo_i.values[~data["is_first"]],
+                    customdata=customdata[~data["is_first"], :],
+                    name="1. heitto",
+                    mode="markers",
+                    hovertemplate=f"{model} log-uskottavuus: %{{x:.2f}}<br>{model2} "
+                    "log-uskottavuus: %{y:.2f}<br>Heittoaika: %{customdata[0]} s<br>"
+                    "Heiton indeksi: %{customdata[1]}<br>"
+                    "Heittäjän indeksi: %{customdata[2]}<extra>2. heitto</extra>",
+                ),
+                row=model_index + model_index2 + 1,
+                col=model_index + 1,
+            )
+            figure.update_yaxes(
+                title_text=model2,
+                row=model_index + model_index2 + 1,
+                col=1,
+            )
+        figure.update_xaxes(
+            title_text=model,
+            row=len(model_names) - 1,
+            col=model_index + 1,
+        )
+
+    figure.update_layout(
+        showlegend=False,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(
+        figure_directory / "log_likelihood_comparison.html", include_mathjax="cdn"
+    )
+
+
+def _log_likelihood_difference(
+    data: Dataset, loo_results: dict[str, ELPDData], figure_directory: Path
+) -> None:
+    model_names = sorted(loo_results.keys())
+    customdata = np.hstack(
+        [
+            data["throws"].values.reshape(-1, 1),
+            data["player"].values.reshape(-1, 1),
+        ]
+    )
+
+    figure = make_subplots(rows=len(model_names) - 1, cols=len(model_names) - 1)
+    for model_index, model in enumerate(model_names[:-1]):
+        model_results = loo_results[model]
+        for model_index2, model2 in enumerate(model_names[model_index + 1 :]):
+            model2_results = loo_results[model2]
+
+            differences = model2_results.loo_i.values - model_results.loo_i.values
+            figure.add_trace(
+                go.Scatter(
+                    x=data["y"].values[data["is_first"]],
+                    y=differences[data["is_first"]],
+                    customdata=customdata[data["is_first"], :],
+                    name="1. heitto",
+                    mode="markers",
+                    hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
+                    "Heiton indeksi: %{customdata[0]}<br>"
+                    "Heittäjän indeksi: %{customdata[1]}"
+                    f"<extra>1. heitto<br>{model2} - {model}</extra>",
+                ),
+                row=model_index + model_index2 + 1,
+                col=model_index + 1,
+            )
+            figure.add_trace(
+                go.Scatter(
+                    x=data["y"].values[data["is_first"]],
+                    y=differences[~data["is_first"]],
+                    customdata=customdata[~data["is_first"], :],
+                    name="1. heitto",
+                    mode="markers",
+                    hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
+                    "Heiton indeksi: %{customdata[0]}<br>"
+                    "Heittäjän indeksi: %{customdata[1]}"
+                    f"<extra>2. heitto<br>{model2} - {model}</extra>",
+                ),
+                row=model_index + model_index2 + 1,
+                col=model_index + 1,
+            )
+            figure.update_yaxes(
+                title_text=f"{model2} - {model}",
+                row=model_index + model_index2 + 1,
+                col=1,
+            )
+        figure.update_xaxes(
+            title_text="Heittoaika [s]",
+            row=len(model_names) - 1,
+            col=model_index + 1,
+        )
+
+    figure.update_layout(
+        showlegend=False,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(
+        figure_directory / "log_likelihood_differences.html", include_mathjax="cdn"
+    )
