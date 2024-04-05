@@ -511,6 +511,8 @@ def predictive_distributions(
         Observed data
     """
 
+    figure_directory.mkdir(parents=True, exist_ok=True)
+
     _data_distribution(samples, figure_directory, true_values=true_values)
     _data_moments(samples, figure_directory, true_values=true_values)
     _throw_time_ranges(samples, figure_directory, true_values=true_values)

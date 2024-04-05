@@ -32,6 +32,8 @@ def cross_validation_plots(
         Path to the directory in which the figures are saved
     """
 
+    figure_directory.mkdir(parents=True, exist_ok=True)
+
     _k_hat(data, loo_result, figure_directory)
     _log_likelihoods(data, loo_result, figure_directory)
     _log_likelihood_percentiles(loo_result, figure_directory)
