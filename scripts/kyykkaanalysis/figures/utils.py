@@ -168,19 +168,22 @@ def precalculated_histogram(
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
             "Osuus: %{y:.1f} %"
-            f"<extra>Keskiarvo: {round(samples.mean(),2)}</extra>"
+            f"<extra>{f'{name}<br>' if name is not None else ''}"
+            f"Keskiarvo: {round(samples.mean(),2)}</extra>"
         )
     elif normalization == "probability density":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
             "Suhteellinen yleisyys: %{y:.2f} %"
-            f"<extra>Keskiarvo: {round(samples.mean(),2)}</extra>"
+            f"<extra>{f'{name}<br>' if name is not None else ''}"
+            f"Keskiarvo: {round(samples.mean(),2)}</extra>"
         )
     elif normalization == "count":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
             "Näytteet: %{y} %"
-            f"<extra>{round(samples.mean(),2)}</extra>"
+            f"<extra>{f'{name}<br>' if name is not None else ''}"
+            f"Keskiarvo: {round(samples.mean(),2)}</extra>"
         )
     histogram = go.Bar(
         x=bins[:-1] + (bins[1] - bins[0]) / 2,
