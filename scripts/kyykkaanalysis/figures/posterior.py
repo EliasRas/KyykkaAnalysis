@@ -802,9 +802,9 @@ def _data_moments(
             col=2,
         )
 
-    figure.update_xaxes(title_text="Keskiarvo", row=1, col=1)
+    figure.update_xaxes(title_text="Keskiarvo [s]", row=1, col=1)
     figure.update_yaxes(showticklabels=False, row=1, col=1)
-    figure.update_xaxes(title_text="Keskihajonta", row=1, col=2)
+    figure.update_xaxes(title_text="Keskihajonta [s]", row=1, col=2)
     figure.update_yaxes(showticklabels=False, row=1, col=2)
     figure.update_xaxes(title_text="Vinous", row=2, col=1)
     figure.update_yaxes(showticklabels=False, row=2, col=1)
@@ -846,9 +846,9 @@ def _player_data_moments(
 
     figure.update_traces(opacity=0.7)
 
-    figure.update_xaxes(title_text="Keskiarvo", row=1, col=1)
+    figure.update_xaxes(title_text="Keskiarvo [s]", row=1, col=1)
     figure.update_yaxes(showticklabels=False, row=1, col=1)
-    figure.update_xaxes(title_text="Keskihajonta", row=1, col=2)
+    figure.update_xaxes(title_text="Keskihajonta [s]", row=1, col=2)
     figure.update_yaxes(showticklabels=False, row=1, col=2)
     figure.update_layout(
         showlegend=False,
