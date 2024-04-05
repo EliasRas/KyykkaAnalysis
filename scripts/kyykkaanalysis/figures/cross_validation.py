@@ -141,7 +141,7 @@ def _log_likelihoods(
             ),
             name="2. heitto",
             mode="markers",
-            hovertemplate="Heittoaika: %{x}<br>Pisteittäinen log-uskottavuus: %{y:.2f}"
+            hovertemplate="Heittoaika: %{x} s<br>Pisteittäinen log-uskottavuus: %{y:.2f}"
             "<br>Heiton indeksi: %{customdata[0]}<br>"
             "Heittäjän indeksi: %{customdata[1]}<extra></extra>",
         )
