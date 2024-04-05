@@ -152,7 +152,7 @@ def _log_likelihoods(
         separators=", ",
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
-    figure.write_html(figure_directory / "k_hat.html", include_mathjax="cdn")
+    figure.write_html(figure_directory / "log_likelihood.html", include_mathjax="cdn")
 
 
 def _log_likelihood_percentiles(loo_results: ELPDData, figure_directory: Path) -> None:
