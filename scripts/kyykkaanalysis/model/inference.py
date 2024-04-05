@@ -32,7 +32,6 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
 
     figure_directory = figure_directory / "Posterior"
     naive_figure_directory = figure_directory / "naive"
-    naive_figure_directory.mkdir(parents=True, exist_ok=True)
     cache_directory.mkdir(parents=True, exist_ok=True)
 
     prior_file = cache_directory / "prior.nc"
@@ -93,12 +92,21 @@ def _visualize_sample(
     figure_directory: Path,
 ) -> None:
     raw_directory = figure_directory / "raw"
-    raw_directory.mkdir(parents=True, exist_ok=True)
-    parameter_distributions(posterior.posterior, raw_directory, prior)
-    chain_plots(posterior.posterior, posterior.sample_stats, raw_directory)
+    parameter_distributions(posterior.posterior, raw_directory / "parameters", prior)
+    chain_plots(posterior.posterior, posterior.sample_stats, raw_directory / "chains")
 
-    parameter_distributions(posterior.thinned_posterior, figure_directory, prior)
-    chain_plots(posterior.thinned_posterior, posterior.sample_stats, figure_directory)
+    parameter_distributions(
+        posterior.thinned_posterior, figure_directory / "parameters", prior
+    )
+    chain_plots(
+        posterior.thinned_posterior, posterior.sample_stats, figure_directory / "chains"
+    )
 
-    predictive_distributions(posterior.posterior_predictive, figure_directory, data)
-    cross_validation_plots(data, posterior.loo_result, figure_directory)
+    predictive_distributions(
+        posterior.posterior_predictive, figure_directory / "predictions", data
+    )
+    cross_validation_plots(
+        data, posterior.loo_result, figure_directory / "cross_validation"
+    )
+
+
