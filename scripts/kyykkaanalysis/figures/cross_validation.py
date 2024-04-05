@@ -101,7 +101,7 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
     )
     figure.update_layout(
         xaxis_title="Heittoaika [s]",
-        yaxis_title=r"$\text{Pareto} \hat{k}$",
+        yaxis_title=r"$\text{Pareto }\hat{k}$",
         separators=", ",
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
