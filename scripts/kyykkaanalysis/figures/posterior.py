@@ -484,7 +484,10 @@ def _contraction(
         )
     )
     figure.update_layout(
-        xaxis={"title":"Posteriorin supistuma","range":[0,1] if min(contractions) > 0 else None},
+        xaxis={
+            "title": "Posteriorin supistuma",
+            "range": [0, 1] if min(contractions) > 0 else None,
+        },
         yaxis_showticklabels=False,
         showlegend=False,
         separators=", ",
@@ -760,7 +763,7 @@ def _data_moments(
                 name="Todellinen arvo",
                 mode="lines",
                 line={"color": "black", "dash": "dash"},
-                hovertemplate="Todellinen arvo: %{x:.2f}<extra></extra>",
+                hovertemplate="Todellinen arvo: %{x:.2f} s<extra></extra>",
             ),
             row=1,
             col=1,
@@ -772,7 +775,7 @@ def _data_moments(
                 name="Todellinen arvo",
                 mode="lines",
                 line={"color": "black", "dash": "dash"},
-                hovertemplate="Todellinen arvo: %{x:.2f}<extra></extra>",
+                hovertemplate="Todellinen arvo: %{x:.2f} s<extra></extra>",
             ),
             row=1,
             col=2,
@@ -845,7 +848,6 @@ def _player_data_moments(
         )
 
     figure.update_traces(opacity=0.7)
-
     figure.update_xaxes(title_text="Keskiarvo [s]", row=1, col=1)
     figure.update_yaxes(showticklabels=False, row=1, col=1)
     figure.update_xaxes(title_text="Keskihajonta [s]", row=1, col=2)
@@ -944,9 +946,9 @@ def _player_range(
         mode="lines",
         line={"color": PLOT_COLORS[0], "width": 2},
         hovertemplate=f"Vaihteluväli: {round(samples.min(),1)}"
-        f" - {round(samples.max(),1)}<br>"
+        f" - {round(samples.max(),1)} s<br>"
         f"Kvartiiliväli: {round(np.quantile(samples, 0.25),1)} "
-        f"- {round(np.quantile(samples, 0.75),1)}<extra>{y}</extra>",
+        f"- {round(np.quantile(samples, 0.75),1)} s<extra>{y}</extra>",
     )
     hdi = go.Scatter(
         x=np.linspace(
@@ -958,9 +960,9 @@ def _player_range(
         mode="lines",
         line={"color": PLOT_COLORS[0], "width": 10},
         hovertemplate=f"Vaihteluväli: {round(samples.min(),1)}"
-        f" - {round(samples.max(),1)}<br>"
+        f" - {round(samples.max(),1)} s<br>"
         f"Kvartiiliväli: {round(np.quantile(samples, 0.25),1)} "
-        f"- {round(np.quantile(samples, 0.75),1)}<extra>{y}</extra>",
+        f"- {round(np.quantile(samples, 0.75),1)} s<extra>{y}</extra>",
     )
 
     true_value = go.Scatter(
@@ -968,7 +970,7 @@ def _player_range(
         y=[y],
         mode="markers",
         marker={"color": "black", "size": 7},
-        hovertemplate="Todellinen arvo: %{x:.2f}" f"<extra>{y}</extra>",
+        hovertemplate="Todellinen arvo: %{x:.2f} s" f"<extra>{y}</extra>",
     )
 
     return total_range, hdi, true_value
