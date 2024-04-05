@@ -255,7 +255,6 @@ def _log_likelihood_comparison(
                     x=model_results.loo_i.values[~data["is_first"]],
                     y=model2_results.loo_i.values[~data["is_first"]],
                     customdata=customdata[~data["is_first"], :],
-                    name="1. heitto",
                     mode="markers",
                     hovertemplate=f"{model} log-uskottavuus: %{{x:.2f}}<br>{model2} "
                     "log-uskottavuus: %{y:.2f}<br>Heittoaika: %{customdata[0]} s<br>"
@@ -309,7 +308,6 @@ def _log_likelihood_difference(
                     x=data["y"].values[data["is_first"]],
                     y=differences[data["is_first"]],
                     customdata=customdata[data["is_first"], :],
-                    name="1. heitto",
                     mode="markers",
                     hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
                     "Heiton indeksi: %{customdata[0]}<br>"
@@ -324,7 +322,6 @@ def _log_likelihood_difference(
                     x=data["y"].values[data["is_first"]],
                     y=differences[~data["is_first"]],
                     customdata=customdata[~data["is_first"], :],
-                    name="1. heitto",
                     mode="markers",
                     hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
                     "Heiton indeksi: %{customdata[0]}<br>"
