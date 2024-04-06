@@ -16,8 +16,8 @@
     \node[above of=y-f, xshift=0.15cm, yshift=-0.75cm] (tline) {};
     \factoredge {o} {tline} {}
     \factor[above of=o, yshift=1cm] {o-f} {left:half-\(\mathcal{N}(0,11^2)\)} {} {o}
-    \factor[above of=t, yshift=1cm] {t-f} {right:truncated \(\mathcal{N}\)} {m, s} {t}
-    \factor[above of=m, yshift=1cm] {m-f} {left:truncated \(\mathcal{N}(28,11^2)\)} {} {m}
+    \factor[above of=t, yshift=1cm] {t-f} {right:\(\mathcal{N}^+\)} {m, s} {t}
+    \factor[above of=m, yshift=1cm] {m-f} {left:\(\mathcal{N}^+(28,11^2)\)} {} {m}
     \factor[above of=s, yshift=1cm] {s-f} {right:half-\(\mathcal{N}(0,11^2)\)} {} {s}
     \factor[above of=k, yshift=1cm] {o-f} {right:half-\(\mathcal{N}(1,14^2)\)} {} {k}
 

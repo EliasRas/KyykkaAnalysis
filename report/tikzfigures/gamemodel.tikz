@@ -40,13 +40,13 @@
     \factor[above of=y, xshift=1cm, yshift=2cm] {y-f} {right:\fref{Kuva}{fig:throwmodel}} {i} {y}
 
     \factor[right of=k, xshift=3.5cm] {k-f} {above:\(\mathcal{G}\)} {t_k, k_k} {k}
-    \factor[right of=t_k, xshift=1cm] {t_k-f} {right:truncated \(\mathcal{N}(60,93^2)\)} {} {t_k}
+    \factor[right of=t_k, xshift=1cm] {t_k-f} {right:\(\mathcal{N}^+(60,93^2)\)} {} {t_k}
     \factor[right of=k_k, xshift=1cm] {k_k-f} {right:half-\(\mathcal{N}(1,4^2)\)} {} {k_k}
     \factor[right of=eratauko, xshift=2cm] {eratauko-f} {above:\(\mathcal{G}\)} {t_era, k_era} {eratauko}
-    \factor[right of=t_era, xshift=1cm] {t_era-f} {right:truncated \(\mathcal{N}(30,105^2)\)} {} {t_era}
+    \factor[right of=t_era, xshift=1cm] {t_era-f} {right:\(\mathcal{N}^+(30,105^2)\)} {} {t_era}
     \factor[right of=k_era, xshift=1cm] {k_era-f} {right:half-\(\mathcal{N}(1,4^2)\)} {} {k_era}
     \factor[right of=pelitauko, xshift=2cm] {pelitauko-f} {above:\(\mathcal{G}\)} {t_peli, k_peli} {pelitauko}
-    \factor[right of=t_peli, xshift=1cm] {t_peli-f} {right:truncated \(\mathcal{N}(60,210^2)\)} {} {t_peli}
+    \factor[right of=t_peli, xshift=1cm] {t_peli-f} {right:\(\mathcal{N}^+(60,210^2)\)} {} {t_peli}
     \factor[right of=k_peli, xshift=1cm] {k_peli-f} {right:half-\(\mathcal{N}(1,4^2)\)} {} {k_peli}
 
     % Gates
