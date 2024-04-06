@@ -6,7 +6,7 @@ from argparse import ArgumentParser, Namespace
 from kyykkaanalysis.data.data_reading import read_times
 from kyykkaanalysis.data.data_description import print_description
 from kyykkaanalysis.figures import data as data_figures
-from kyykkaanalysis.model import model_checks
+from kyykkaanalysis.model import model_checks, inference
 
 
 def main():
@@ -24,6 +24,8 @@ def main():
 
     model_checks.check_priors(data, args.figure_directory, args.cache_directory)
     model_checks.fake_data_simulation(data, args.figure_directory, args.cache_directory)
+
+    inference.fit_model(data, args.figure_directory, args.cache_directory)
 
 
 def _parse_arguments() -> Namespace:
