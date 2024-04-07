@@ -80,7 +80,7 @@ def fake_data_simulation(
     naive_cache_directory.mkdir(parents=True, exist_ok=True)
 
     _test_model(data, figure_directory, cache_directory)
-    _test_naive_model(data, naive_figure_directory, naive_cache_directory)
+    # _test_naive_model(data, naive_figure_directory, naive_cache_directory)
 
 
 def _test_model(
@@ -96,10 +96,10 @@ def _test_model(
         check_priors(data, figure_directory.parent, cache_directory)
         prior = open_dataset(prior_file)
 
-    summaries, predictive_summaries = _fake_data_inference(
-        model, prior, cache_directory, figure_directory
-    )
-    estimation_plots(summaries, predictive_summaries, figure_directory)
+    # summaries, predictive_summaries = _fake_data_inference(
+    #     model, prior, cache_directory, figure_directory
+    # )
+    # estimation_plots(summaries, predictive_summaries, figure_directory)
 
     summaries, predictive_summaries = _fake_data_inference(
         naive_model, prior, cache_directory, figure_directory
@@ -172,7 +172,7 @@ def _fake_data_inference(
             posterior_sample.thinned_sample
         )
 
-        if sample_index in [0, 1, 4]:
+        if sample_index in [0, 1] or posterior_sample.thinned_sample["draw"].size < 10:
             _visualize_sample(
                 model,
                 figure_directory,
