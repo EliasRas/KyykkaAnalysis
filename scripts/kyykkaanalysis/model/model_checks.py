@@ -283,13 +283,13 @@ def _visualize_sample(
 
     posterior_distribution_plots(
         posterior_sample.posterior,
-        sample_directory,
+        sample_directory / "parameters",
         prior_samples=prior,
         true_values=sample,
     )
     predictive_distributions(
         posterior_sample.posterior_predictive,
-        sample_directory,
+        sample_directory / "predictions",
         true_values=prior[posterior_sample.posterior_predictive.keys()].isel(
             draw=sample_index
         ),
@@ -297,7 +297,7 @@ def _visualize_sample(
     chain_plots(
         posterior_sample.posterior,
         posterior_sample.get("sample_stats", None),
-        sample_directory,
+        sample_directory / "chains",
     )
 
 
