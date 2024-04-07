@@ -96,10 +96,10 @@ def _test_model(
         check_priors(data, figure_directory.parent, cache_directory)
         prior = open_dataset(prior_file)
 
-    # summaries, predictive_summaries = _fake_data_inference(
-    #     model, prior, cache_directory, figure_directory
-    # )
-    # estimation_plots(summaries, predictive_summaries, figure_directory)
+    summaries, predictive_summaries = _fake_data_inference(
+        model, prior, cache_directory, figure_directory
+    )
+    estimation_plots(summaries, predictive_summaries, figure_directory)
 
     summaries, predictive_summaries = _fake_data_inference(
         naive_model, prior, cache_directory, figure_directory
