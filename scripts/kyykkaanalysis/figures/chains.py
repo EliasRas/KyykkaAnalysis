@@ -17,8 +17,8 @@ from .utils import (
 
 def chain_plots(
     samples: Dataset,
-    sample_stats: Dataset,
     figure_directory: Path,
+    sample_stats: Dataset = None,
 ) -> None:
     """
     Plot the information about MCMC chains
@@ -27,17 +27,18 @@ def chain_plots(
     ----------
     samples : xarray.Dataset
         Posterior samples
-    sample_stats : xarray.Dataset
-        Information about posterior samples
     figure_directory : Path
         Path to the directory in which the figures are saved
+    sample_stats : xarray.Dataset, optional
+        Information about posterior samples
     """
 
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _trace_plot(samples, figure_directory)
-    _divergences(samples, sample_stats, figure_directory)
-    _energy_plot(sample_stats, figure_directory)
+    if sample_stats is not None:
+        _divergences(samples, sample_stats, figure_directory)
+        _energy_plot(sample_stats, figure_directory)
 
 
 def _trace_plot(samples: Dataset, figure_directory: Path) -> None:

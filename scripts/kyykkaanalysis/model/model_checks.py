@@ -298,8 +298,8 @@ def _visualize_sample(
     )
     chain_plots(
         posterior_sample.posterior,
-        posterior_sample.get("sample_stats", None),
         sample_directory / "chains",
+        posterior_sample.get("sample_stats", None),
     )
 
 

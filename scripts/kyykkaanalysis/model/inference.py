@@ -99,13 +99,13 @@ def _visualize_sample(
 ) -> None:
     raw_directory = figure_directory / "raw"
     parameter_distributions(posterior.posterior, raw_directory / "parameters", prior)
-    chain_plots(posterior.posterior, posterior.sample_stats, raw_directory / "chains")
+    chain_plots(posterior.posterior, raw_directory / "chains", posterior.sample_stats)
 
     parameter_distributions(
         posterior.thinned_posterior, figure_directory / "parameters", prior
     )
     chain_plots(
-        posterior.thinned_posterior, posterior.sample_stats, figure_directory / "chains"
+        posterior.thinned_posterior, figure_directory / "chains", posterior.sample_stats
     )
 
     predictive_distributions(
