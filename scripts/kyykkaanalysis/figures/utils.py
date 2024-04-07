@@ -266,6 +266,9 @@ def create_bins(values: npt.NDArray[Any], bin_count: int) -> npt.NDArray[Any]:
     """
     min_value = np.floor(values.min())
     max_value = np.ceil(values.max())
+    if min_value == max_value:
+        min_value -= 1
+        min_value += 1
     bin_size = (max_value - min_value) / bin_count
     if np.issubdtype(values.dtype, np.integer):
         bin_size = max(round(bin_size), 1)
