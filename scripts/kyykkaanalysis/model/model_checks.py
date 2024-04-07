@@ -80,7 +80,7 @@ def fake_data_simulation(
     naive_cache_directory.mkdir(parents=True, exist_ok=True)
 
     _test_model(data, figure_directory, cache_directory)
-    # _test_naive_model(data, naive_figure_directory, naive_cache_directory)
+    _test_naive_model(data, naive_figure_directory, naive_cache_directory)
 
 
 def _test_model(
