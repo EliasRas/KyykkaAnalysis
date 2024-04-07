@@ -281,6 +281,10 @@ def _visualize_sample(
     else:
         sample_directory = figure_directory / str(sample_index)
 
+    data = model.dataset
+    for var in posterior_sample.posterior_predictive.keys():
+        data[var] = prior[var].isel(draw=sample_index, chain=0)
+
     posterior_distribution_plots(
         posterior_sample.posterior,
         sample_directory / "parameters",
@@ -290,9 +294,7 @@ def _visualize_sample(
     predictive_distributions(
         posterior_sample.posterior_predictive,
         sample_directory / "predictions",
-        true_values=prior[posterior_sample.posterior_predictive.keys()].isel(
-            draw=sample_index
-        ),
+        true_values=data,
     )
     chain_plots(
         posterior_sample.posterior,
