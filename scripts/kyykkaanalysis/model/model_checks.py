@@ -188,7 +188,7 @@ def _fake_data_inference(
                 sample.shape[0] * sample.shape[1]
             )
 
-        _summarize_posterior(summaries, posterior_sample, sample_index)
+        _summarize_posterior(summaries, posterior_sample.posterior, sample_index)
         _summarize_posterior_predictive(
             predictive_summaries,
             posterior_sample.posterior_predictive,
