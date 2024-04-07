@@ -350,7 +350,7 @@ def _percentiles(posterior_summaries: Dataset, figure_directory: Path) -> None:
         cdf_errors = (
             np.linspace(0, 1, parameter_percentiles.size) - parameter_percentiles
         )
-        digits = max(np.ceil(-np.log10(cdf_errors.max())).astype(int) + 1, 1)
+        digits = max(np.ceil(-np.log10(np.abs(cdf_errors).max())).astype(int) + 1, 1)
         figure.add_trace(
             go.Scatter(
                 x=parameter_percentiles,
