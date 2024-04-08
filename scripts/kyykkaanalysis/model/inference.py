@@ -5,7 +5,7 @@ from pathlib import Path
 from xarray import Dataset, open_dataset
 from arviz import InferenceData
 
-from .modeling import ThrowTimeModel
+from .modeling import ThrowTimeModel, ModelType
 from .model_checks import check_priors
 from ..data.data_classes import ModelData, Stream
 from ..figures.posterior import (
@@ -31,46 +31,95 @@ def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path)
     """
 
     figure_directory = figure_directory / "Posterior"
-    naive_figure_directory = figure_directory / "naive"
     cache_directory.mkdir(parents=True, exist_ok=True)
-
-    prior_file = cache_directory / "prior.nc"
-    if prior_file.exists():
-        prior = open_dataset(prior_file)
-    else:
-        check_priors(data, figure_directory.parent, cache_directory)
-        prior = open_dataset(prior_file)
 
     model = ThrowTimeModel(ModelData(data))
     posterior = _sample_posterior(model, cache_directory)
     _visualize_sample(
-        prior,
+        _load_prior(data, ModelType.GAMMA, figure_directory.parent, cache_directory),
         model.dataset,
         posterior,
         figure_directory,
     )
 
-    naive_model = ThrowTimeModel(ModelData(data), naive=True)
+    naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVE)
     naive_posterior = _sample_posterior(naive_model, cache_directory)
     _visualize_sample(
-        prior,
+        _load_prior(data, ModelType.NAIVE, figure_directory.parent, cache_directory),
         naive_model.dataset,
         naive_posterior,
-        naive_figure_directory,
+        figure_directory / "naive",
+    )
+
+    inv_model = ThrowTimeModel(ModelData(data), model_type=ModelType.INVGAMMA)
+    inv_posterior = _sample_posterior(inv_model, cache_directory)
+    _visualize_sample(
+        _load_prior(data, ModelType.INVGAMMA, figure_directory.parent, cache_directory),
+        inv_model.dataset,
+        inv_posterior,
+        figure_directory / "inv",
+    )
+
+    naive_inv_model = ThrowTimeModel(
+        ModelData(data), model_type=ModelType.NAIVEINVGAMMA
+    )
+    naive_inv_posterior = _sample_posterior(naive_inv_model, cache_directory)
+    _visualize_sample(
+        _load_prior(
+            data, ModelType.NAIVEINVGAMMA, figure_directory.parent, cache_directory
+        ),
+        naive_inv_model.dataset,
+        naive_inv_posterior,
+        figure_directory / "naive_inv",
     )
 
     _compare_models(
         model.dataset,
-        {"Palkintopallivirhe": posterior, "Alaspäin pyöristys": naive_posterior},
+        {
+            "Palkintopallivirhe": posterior,
+            "Alaspäin pyöristys": naive_posterior,
+            "Käänteinen gammajakauma ja pp.virhe": inv_posterior,
+            "Käänteinen gammajakauma ja pyöristysvirhe": naive_inv_posterior,
+        },
         figure_directory,
     )
 
 
-def _sample_posterior(model: ThrowTimeModel, cache_directory: Path) -> InferenceData:
-    if model.naive:
-        posterior_file = cache_directory / "naive_posterior.nc"
+def _load_prior(
+    data: list[Stream],
+    model_type: ModelType,
+    figure_directory: Path,
+    cache_directory: Path,
+) -> Dataset:
+    match model_type:
+        case ModelType.GAMMA:
+            prior_file = cache_directory / "prior.nc"
+        case ModelType.NAIVE:
+            prior_file = cache_directory / "naive_prior.nc"
+        case ModelType.INVGAMMA:
+            prior_file = cache_directory / "inv_prior.nc"
+        case ModelType.NAIVEINVGAMMA:
+            prior_file = cache_directory / "naive_inv_prior.nc"
+
+    if prior_file.exists():
+        prior = open_dataset(prior_file)
     else:
-        posterior_file = cache_directory / "posterior.nc"
+        check_priors(data, figure_directory, cache_directory, model_type=model_type)
+        prior = open_dataset(prior_file)
+
+    return prior
+
+
+def _sample_posterior(model: ThrowTimeModel, cache_directory: Path) -> InferenceData:
+    match model.model_type:
+        case ModelType.GAMMA:
+            posterior_file = cache_directory / "posterior.nc"
+        case ModelType.NAIVE:
+            posterior_file = cache_directory / "naive_posterior.nc"
+        case ModelType.INVGAMMA:
+            posterior_file = cache_directory / "inv_posterior.nc"
+        case ModelType.NAIVEINVGAMMA:
+            posterior_file = cache_directory / "naive_inv_posterior.nc"
 
     if posterior_file.exists():
         posterior = InferenceData.from_netcdf(posterior_file)
