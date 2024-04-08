@@ -220,6 +220,7 @@ def model_comparison(
 
     _log_likelihood_comparison(data, loo_results, figure_directory)
     _log_likelihood_difference(data, loo_results, figure_directory)
+    _elpd(loo_results, figure_directory)
 
 
 def _log_likelihood_comparison(
@@ -391,3 +392,24 @@ def _log_likelihood_difference(
     figure.write_html(
         figure_directory / "log_likelihood_differences.html", include_mathjax="cdn"
     )
+
+
+def _elpd(loo_results: dict[str, ELPDData], figure_directory: Path) -> None:
+    model_names = sorted(loo_results.keys(), key=lambda m: -loo_results[m].elpd_loo)
+    elpd = [loo_results[model].elpd_loo for model in model_names]
+    se = [loo_results[model].se for model in model_names]
+    figure = go.Figure(
+        go.Scatter(
+            x=elpd,
+            y=model_names,
+            error_x={"type": "data", "array": se, "visible": True},
+            mode="markers",
+        )
+    )
+    figure.update_layout(
+        xaxis_title="Pisteittäisen log-ennustetiheyden odotusarvo",
+        showlegend=False,
+        separators=", ",
+        font={"size": FONT_SIZE, "family": "Computer modern"},
+    )
+    figure.write_html(figure_directory / "elpd.html", include_mathjax="cdn")
