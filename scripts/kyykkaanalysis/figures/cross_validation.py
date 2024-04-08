@@ -245,6 +245,7 @@ def _log_likelihood_comparison(
                     y=model2_results.loo_i.values[data["is_first"]],
                     customdata=customdata[data["is_first"], :],
                     mode="markers",
+                    marker_color=PLOT_COLORS[0],
                     hovertemplate=f"{model} log-uskottavuus: %{{x:.2f}}<br>{model2} "
                     "log-uskottavuus: %{y:.2f}<br>Heittoaika: %{customdata[0]} s<br>"
                     "Heiton indeksi: %{customdata[1]}<br>"
@@ -259,6 +260,7 @@ def _log_likelihood_comparison(
                     y=model2_results.loo_i.values[~data["is_first"]],
                     customdata=customdata[~data["is_first"], :],
                     mode="markers",
+                    marker_color=PLOT_COLORS[1],
                     hovertemplate=f"{model} log-uskottavuus: %{{x:.2f}}<br>{model2} "
                     "log-uskottavuus: %{y:.2f}<br>Heittoaika: %{customdata[0]} s<br>"
                     "Heiton indeksi: %{customdata[1]}<br>"
@@ -312,6 +314,7 @@ def _log_likelihood_difference(
                     y=differences[data["is_first"]],
                     customdata=customdata[data["is_first"], :],
                     mode="markers",
+                    marker_color=PLOT_COLORS[0],
                     hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
                     "Heiton indeksi: %{customdata[0]}<br>"
                     "Heittäjän indeksi: %{customdata[1]}"
@@ -326,6 +329,7 @@ def _log_likelihood_difference(
                     y=differences[~data["is_first"]],
                     customdata=customdata[~data["is_first"], :],
                     mode="markers",
+                    marker_color=PLOT_COLORS[1],
                     hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
                     "Heiton indeksi: %{customdata[0]}<br>"
                     "Heittäjän indeksi: %{customdata[1]}"
