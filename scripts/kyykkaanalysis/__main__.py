@@ -7,6 +7,7 @@ from kyykkaanalysis.data.data_reading import read_times
 from kyykkaanalysis.data.data_description import print_description
 from kyykkaanalysis.figures import data as data_figures
 from kyykkaanalysis.model import model_checks, inference
+from kyykkaanalysis.model.modeling import ModelType
 
 
 def main():
@@ -22,7 +23,9 @@ def main():
     data_figures.time_distributions(data, args.figure_directory / "Data")
     data_figures.averages(data, args.figure_directory / "Data")
 
-    model_checks.check_priors(data, args.figure_directory, args.cache_directory)
+    model_checks.check_priors(
+        data, args.figure_directory / "Prior", args.cache_directory, ModelType.GAMMA
+    )
     model_checks.fake_data_simulation(data, args.figure_directory, args.cache_directory)
 
     inference.fit_model(data, args.figure_directory, args.cache_directory)

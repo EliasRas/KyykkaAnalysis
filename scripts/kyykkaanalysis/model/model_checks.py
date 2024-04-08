@@ -94,7 +94,7 @@ def _test_model(
     if prior_file.exists():
         prior = open_dataset(prior_file)
     else:
-        check_priors(data, figure_directory.parent, cache_directory)
+        check_priors(data, figure_directory.parent / "Prior", cache_directory)
         prior = open_dataset(prior_file)
 
     summaries, predictive_summaries = _fake_data_inference(
