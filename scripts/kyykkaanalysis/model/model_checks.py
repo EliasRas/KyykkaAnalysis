@@ -48,6 +48,13 @@ def check_priors(
         case ModelType.NAIVE:
             cache_file = cache_directory / "naive_prior.nc"
             figure_directory = figure_directory / "naive"
+        case ModelType.INVGAMMA:
+            cache_file = cache_directory / "inv_prior.nc"
+            figure_directory = figure_directory / "inv"
+        case ModelType.NAIVEINVGAMMA:
+            cache_file = cache_directory / "naive_inv_prior.nc"
+            figure_directory = figure_directory / "naiveinv"
+
     if cache_file.exists():
         samples = open_dataset(cache_file)
     else:
