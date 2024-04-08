@@ -269,6 +269,40 @@ def _log_likelihood_comparison(
                 row=model_index + model_index2 + 1,
                 col=model_index + 1,
             )
+            likelihood_range = [
+                min(
+                    model_results.loo_i.values.min(), model2_results.loo_i.values.min()
+                ),
+                max(
+                    model_results.loo_i.values.max(), model2_results.loo_i.values.max()
+                ),
+            ]
+            likelihood_range = [
+                likelihood_range[0] - 0.1 * (likelihood_range[1] - likelihood_range[0]),
+                likelihood_range[1] + 0.1 * (likelihood_range[1] - likelihood_range[0]),
+            ]
+            figure.add_trace(
+                go.Scatter(
+                    x=likelihood_range,
+                    y=likelihood_range,
+                    mode="lines",
+                    line={"color": "black", "dash": "dash"},
+                    hovertemplate="Sama log-uskottavuus",
+                ),
+                row=model_index + model_index2 + 1,
+                col=model_index + 1,
+            )
+
+            figure.update_xaxes(
+                range=likelihood_range,
+                row=model_index + model_index2 + 1,
+                col=model_index + 1,
+            )
+            figure.update_yaxes(
+                range=likelihood_range,
+                row=model_index + model_index2 + 1,
+                col=model_index + 1,
+            )
             figure.update_yaxes(
                 title_text=model2,
                 row=model_index + model_index2 + 1,
