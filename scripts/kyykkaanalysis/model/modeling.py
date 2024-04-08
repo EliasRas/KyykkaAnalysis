@@ -8,7 +8,8 @@ from numpy import typing as npt
 from xarray import merge
 from xarray import Dataset, DataArray
 import pymc as pm
-from pymc.math import floor, exp, log
+from pymc.math import floor, exp, log, switch
+from pytensor.tensor.math import gammainc
 from arviz import summary, loo, loo_pit, psislw, ess, InferenceData, ELPDData
 
 from ..data.data_classes import ModelData
@@ -532,13 +533,35 @@ def invgamma_throw_model(data: ModelData, naive: bool = False) -> pm.Model:
 
 
 def _podium_invgamma_logp(value, a: float, theta: float):
-    dist = pm.InverseGamma.dist(alpha=exp(-a) + 1, beta=theta * exp(-a))
+    alpha = exp(-a) + 1
+    beta = theta * exp(-a)
+
+    density = switch(
+        value > beta / (alpha - 1 + 1e-9),
+        _gammainc_diff(value, alpha, beta),
+        _dist_diff(value, alpha, beta),
+    )
+
+    return log(5 / 9 * density[0] + 3 / 9 * density[1] + 1 / 9 * density[2])
+
+
+def _dist_diff(value, alpha: float, beta: float):
+    dist = pm.InverseGamma.dist(alpha=alpha, beta=beta)
 
     density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
     density2 = exp(pm.logcdf(dist, value + 2)) - exp(pm.logcdf(dist, value - 1))
     density3 = exp(pm.logcdf(dist, value + 1)) - exp(pm.logcdf(dist, value))
 
-    return log(5 / 9 * density1 + 3 / 9 * density2 + 1 / 9 * density3)
+    return density1, density2, density3
+
+
+def _gammainc_diff(value, alpha: float, beta: float):
+
+    density1 = gammainc(alpha, beta / (value - 2)) - gammainc(alpha, beta / (value + 3))
+    density2 = gammainc(alpha, beta / (value - 1)) - gammainc(alpha, beta / (value + 2))
+    density3 = gammainc(alpha, beta / (value)) - gammainc(alpha, beta / (value + 1))
+
+    return density1, density2, density3
 
 
 def _podium_invgamma_rng(
