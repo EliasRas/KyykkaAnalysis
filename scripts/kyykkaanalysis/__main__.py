@@ -26,7 +26,20 @@ def main():
     model_checks.check_priors(
         data, args.figure_directory / "Prior", args.cache_directory, ModelType.GAMMA
     )
+    model_checks.check_priors(
+        data, args.figure_directory / "Prior", args.cache_directory, ModelType.NAIVE
+    )
+    model_checks.check_priors(
+        data, args.figure_directory / "Prior", args.cache_directory, ModelType.INVGAMMA
+    )
+    model_checks.check_priors(
+        data,
+        args.figure_directory / "Prior",
+        args.cache_directory,
+        ModelType.NAIVEINVGAMMA,
+    )
     model_checks.fake_data_simulation(data, args.figure_directory, args.cache_directory)
+
 
     inference.fit_model(data, args.figure_directory, args.cache_directory)
 
