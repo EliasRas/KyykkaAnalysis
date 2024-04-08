@@ -41,10 +41,7 @@ class ThrowTimeModel:
 
         self.data = data
         self.naive = naive
-        if not naive:
-            self.model = gamma_throw_model(data)
-        else:
-            self.model = naive_throw_model(data)
+        self.model = gamma_throw_model(data, naive=naive)
 
     def sample_prior(self, sample_count: int = 500) -> Dataset:
         """
@@ -341,7 +338,7 @@ class ThrowTimeModel:
         return data
 
 
-def gamma_throw_model(data: ModelData) -> pm.Model:
+def gamma_throw_model(data: ModelData, naive: bool = False) -> pm.Model:
     """
     Construct a model for throw times
 
@@ -349,6 +346,8 @@ def gamma_throw_model(data: ModelData) -> pm.Model:
     ----------
     data : ModelData
         Data for the model
+    naive : bool, default False
+        Whether the model uses simple floor rounding in likelihood
 
     Returns
     -------
@@ -372,15 +371,25 @@ def gamma_throw_model(data: ModelData) -> pm.Model:
         is_first = pm.MutableData("is_first", data.first_throw, dims="throws")
         throw_times = pm.MutableData("throw_times", data.throw_times, dims="throws")
 
-        pm.CustomDist(
-            "y",
-            k,
-            theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
-            logp=_podium_gamma_logp,
-            random=_podium_gamma_rng,
-            dims="throws",
-            observed=throw_times,
-        )
+        if not naive:
+            pm.CustomDist(
+                "y",
+                k,
+                theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+                logp=_podium_gamma_logp,
+                random=_podium_gamma_rng,
+                dims="throws",
+                observed=throw_times,
+            )
+        else:
+            pm.CustomDist(
+                "y",
+                k,
+                theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+                dist=_floored_gamma,
+                dims="throws",
+                observed=throw_times,
+            )
 
     return model
 
