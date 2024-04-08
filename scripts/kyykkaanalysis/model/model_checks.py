@@ -7,7 +7,7 @@ from xarray import Dataset, open_dataset
 from arviz import InferenceData
 from scipy.stats import kstest
 
-from .modeling import ThrowTimeModel
+from .modeling import ThrowTimeModel, ModelType
 from ..data.data_classes import Stream, ModelData
 from ..figures.prior import parameter_distributions as prior_distribution_plots
 from ..figures.posterior import (
@@ -22,7 +22,7 @@ def check_priors(
     data: list[Stream],
     figure_directory: Path,
     cache_directory: Path,
-    naive: bool = False,
+    model_type: ModelType = ModelType.GAMMA,
 ):
     """
     Sample data from prior distribution and analyze it
@@ -35,18 +35,19 @@ def check_priors(
         Path to the directory in which the figures are saved
     cache_directory : Path
         Path to the directory in which the sampled prior is saved
-    naive : bool, default False
-        Whether to use simple floor rounding in likelihood
+    model_type : ModelType, default GAMMA
+        Type of model to use
     """
 
-    figure_directory = figure_directory / "Prior"
     cache_directory.mkdir(parents=True, exist_ok=True)
 
-    model = ThrowTimeModel(ModelData(data), naive=naive)
-    if naive:
-        cache_file = cache_directory / "naive_prior.nc"
-    else:
-        cache_file = cache_directory / "prior.nc"
+    model = ThrowTimeModel(ModelData(data), model_type=model_type)
+    match model_type:
+        case ModelType.GAMMA:
+            cache_file = cache_directory / "prior.nc"
+        case ModelType.NAIVE:
+            cache_file = cache_directory / "naive_prior.nc"
+            figure_directory = figure_directory / "naive"
     if cache_file.exists():
         samples = open_dataset(cache_file)
     else:
@@ -87,7 +88,7 @@ def _test_model(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ) -> None:
     model = ThrowTimeModel(ModelData(data))
-    naive_model = ThrowTimeModel(ModelData(data), naive=True)
+    naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVE)
 
     prior_file = cache_directory / "prior.nc"
     if prior_file.exists():
@@ -111,13 +112,15 @@ def _test_naive_model(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ) -> None:
     model = ThrowTimeModel(ModelData(data))
-    naive_model = ThrowTimeModel(ModelData(data), naive=True)
+    naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVE)
 
     naive_prior_file = cache_directory / "naive_prior.nc"
     if naive_prior_file.exists():
         naive_prior = open_dataset(naive_prior_file)
     else:
-        check_priors(data, figure_directory.parent, cache_directory, naive=True)
+        check_priors(
+            data, figure_directory.parent, cache_directory, model_type=ModelType.NAIVE
+        )
         naive_prior = open_dataset(naive_prior_file)
 
     summaries, predictive_summaries = _fake_data_inference(

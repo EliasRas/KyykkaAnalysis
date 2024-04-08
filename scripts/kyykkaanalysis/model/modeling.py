@@ -1,6 +1,7 @@
 """Construct a playtime model"""
 
 from typing import Self
+from enum import Enum
 
 import numpy as np
 from numpy import typing as npt
@@ -13,6 +14,29 @@ from arviz import summary, loo, loo_pit, psislw, ess, InferenceData, ELPDData
 from ..data.data_classes import ModelData
 
 
+class ModelType(Enum):
+    """
+    Type of throw time model
+    """
+
+    GAMMA = 1
+    """
+    Uses a gamma distribution for raw data and podium error model
+    """
+    NAIVE = 2
+    """
+    Uses a gamma distribution for raw data and floor rounding error model
+    """
+    INVGAMMA = 3
+    """
+    Uses an inverse gamma distribution for raw data and podium error model
+    """
+    NAIVEINVGAMMA = 4
+    """
+    Uses an inverse gamma distribution for raw data and floor rounding error model
+    """
+
+
 class ThrowTimeModel:
     """
     Container for throw time model
@@ -21,15 +45,17 @@ class ThrowTimeModel:
     ----------
     data : ModelData
         Data for the model
-    naive : bool
-        Whether the model uses simple floor rounding in likelihood
+    model_type : ModelType
+        The type of model used
     model : pymc.Model
         Throw time model
     """
 
-    # Should be changed to https://www.pymc.io/projects/examples/en/latest/howto/model_builder.html
+    # TODO: Should be changed to https://www.pymc.io/projects/examples/en/latest/howto/model_builder.html
 
-    def __init__(self, data: ModelData, naive: bool = False) -> None:
+    def __init__(
+        self, data: ModelData, model_type: ModelType = ModelType.GAMMA
+    ) -> None:
         """
         Container for throw time model
 
@@ -37,11 +63,21 @@ class ThrowTimeModel:
         ----------
         data : ModelData
             Data for the model
+        model_type : ModelType, default GAMMA
+            Type of model to construct
         """
 
         self.data = data
-        self.naive = naive
-        self.model = gamma_throw_model(data, naive=naive)
+        self.model_type = model_type
+        match model_type:
+            case ModelType.GAMMA:
+                self.model = gamma_throw_model(data)
+            case ModelType.NAIVE:
+                self.model = gamma_throw_model(data, naive=True)
+            case ModelType.INVGAMMA:
+                self.model = invgamma_throw_model(data)
+            case ModelType.NAIVEINVGAMMA:
+                self.model = invgamma_throw_model(data, naive=True)
 
     def sample_prior(self, sample_count: int = 500) -> Dataset:
         """
@@ -220,12 +256,17 @@ class ThrowTimeModel:
             with self.model:
                 y = y.flatten()
 
-                # Ensure that measurement error bounds are within Gamma distribution domain
-                # Otherwise gradient calculation fails
-                if self.naive:
-                    y[y < 1] = 1
-                else:
-                    y[y < 3] = 3
+                # Ensure that measurement error bounds are within relevant distribution
+                # domain. Otherwise gradient calculation fails
+                match self.model_type:
+                    case ModelType.GAMMA:
+                        y[y < 3] = 3
+                    case ModelType.NAIVE:
+                        y[y < 1] = 1
+                    case ModelType.INVGAMMA:
+                        y[y < 3] = 3
+                    case ModelType.NAIVEINVGAMMA:
+                        y[y < 1] = 1
 
                 pm.set_data({"throw_times": y})
 
