@@ -339,7 +339,7 @@ def _log_likelihood_difference(
                 col=model_index + 1,
             )
             figure.update_yaxes(
-                title_text=f"{model2} - {model}",
+                title_text="Virheiden erotus",
                 row=model_index + model_index2 + 1,
                 col=1,
             )
