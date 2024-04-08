@@ -133,14 +133,7 @@ class ThrowTimeModel:
         """
 
         with self.model:
-            starting_point = {
-                "mu_interval__": np.array(np.log(28)),
-                "sigma_log__": np.array(np.log(11)),
-                "o_log__": np.array(np.log(1)),
-                "k_interval__": np.array(np.log(2)),
-                "theta_interval__": np.ones(len(self.model.coords["players"]))
-                * np.log(28),
-            }
+            starting_point = self._starting_point()
             samples = pm.sample(
                 nuts_sampler="blackjax",
                 draws=sample_count,
@@ -155,6 +148,22 @@ class ThrowTimeModel:
             return self.thin(samples)
 
         return samples
+
+    def _starting_point(self) -> dict[str, npt.NDArray[np.float_]]:
+        starting_point = {
+            "mu_interval__": np.array(np.log(28)),
+            "sigma_log__": np.array(np.log(11)),
+            "o_log__": np.array(np.log(1)),
+            "theta_interval__": np.ones(len(self.model.coords["players"])) * np.log(28),
+        }
+
+        match self.model_type:
+            case ModelType.GAMMA | ModelType.NAIVE:
+                starting_point["k_interval__"] = np.array(np.log(2))
+            case ModelType.INVGAMMA | ModelType.NAIVEINVGAMMA:
+                starting_point["a"] = np.array(-2)
+
+        return starting_point
 
     def sample_posterior_predictive(self, posterior_sample: Dataset) -> Dataset:
         """
