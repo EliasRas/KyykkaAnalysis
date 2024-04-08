@@ -42,7 +42,7 @@ class ThrowTimeModel:
         self.data = data
         self.naive = naive
         if not naive:
-            self.model = throw_model(data)
+            self.model = gamma_throw_model(data)
         else:
             self.model = naive_throw_model(data)
 
@@ -341,7 +341,7 @@ class ThrowTimeModel:
         return data
 
 
-def throw_model(data: ModelData) -> pm.Model:
+def gamma_throw_model(data: ModelData) -> pm.Model:
     """
     Construct a model for throw times
 
