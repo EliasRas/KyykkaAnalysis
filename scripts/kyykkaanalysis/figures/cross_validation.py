@@ -91,7 +91,7 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
         )
     figure.add_trace(
         go.Scatter(
-            x=[0, data["y"].values.max()],
+            x=[0, data["y"].values.max() + 1],
             y=[0.7, 0.7],
             name="Luotettavuusraja",
             mode="lines",
@@ -100,7 +100,10 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
         )
     )
     figure.update_layout(
-        xaxis_title="Heittoaika [s]",
+        xaxis={
+            "title": "Heittoaika [s]",
+            "range": [0, data["y"].values.max() + 1],
+        },
         yaxis_title=r"$\text{Pareto }\hat{k}$",
         separators=", ",
         font={"size": FONT_SIZE, "family": "Computer modern"},
