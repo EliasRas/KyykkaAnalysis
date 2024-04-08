@@ -157,6 +157,8 @@ def _divergences(
             line={
                 "color": divergences,
                 "colorscale": [(0, "black"), (1, "red")],
+                "cmin": 0,
+                "cmax": 1,
             },
             dimensions=dimensions,
         )
