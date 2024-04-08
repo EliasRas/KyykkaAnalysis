@@ -18,6 +18,7 @@ LATEX_CONVERSION = {
     "sigma": r"$\sigma$",
     "o": "$o$",
     "k": "$k$",
+    "a": "$a$",
     "theta": r"$\theta$",
     "y": "$y$",
 }
@@ -26,6 +27,7 @@ ERROR_LATEX_CONVERSION = {
     "sigma": r"$\sigma-\text{virhe}$",
     "o": r"$o-\text{virhe}$",
     "k": r"$k-\text{virhe}$",
+    "a": r"$a-\text{virhe}$",
     "theta": r"$\theta-\text{virhe}$",
     "y": r"$y-\text{virhe}$",
 }
@@ -34,6 +36,7 @@ PERCENTILE_LATEX_CONVERSION = {
     "sigma": r"$\sigma-\text{prosenttipiste}$",
     "o": r"$o-\text{prosenttipiste}$",
     "k": r"$k-\text{prosenttipiste}$",
+    "a": r"$a-\text{prosenttipiste}$",
     "theta": r"$\theta-\text{prosenttipiste}$",
     "y": r"$y-\text{prosenttipiste}$",
 }
