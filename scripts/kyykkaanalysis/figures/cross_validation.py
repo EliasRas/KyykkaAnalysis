@@ -77,22 +77,11 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
         )
     )
 
-    accuracy_threshold = 1 - 1 / np.log10(loo_results.n_samples)
-    if accuracy_threshold < 0.7:
-        figure.add_trace(
-            go.Scatter(
-                x=[0, data["y"].values.max()],
-                y=[accuracy_threshold, accuracy_threshold],
-                name="Tarkkuusraja",
-                mode="lines",
-                line={"color": "black", "dash": "dot"},
-                hoverinfo="skip",
-            )
-        )
+    reliability_threshold = min(1 - 1 / np.log10(loo_results.n_samples),0.7)
     figure.add_trace(
         go.Scatter(
             x=[0, data["y"].values.max() + 1],
-            y=[0.7, 0.7],
+            y=[reliability_threshold, reliability_threshold],
             name="Luotettavuusraja",
             mode="lines",
             line={"color": "black", "dash": "dash"},
