@@ -182,7 +182,7 @@ def _fake_data_inference(
             posterior_sample.thinned_sample
         )
 
-        if sample_index in [0, 1] or posterior_sample.thinned_sample["draw"].size < 10:
+        if sample_index in [0, 1] or posterior_sample.thinned_sample["draw"].size < 500:
             _visualize_sample(
                 model,
                 figure_directory,
