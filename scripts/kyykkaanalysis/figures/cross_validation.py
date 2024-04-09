@@ -54,7 +54,7 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
             ),
             name="1. heitto",
             mode="markers",
-            hovertemplate="Heittoaika: %{x}<br>Pareto k: %{y:.2f}"
+            hovertemplate="Heittoaika: %{x} s<br>Pareto k: %{y:.2f}"
             "<br>Heiton indeksi: %{customdata[0]}<br>"
             "Heittäjän indeksi: %{customdata[1]}<extra>1. heitto</extra>",
         )
@@ -71,13 +71,13 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
             ),
             name="2. heitto",
             mode="markers",
-            hovertemplate="Heittoaika: %{x}<br>Pareto k: %{y:.2f}"
+            hovertemplate="Heittoaika: %{x} s<br>Pareto k: %{y:.2f}"
             "<br>Heiton indeksi: %{customdata[0]}<br>"
             "Heittäjän indeksi: %{customdata[1]}<extra>2. heitto</extra>",
         )
     )
 
-    reliability_threshold = min(1 - 1 / np.log10(loo_results.n_samples),0.7)
+    reliability_threshold = min(1 - 1 / np.log10(loo_results.n_samples), 0.7)
     figure.add_trace(
         go.Scatter(
             x=[0, data["y"].values.max() + 1],
