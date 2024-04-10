@@ -100,7 +100,7 @@ class ThrowTimeModel:
 
         return samples
 
-    def sample(
+    def sample(  # noqa: PLR0913
         self,
         *,
         sample_count: int = 1000,
@@ -268,11 +268,11 @@ class ThrowTimeModel:
                 # domain. Otherwise gradient calculation fails
                 match self.model_type:
                     case ModelType.GAMMA:
-                        y[y < 3] = 3
+                        y[y < 3] = 3  # noqa: PLR2004
                     case ModelType.NAIVE:
                         y[y < 1] = 1
                     case ModelType.INVGAMMA:
-                        y[y < 3] = 3
+                        y[y < 3] = 3  # noqa: PLR2004
                     case ModelType.NAIVEINVGAMMA:
                         y[y < 1] = 1
 

@@ -79,7 +79,7 @@ def _last_valid_time(content: list[str]) -> int:
     return last_valid_index
 
 
-def _read_stream_times(
+def _read_stream_times(  # noqa: PLR0913
     teams: dict[str, str],
     player_ids: dict[str, int],
     stream: Stream,
@@ -120,11 +120,11 @@ def _read_stream_times(
 
 def _parse_time(time_string: str) -> np.datetime64:
     time_info = time_string.split(".")
-    if len(time_info) == 2:
+    if len(time_info) == 2:  # noqa: PLR2004
         hours = np.timedelta64(0, "h")
         minutes = np.timedelta64(int(time_info[0]), "m")
         seconds = np.timedelta64(int(time_info[1]), "s")
-    elif len(time_info) == 3:
+    elif len(time_info) == 3:  # noqa: PLR2004
         hours = np.timedelta64(int(time_info[0]), "h")
         minutes = np.timedelta64(int(time_info[1]), "m")
         seconds = np.timedelta64(int(time_info[2]), "s")
@@ -146,7 +146,7 @@ def _parse_kona_time(
         konas.append(Konatime(time))
         halves[-1].konas = tuple(konas)
         konas = []
-        if len(halves) == 2:
+        if len(halves) == 2:  # noqa: PLR2004
             stream.games.append(Game(tuple(halves)))
             halves = [Half()]
         else:

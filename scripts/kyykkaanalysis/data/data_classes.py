@@ -176,7 +176,7 @@ class Half:
         turn_indices = np.zeros(  # First 2 throws of each player
             min(16, len(self.throws)), int
         )
-        if len(self.throws) > 16:
+        if len(self.throws) > 16:  # noqa: PLR2004
             turn_indices = np.concatenate(  # Last 2 throws of each player
                 (
                     turn_indices,
@@ -252,9 +252,9 @@ class Half:
             Duration of the half
         """
 
-        if len(self.throws) < 32:
+        if len(self.throws) < 32:  # noqa: PLR2004
             duration = np.timedelta64("NaT")
-        elif np.isfinite(self.kona_times()).sum() < 2:
+        elif np.isfinite(self.kona_times()).sum() < 2:  # noqa: PLR2004
             duration = self.throw_times()[-1] - self.throw_times()[0]
         else:
             duration = self.kona_times()[-1] - self.throw_times()[0]
@@ -706,7 +706,7 @@ class ModelData:
             [stream.throw_numbers(difference=True) for stream in data]
         )
         self.first_throw: npt.NDArray[np.bool_] = (throw_number == 0) | (
-            throw_number == 3
+            throw_number == 3  # noqa: PLR2004
         )
 
         valid_times = np.isfinite(throw_times)

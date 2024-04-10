@@ -4,6 +4,8 @@ import numpy as np
 
 from .data_classes import Stream
 
+# ruff: noqa: T201
+
 
 def print_description(data: list[Stream]) -> None:
     """
@@ -77,7 +79,7 @@ def _key_throw_values(data: list[Stream]) -> None:
 
     throws = np.concatenate([stream.throw_numbers(difference=True) for stream in data])
     throws = throws[valid_times]
-    first_throw = (throws == 1) | (throws == 3)
+    first_throw = (throws == 1) | (throws == 3)  # noqa: PLR2004
     print(
         "Ensimmäisen ja toisen heiton eron keskiarvo:",
         round(

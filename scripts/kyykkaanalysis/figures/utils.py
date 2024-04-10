@@ -59,17 +59,14 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     """
 
     try:
-        (
-            rows,
-            cols,
-        ) = figure._get_subplot_rows_columns()  # pylint: disable=protected-access
+        rows, cols = figure._get_subplot_rows_columns()  # noqa: SLF001
         rows = list(rows)
         cols = list(cols)
         for row in rows:
             for col in cols:
                 figure.update_xaxes(showline=True, showgrid=False, row=row, col=col)
                 figure.update_yaxes(showline=True, showgrid=False, row=row, col=col)
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:  # noqa: BLE001
         figure.update_layout(
             xaxis_showline=True,
             xaxis_showgrid=False,
@@ -134,7 +131,7 @@ def parameter_to_latex(
     return symbol
 
 
-def precalculated_histogram(
+def precalculated_histogram(  # noqa: PLR0913
     samples: npt.NDArray[Any],
     color: str,
     *,

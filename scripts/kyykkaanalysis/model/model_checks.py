@@ -336,7 +336,7 @@ def _sample_posterior(
     return posterior_sample
 
 
-def _visualize_sample(
+def _visualize_sample(  # noqa: PLR0913
     model: ThrowTimeModel,
     figure_directory: Path,
     sample_index: int,
