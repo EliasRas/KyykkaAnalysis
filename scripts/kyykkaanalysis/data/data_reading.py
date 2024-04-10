@@ -128,23 +128,7 @@ def _read_stream_times(  # noqa: PLR0913
         if player == "Kona kasassa":
             halves, konas = _parse_kona_time(stream, halves, konas, time)
         else:
-            if len(halves) == 1:
-                if len(halves[-1].throws) == 0 and len(stream.games) == 0:
-                    previous_time = np.datetime64("NaT")
-                elif len(halves[-1].throws) == 0:
-                    previous_time = stream.end
-                else:
-                    previous_time = halves[-1].throws[-1].time
-            elif len(halves[-1].throws) == 0:
-                previous_time = halves[0].konas[-1].time
-            else:
-                previous_time = halves[-1].throws[-1].time
-            if time < previous_time:
-                msg = (
-                    f"Throw timestamp {time} in stream {stream.url} is earlier than"
-                    f" the previous timestamp {previous_time}."
-                )
-                ValueError(msg)
+            _validate_time()
 
             halves[-1].throws.append(
                 Throwtime(player_ids[player], player, time, teams[player], playoffs)
@@ -172,6 +156,26 @@ def _parse_time(time_string: str) -> np.datetime64:
         raise ValueError(msg)
 
     return np.datetime64("2000-01-01") + hours + minutes + seconds
+
+
+def _validate_time(stream: Stream, halves: list[Half], time: np.datetime64) -> None:
+    if len(halves) == 1:
+        if len(halves[-1].throws) == 0 and len(stream.games) == 0:
+            previous_time = np.datetime64("NaT")
+        elif len(halves[-1].throws) == 0:
+            previous_time = stream.end
+        else:
+            previous_time = halves[-1].throws[-1].time
+    elif len(halves[-1].throws) == 0:
+        previous_time = halves[0].konas[-1].time
+    else:
+        previous_time = halves[-1].throws[-1].time
+    if time < previous_time:
+        msg = (
+            f"Throw timestamp {time} in stream {stream.url} is earlier than"
+            f" the previous timestamp {previous_time}."
+        )
+        ValueError(msg)
 
 
 def _parse_kona_time(
