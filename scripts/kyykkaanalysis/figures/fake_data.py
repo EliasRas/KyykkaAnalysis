@@ -81,7 +81,8 @@ def _cm_accuracy(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     name=parameter_symbol,
                     boxpoints="all",
                     marker_color=PLOT_COLORS[0],
-                    hovertemplate=f"Virhe: %{{x:.2f}}{theta_hover}<extra>{parameter}</extra>",
+                    hovertemplate=f"Virhe: %{{x:.2f}}{theta_hover}"
+                    f"<extra>{parameter}</extra>",
                 ),
                 row=1,
                 col=1,
@@ -93,7 +94,8 @@ def _cm_accuracy(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     customdata=theta_customdata,
                     boxpoints="all",
                     marker_color=PLOT_COLORS[0],
-                    hovertemplate=f"Virhe: %{{x:.2f}}{theta_hover}<extra>{parameter}</extra>",
+                    hovertemplate=f"Virhe: %{{x:.2f}}{theta_hover}"
+                    f"<extra>{parameter}</extra>",
                 ),
                 row=1,
                 col=3,
@@ -106,7 +108,8 @@ def _cm_accuracy(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     name=parameter_symbol,
                     boxpoints="all",
                     marker_color=PLOT_COLORS[0],
-                    hovertemplate=f"Virhe: %{{x:.2f}}{extra_hover}<extra>{parameter}</extra>",
+                    hovertemplate=f"Virhe: %{{x:.2f}}{extra_hover}"
+                    f"<extra>{parameter}</extra>",
                 ),
                 row=1,
                 col=1,
@@ -118,7 +121,8 @@ def _cm_accuracy(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     customdata=customdata,
                     boxpoints="all",
                     marker_color=PLOT_COLORS[0],
-                    hovertemplate=f"Virhe: %{{x:.2f}}{extra_hover}<extra>{parameter}</extra>",
+                    hovertemplate=f"Virhe: %{{x:.2f}}{extra_hover}"
+                    f"<extra>{parameter}</extra>",
                 ),
                 row=1,
                 col=3,
@@ -415,7 +419,8 @@ def _sample_sizes(posterior_summaries: Dataset, figure_directory: Path) -> None:
                             0,
                         ),
                         theta_customdata,
-                        f"Otoksen koko: %{{y:.2f}}{theta_hover}<extra>{parameter}</extra>",
+                        f"Otoksen koko: %{{y:.2f}}{theta_hover}"
+                        f"<extra>{parameter}</extra>",
                     ),
                     row=parameter_index + 1,
                     col=parameter_index2 + 1,
@@ -426,7 +431,8 @@ def _sample_sizes(posterior_summaries: Dataset, figure_directory: Path) -> None:
                         parameter_truths,
                         sample_size,
                         customdata,
-                        f"Otoksen koko: %{{y:.2f}}{extra_hover}<extra>{parameter}</extra>",
+                        f"Otoksen koko: %{{y:.2f}}{extra_hover}"
+                        f"<extra>{parameter}</extra>",
                     ),
                     row=parameter_index + 1,
                     col=parameter_index2 + 1,
@@ -519,7 +525,8 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     mode="markers",
                     marker={"color": PLOT_COLORS[0], "opacity": 0.7},
                     hovertemplate=(
-                        f"Posteriorin supistuma: %{{x:.2f}}<br>Normalisoitu virhe:%{{y:.2f}}"
+                        f"Posteriorin supistuma: %{{x:.2f}}<br>"
+                        "Normalisoitu virhe:%{{y:.2f}}"
                         f"{theta_hover}<extra>{parameter}</extra>"
                     ),
                 ),
@@ -536,7 +543,8 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     mode="markers",
                     marker={"color": PLOT_COLORS[0], "opacity": 0.7},
                     hovertemplate=(
-                        f"Posteriorin supistuma: %{{x:.2f}}<br>Normalisoitu virhe:%{{y:.2f}}"
+                        f"Posteriorin supistuma: %{{x:.2f}}<br>"
+                        "Normalisoitu virhe:%{{y:.2f}}"
                         f"{extra_hover}<extra>{parameter}</extra>"
                     ),
                 ),
@@ -599,7 +607,8 @@ def _ks_distances(
                             0,
                         ),
                         theta_customdata,
-                        f"KS-testin etäisyys: %{{y:.2f}}{theta_hover}<extra>{parameter}</extra>",
+                        f"KS-testin etäisyys: %{{y:.2f}}{theta_hover}"
+                        f"<extra>{parameter}</extra>",
                     ),
                     row=1,
                     col=parameter_index + 1,
@@ -610,7 +619,8 @@ def _ks_distances(
                         parameter_truths,
                         distance,
                         customdata,
-                        f"KS-testin etäisyys: %{{y:.2f}}{extra_hover}<extra>{parameter}</extra>",
+                        f"KS-testin etäisyys: %{{y:.2f}}{extra_hover}"
+                        f"<extra>{parameter}</extra>",
                     ),
                     row=1,
                     col=parameter_index + 1,

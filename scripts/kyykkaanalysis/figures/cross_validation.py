@@ -40,7 +40,6 @@ def cross_validation_plots(
 
 
 def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None:
-
     figure = go.Figure()
     figure.add_trace(
         go.Scatter(
@@ -118,8 +117,9 @@ def _log_likelihoods(
             customdata=customdata[data["is_first"], :],
             name="1. heitto",
             mode="markers",
-            hovertemplate="Heittoaika: %{x} s<br>Pisteittäinen log-uskottavuus: %{y:.2f}"
-            "<br>Heiton indeksi: %{customdata[0]}<br>"
+            hovertemplate="Heittoaika: %{x} s<br>"
+            "Pisteittäinen log-uskottavuus: %{y:.2f}<br>"
+            "Heiton indeksi: %{customdata[0]}<br>"
             "Heittäjän indeksi: %{customdata[1]}<extra></extra>",
         )
     )
@@ -130,8 +130,9 @@ def _log_likelihoods(
             customdata=customdata[~data["is_first"], :],
             name="2. heitto",
             mode="markers",
-            hovertemplate="Heittoaika: %{x} s<br>Pisteittäinen log-uskottavuus: %{y:.2f}"
-            "<br>Heiton indeksi: %{customdata[0]}<br>"
+            hovertemplate="Heittoaika: %{x} s<br>"
+            "Pisteittäinen log-uskottavuus: %{y:.2f}<br>"
+            "Heiton indeksi: %{customdata[0]}<br>"
             "Heittäjän indeksi: %{customdata[1]}<extra></extra>",
         )
     )
@@ -339,7 +340,8 @@ def _log_likelihood_difference(
                     customdata=customdata[data["is_first"], :],
                     mode="markers",
                     marker_color=PLOT_COLORS[0],
-                    hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
+                    hovertemplate="Heittoaika: %{x} s<br>"
+                    "Log-uskottavuuksien ero: %{y:.2f}<br>"
                     "Heiton indeksi: %{customdata[0]}<br>"
                     "Heittäjän indeksi: %{customdata[1]}"
                     f"<extra>1. heitto<br>{model2} - {model}</extra>",
@@ -354,7 +356,8 @@ def _log_likelihood_difference(
                     customdata=customdata[~data["is_first"], :],
                     mode="markers",
                     marker_color=PLOT_COLORS[1],
-                    hovertemplate="Heittoaika: %{x} s<br>Log-uskottavuuksien ero: %{y:.2f}<br>"
+                    hovertemplate="Heittoaika: %{x} s<br>"
+                    "Log-uskottavuuksien ero: %{y:.2f}<br>"
                     "Heiton indeksi: %{customdata[0]}<br>"
                     "Heittäjän indeksi: %{customdata[1]}"
                     f"<extra>2. heitto<br>{model2} - {model}</extra>",

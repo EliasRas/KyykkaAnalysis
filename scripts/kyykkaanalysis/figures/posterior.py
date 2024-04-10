@@ -485,7 +485,8 @@ def _contraction(
             y=np.random.default_rng().random(len(contractions)),
             customdata=parameters,
             mode="markers",
-            hovertemplate="Posteriorin supistuma: %{x:.2f}<extra>%{customdata}:</extra>",
+            hovertemplate="Posteriorin supistuma: %{x:.2f}"
+            "<extra>%{customdata}:</extra>",
         )
     )
     figure.update_layout(
@@ -976,7 +977,7 @@ def _player_range(
         y=[y],
         mode="markers",
         marker={"color": "black", "size": 7},
-        hovertemplate="Todellinen arvo: %{x:.2f} s" f"<extra>{y}</extra>",
+        hovertemplate=f"Todellinen arvo: %{{x:.2f}} s<extra>{y}</extra>",
     )
 
     return total_range, hdi, true_value

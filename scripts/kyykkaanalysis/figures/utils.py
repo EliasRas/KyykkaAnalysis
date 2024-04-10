@@ -157,7 +157,8 @@ def precalculated_histogram(  # noqa: PLR0913
     bin_count : int, optional
         Number of bins
     normalization : str, default "probability"
-        Normalization for the bins. One of "probability", "probability density" and "count"
+        Normalization for the bins. One of "probability", "probability density" and
+        "count"
     legendgroup : str, optional
         Title of the legendgroup for this trace
 
@@ -229,7 +230,8 @@ def calculate_histogram(
     bin_count : int
         Number of bins
     normalization : str, default "probability"
-        Normalization for the bins. One of "probability", "probability density" and "count"
+        Normalization for the bins. One of "probability", "probability density" and
+        "count"
 
     Returns
     -------
@@ -345,7 +347,8 @@ def ecdf(
         mode="lines",
         name=name,
         line_color=color,
-        hovertemplate="Arvo: %{x:.2f}<br>Kumulatiivinen yleisyys: %{y:.2f}<extra></extra>",
+        hovertemplate="Arvo: %{x:.2f}<br>Kumulatiivinen yleisyys: %{y:.2f}"
+        "<extra></extra>",
         legendgroup=legendgroup,
         legendgrouptitle_text=legendgroup,
     )

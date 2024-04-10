@@ -36,8 +36,8 @@ def timeline(data: list[Stream]) -> None:
                             customdata=players,
                             mode="markers",
                             marker_color=PLOT_COLORS[game_index % len(PLOT_COLORS)],
-                            hovertemplate=f"{game_index+1}. pelin {half_index+1}. erä<br>"
-                            "Heittäjä: %{customdata}<br>Heittoaika: %{y|%H.%M.%S}"
+                            hovertemplate=f"{game_index+1}. pelin {half_index+1}. erä"
+                            "<br>Heittäjä: %{customdata}<br>Heittoaika: %{y|%H.%M.%S}"
                             "<extra></extra>",
                             showlegend=False,
                         )
@@ -66,9 +66,8 @@ def timeline(data: list[Stream]) -> None:
                             mode="markers",
                             marker_symbol="x",
                             marker_color=PLOT_COLORS[game_index % len(PLOT_COLORS)],
-                            hovertemplate=f"{game_index+1}. pelin {half_index+1}. erä<br>"
-                            "Kasausaika: %{y|%H.%M.%S}"
-                            "<extra></extra>",
+                            hovertemplate=f"{game_index+1}. pelin {half_index+1}. erä"
+                            "<br>Kasausaika: %{y|%H.%M.%S}<extra></extra>",
                             showlegend=False,
                         )
                     )
@@ -128,7 +127,8 @@ def _game_throws(
             opacity=0.5,
             marker={"color": PLOT_COLORS[0], "line": {"color": PLOT_COLORS[0]}},
             name="Runkosarjapelit",
-            hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y:.3f}",
+            hovertemplate="Heittojen välinen aika: %{x} s<br>"
+            "Suhteellinen yleisyys: %{y:.3f}",
         )
     )
     figure.add_trace(
@@ -139,7 +139,8 @@ def _game_throws(
             opacity=0.5,
             marker={"color": PLOT_COLORS[1], "line": {"color": PLOT_COLORS[1]}},
             name="Pudotuspelit",
-            hovertemplate="Heittojen välinen aika: %{x} s<br>Suhteellinen yleisyys: %{y:.3f}",
+            hovertemplate="Heittojen välinen aika: %{x} s<br>"
+            "Suhteellinen yleisyys: %{y:.3f}",
         )
     )
 
