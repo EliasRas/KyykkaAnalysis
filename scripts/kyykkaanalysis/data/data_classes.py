@@ -173,14 +173,14 @@ class Half:
         """
 
         numbers = np.remainder(np.arange(len(self.throws)), 2) + 1
-        turn_indices = np.zeros(
+        turn_indices = np.zeros(  # First 2 throws of each player
             min(16, len(self.throws)), int
-        )  # First 2 throws of each player
+        )
         if len(self.throws) > 16:
-            turn_indices = np.concatenate(
+            turn_indices = np.concatenate(  # Last 2 throws of each player
                 (
                     turn_indices,
-                    np.ones(len(self.throws) - 16, int),  # Last 2 throws of each player
+                    np.ones(len(self.throws) - 16, int),
                 )
             )
         numbers += 2 * turn_indices
