@@ -82,13 +82,17 @@ def fake_data_simulation(
         Path to the directory in which the sampled prior is saved
     """
 
-    naive_figure_directory = figure_directory / "naive_SimulatedData"
-    figure_directory = figure_directory / "SimulatedData"
     naive_cache_directory = cache_directory / "naive"
     naive_cache_directory.mkdir(parents=True, exist_ok=True)
 
-    _test_model(data, figure_directory, cache_directory)
-    _test_naive_model(data, naive_figure_directory, naive_cache_directory)
+    _test_model(data, figure_directory / "SimulatedData", cache_directory)
+    _test_naive_model(
+        data, figure_directory / "naive_SimulatedData", naive_cache_directory
+    )
+    _test_inv_model(data, figure_directory / "inv_SimulatedData", cache_directory)
+    _test_naive_inv_model(
+        data, figure_directory / "naive_inv_SimulatedData", naive_cache_directory
+    )
 
 
 def _test_model(
@@ -137,6 +141,54 @@ def _test_naive_model(
 
     summaries, predictive_summaries = _fake_data_inference(
         naive_model, naive_prior, cache_directory, figure_directory
+    )
+    estimation_plots(summaries, predictive_summaries, figure_directory / "naive")
+
+
+def _test_inv_model(
+    data: list[Stream], figure_directory: Path, cache_directory: Path
+) -> None:
+    model = ThrowTimeModel(ModelData(data), model_type=ModelType.INVGAMMA)
+    naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVEINVGAMMA)
+
+    prior_file = cache_directory / "inv_prior.nc"
+    if prior_file.exists():
+        prior = open_dataset(prior_file)
+    else:
+        check_priors(data, figure_directory.parent / "Prior", cache_directory)
+        prior = open_dataset(prior_file)
+
+    summaries, predictive_summaries = _fake_data_inference(
+        model, prior, cache_directory, figure_directory
+    )
+    estimation_plots(summaries, predictive_summaries, figure_directory)
+
+    summaries, predictive_summaries = _fake_data_inference(
+        naive_model, prior, cache_directory, figure_directory
+    )
+    estimation_plots(summaries, predictive_summaries, figure_directory / "naive")
+
+
+def _test_naive_inv_model(
+    data: list[Stream], figure_directory: Path, cache_directory: Path
+) -> None:
+    model = ThrowTimeModel(ModelData(data), model_type=ModelType.INVGAMMA)
+    naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVEINVGAMMA)
+
+    prior_file = cache_directory / "naive_inv_prior.nc"
+    if prior_file.exists():
+        prior = open_dataset(prior_file)
+    else:
+        check_priors(data, figure_directory.parent / "Prior", cache_directory)
+        prior = open_dataset(prior_file)
+
+    summaries, predictive_summaries = _fake_data_inference(
+        model, prior, cache_directory, figure_directory
+    )
+    estimation_plots(summaries, predictive_summaries, figure_directory)
+
+    summaries, predictive_summaries = _fake_data_inference(
+        naive_model, prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory / "naive")
 
@@ -257,10 +309,15 @@ def _generate_summaries(
 def _sample_posterior(
     sample_index: int, sample: Dataset, cache_directory: Path, model: ThrowTimeModel
 ) -> InferenceData:
-    if model.naive:
-        posterior_file = cache_directory / f"naive_posterior_{sample_index}.nc"
-    else:
-        posterior_file = cache_directory / f"posterior_{sample_index}.nc"
+    match model.model_type:
+        case ModelType.GAMMA:
+            posterior_file = cache_directory / f"posterior_{sample_index}.nc"
+        case ModelType.NAIVE:
+            posterior_file = cache_directory / f"naive_posterior_{sample_index}.nc"
+        case ModelType.INVGAMMA:
+            posterior_file = cache_directory / f"inv_posterior_{sample_index}.nc"
+        case ModelType.NAIVEINVGAMMA:
+            posterior_file = cache_directory / f"naive_inv_posterior_{sample_index}.nc"
 
     if posterior_file.exists():
         posterior_sample = open_dataset(posterior_file)
@@ -286,10 +343,15 @@ def _visualize_sample(
     sample: Dataset,
     posterior_sample: InferenceData,
 ) -> None:
-    if model.naive:
-        sample_directory = figure_directory / f"naive_{sample_index}"
-    else:
-        sample_directory = figure_directory / str(sample_index)
+    match model.model_type:
+        case ModelType.GAMMA:
+            sample_directory = figure_directory / str(sample_index)
+        case ModelType.NAIVE:
+            sample_directory = figure_directory / f"naive_{sample_index}"
+        case ModelType.INVGAMMA:
+            sample_directory = figure_directory / f"inv_{sample_index}"
+        case ModelType.NAIVEINVGAMMA:
+            sample_directory = figure_directory / f"naive_inv_{sample_index}"
 
     data = model.dataset
     for var in posterior_sample.posterior_predictive.keys():
