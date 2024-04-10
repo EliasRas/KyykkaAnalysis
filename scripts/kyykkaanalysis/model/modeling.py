@@ -1,16 +1,15 @@
-"""Construct a playtime model"""
+"""Construct a play time model"""
 
-from typing import Self
 from enum import Enum
+from typing import Self
 
+from arviz import InferenceData, ELPDData, summary, loo, loo_pit, psislw, ess
 import numpy as np
 from numpy import typing as npt
-from xarray import merge
-from xarray import Dataset, DataArray
 import pymc as pm
-from pymc.math import floor, exp, log, switch
+from pymc.math import exp, floor, log, switch
 from pytensor.tensor.math import gammainc
-from arviz import summary, loo, loo_pit, psislw, ess, InferenceData, ELPDData
+from xarray import DataArray, Dataset, merge
 
 from ..data.data_classes import ModelData
 

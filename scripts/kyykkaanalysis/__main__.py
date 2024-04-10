@@ -1,12 +1,12 @@
 """Analysis of kyykka play times"""
 
-from pathlib import Path
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
 
-from kyykkaanalysis.data.data_reading import read_times
 from kyykkaanalysis.data.data_description import print_description
+from kyykkaanalysis.data.data_reading import read_times
 from kyykkaanalysis.figures import data as data_figures
-from kyykkaanalysis.model import model_checks, inference
+from kyykkaanalysis.model import inference, model_checks
 from kyykkaanalysis.model.modeling import ModelType
 
 

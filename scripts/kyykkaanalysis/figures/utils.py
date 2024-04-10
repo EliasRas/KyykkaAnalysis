@@ -1,18 +1,18 @@
 """Utility functions for plotly figures"""
 
-from typing import Any, Literal
 from pathlib import Path
 from time import sleep
+from typing import Any, Literal
 
 import numpy as np
 from numpy import typing as npt
-from scipy.stats import binom, beta
 from plotly import graph_objects as go, colors
+from scipy.stats import binom, beta
 
-PLOT_COLORS = colors.qualitative.Plotly
+FONT_SIZE = 15
 FONT_SIZE_2X2 = 28
 FONT_SIZE_BOXPLOT = 10
-FONT_SIZE = 15
+PLOT_COLORS = colors.qualitative.Plotly
 LATEX_CONVERSION = {
     "mu": r"$\mu$",
     "sigma": r"$\sigma$",

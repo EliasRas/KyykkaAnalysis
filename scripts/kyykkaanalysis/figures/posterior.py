@@ -1,22 +1,22 @@
 """Visualizations for posterior distributions"""
 
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from numpy import typing as npt
-from scipy.stats import skew, kurtosis
-from xarray import Dataset
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
+from scipy.stats import kurtosis, skew
+from xarray import Dataset
 
 from .utils import (
-    parameter_to_latex,
-    precalculated_histogram,
     create_bins,
     ecdf,
-    PLOT_COLORS,
+    parameter_to_latex,
+    precalculated_histogram,
     FONT_SIZE,
+    PLOT_COLORS,
 )
 
 

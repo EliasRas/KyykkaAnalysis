@@ -3,15 +3,15 @@
 from pathlib import Path
 
 import numpy as np
-from xarray import Dataset
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
+from xarray import Dataset
 
 from .utils import (
     parameter_to_latex,
     precalculated_histogram,
-    PLOT_COLORS,
     FONT_SIZE,
+    PLOT_COLORS,
 )
 
 

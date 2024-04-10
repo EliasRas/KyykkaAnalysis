@@ -6,7 +6,7 @@ import numpy as np
 from numpy import typing as npt
 from plotly import graph_objects as go
 
-from .utils import write_pdf, PLOT_COLORS, FONT_SIZE_2X2, FONT_SIZE
+from .utils import write_pdf, FONT_SIZE, FONT_SIZE_2X2, PLOT_COLORS
 from ..data.data_classes import Stream
 
 

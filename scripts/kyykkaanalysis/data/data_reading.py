@@ -1,9 +1,10 @@
 """Reading play times for CSV files"""
+
 from pathlib import Path
 
 import numpy as np
 
-from .data_classes import Stream, Game, Half, Konatime, Throwtime
+from .data_classes import Game, Half, Konatime, Stream, Throwtime
 
 TEAMS = {
     "Tommi Linnamaa": "ABUA",
