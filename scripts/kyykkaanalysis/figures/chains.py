@@ -1,4 +1,4 @@
-"""Visualizations about MCMC chains"""
+"""Visualizations about MCMC chains."""
 
 from pathlib import Path
 
@@ -21,7 +21,7 @@ def chain_plots(
     sample_stats: Dataset = None,
 ) -> None:
     """
-    Plot the information about MCMC chains
+    Plot the information about MCMC chains.
 
     Parameters
     ----------

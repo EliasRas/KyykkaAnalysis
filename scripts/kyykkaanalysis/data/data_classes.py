@@ -1,4 +1,4 @@
-"""Containers for play time data"""
+"""Containers for play time data."""
 
 from dataclasses import dataclass, field
 
@@ -9,7 +9,7 @@ from numpy import typing as npt
 @dataclass
 class Throwtime:
     """
-    Container for the data from a single throw
+    Container for the data from a single throw.
 
     Attributes
     ----------
@@ -35,7 +35,7 @@ class Throwtime:
 @dataclass
 class Konatime:
     """
-    Container for the data from a single kona
+    Container for the data from a single kona.
 
     Attributes
     ----------
@@ -51,7 +51,7 @@ class Konatime:
 @dataclass
 class Half:
     """
-    Container for the data from a half of a game
+    Container for the data from a half of a game.
 
     Attributes
     ----------
@@ -68,7 +68,7 @@ class Half:
         self, difference: bool = False, anonymize: bool = False
     ) -> npt.NDArray[np.str_]:
         """
-        Names of the players that threw the throws of the half
+        Names of the players that threw the throws of the half.
 
         Parameters
         ----------
@@ -95,7 +95,7 @@ class Half:
 
     def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
-        Names of the teams that threw the throws of the half
+        Names of the teams that threw the throws of the half.
 
         Parameters
         ----------
@@ -116,7 +116,7 @@ class Half:
 
     def playoffs(self, difference: bool = False) -> npt.NDArray[np.bool_]:
         """
-        Whether the throws are from playoffs game or not
+        Whether the throws are from playoffs game or not.
 
         Parameters
         ----------
@@ -137,7 +137,7 @@ class Half:
 
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Positions of the players that threw the throws of the half
+        Positions of the players that threw the throws of the half.
 
         Parameters
         ----------
@@ -159,7 +159,7 @@ class Half:
 
     def throw_numbers(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Whether the throw is the first or second throw
+        Whether the throw is the first or second throw.
 
         Parameters
         ----------
@@ -194,7 +194,7 @@ class Half:
         self, difference: bool = False
     ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
-        Timestamps of the throws in the half
+        Timestamps of the throws in the half.
 
         Parameters
         ----------
@@ -218,7 +218,7 @@ class Half:
         self, difference: bool = False
     ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
-        Timestamps of the piled konas in the half
+        Timestamps of the piled konas in the half.
 
         Parameters
         ----------
@@ -246,7 +246,7 @@ class Half:
     @property
     def duration(self) -> np.timedelta64:
         """
-        Duration of the half
+        Duration of the half.
 
         Returns
         -------
@@ -267,7 +267,7 @@ class Half:
 @dataclass
 class Game:
     """
-    Container for the data from a single game
+    Container for the data from a single game.
 
     Attributes
     ----------
@@ -281,7 +281,7 @@ class Game:
         self, difference: bool = False, anonymize: bool = False
     ) -> npt.NDArray[np.str_]:
         """
-        Names of the players that threw the throws of the game
+        Names of the players that threw the throws of the game.
 
         Parameters
         ----------
@@ -302,7 +302,7 @@ class Game:
 
     def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
-        Names of the teams that threw the throws of the game
+        Names of the teams that threw the throws of the game.
 
         Parameters
         ----------
@@ -319,7 +319,7 @@ class Game:
 
     def playoffs(self, difference: bool = False) -> npt.NDArray[np.bool_]:
         """
-        Whether the throws are from playoffs game or not
+        Whether the throws are from playoffs game or not.
 
         Parameters
         ----------
@@ -336,7 +336,7 @@ class Game:
 
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Positions of the players that threw the throws of the game
+        Positions of the players that threw the throws of the game.
 
         Parameters
         ----------
@@ -353,7 +353,7 @@ class Game:
 
     def throw_numbers(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Whether the throw is the first or second throw
+        Whether the throw is the first or second throw.
 
         Parameters
         ----------
@@ -372,7 +372,7 @@ class Game:
         self, difference: bool = False
     ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
-        Timestamps of the throws in the game
+        Timestamps of the throws in the game.
 
         Parameters
         ----------
@@ -391,7 +391,7 @@ class Game:
         self, difference: bool = False
     ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
-        Timestamps of the piled konas in the game
+        Timestamps of the piled konas in the game.
 
         Parameters
         ----------
@@ -409,7 +409,7 @@ class Game:
     @property
     def duration(self) -> np.timedelta64:
         """
-        Duration of the game
+        Duration of the game.
 
         Returns
         -------
@@ -424,7 +424,7 @@ class Game:
     @property
     def half_durations(self) -> npt.NDArray[np.timedelta64]:
         """
-        Durations of the halfs in the stream
+        Durations of the halfs in the stream.
 
         Returns
         -------
@@ -437,7 +437,7 @@ class Game:
     @property
     def half_break(self) -> np.timedelta64:
         """
-        The break times between the halfs in the stream
+        The break times between the halfs in the stream.
 
         Returns
         -------
@@ -456,7 +456,7 @@ class Game:
 @dataclass
 class Stream:
     """
-    Container for the data from the games played on a single pitch from a single stream
+    Container for the data from the games played on a single pitch from a single stream.
 
     Attributes
     ----------
@@ -476,7 +476,7 @@ class Stream:
         self, difference: bool = False, anonymize: bool = False
     ) -> npt.NDArray[np.str_]:
         """
-        Names of the players that threw the throws in the stream
+        Names of the players that threw the throws in the stream.
 
         Parameters
         ----------
@@ -497,7 +497,7 @@ class Stream:
 
     def teams(self, difference: bool = False) -> npt.NDArray[np.str_]:
         """
-        Names of the teams that threw the throws in the stream
+        Names of the teams that threw the throws in the stream.
 
         Parameters
         ----------
@@ -514,7 +514,7 @@ class Stream:
 
     def playoffs(self, difference: bool = False) -> npt.NDArray[np.bool_]:
         """
-        Whether the throws are from playoffs game or not
+        Whether the throws are from playoffs game or not.
 
         Parameters
         ----------
@@ -531,7 +531,7 @@ class Stream:
 
     def positions(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Positions of the players that threw the throws in the stream
+        Positions of the players that threw the throws in the stream.
 
         Parameters
         ----------
@@ -548,7 +548,7 @@ class Stream:
 
     def throw_numbers(self, difference: bool = False) -> npt.NDArray[np.int_]:
         """
-        Whether the throw is the first or second throw
+        Whether the throw is the first or second throw.
 
         Parameters
         ----------
@@ -567,7 +567,7 @@ class Stream:
         self, difference: bool = False
     ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
-        Timestamps of the throws in the stream
+        Timestamps of the throws in the stream.
 
         Parameters
         ----------
@@ -586,7 +586,7 @@ class Stream:
         self, difference: bool = False
     ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
-        Timestamps of the piled konas in the stream
+        Timestamps of the piled konas in the stream.
 
         Parameters
         ----------
@@ -604,7 +604,7 @@ class Stream:
     @property
     def game_durations(self) -> npt.NDArray[np.timedelta64]:
         """
-        Durations of the games in the stream
+        Durations of the games in the stream.
 
         Returns
         -------
@@ -617,7 +617,7 @@ class Stream:
     @property
     def half_durations(self) -> npt.NDArray[np.timedelta64]:
         """
-        Durations of the halfs in the stream
+        Durations of the halfs in the stream.
 
         Returns
         -------
@@ -630,7 +630,7 @@ class Stream:
     @property
     def game_breaks(self) -> npt.NDArray[np.timedelta64]:
         """
-        The break times between the games in the stream
+        The break times between the games in the stream.
 
         Returns
         -------
@@ -649,7 +649,7 @@ class Stream:
     @property
     def half_breaks(self) -> npt.NDArray[np.timedelta64]:
         """
-        The break times between the halfs in the stream
+        The break times between the halfs in the stream.
 
         Returns
         -------
@@ -662,7 +662,7 @@ class Stream:
 
 class ModelData:
     """
-    Container for the data needed by the throw time models
+    Container for the data needed by the throw time models.
 
     Attributes
     ----------
@@ -681,7 +681,7 @@ class ModelData:
 
     def __init__(self, data: list[Stream]) -> None:
         """
-        Container for the data needed by the throw time models
+        Container for the data needed by the throw time models.
 
         Parameters
         ----------

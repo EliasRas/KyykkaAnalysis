@@ -1,4 +1,5 @@
-"""Visualizing data and models"""
+"""Visualizing data and models."""
+
 import logging
 
 LOGGER = logging.getLogger(__name__)

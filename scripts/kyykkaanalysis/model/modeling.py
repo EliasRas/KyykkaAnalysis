@@ -1,4 +1,4 @@
-"""Construct a play time model"""
+"""Construct a play time model."""
 
 from enum import Enum
 from typing import Self
@@ -15,9 +15,7 @@ from ..data.data_classes import ModelData
 
 
 class ModelType(Enum):
-    """
-    Type of throw time model
-    """
+    """Type of throw time model."""
 
     GAMMA = 1
     """
@@ -39,7 +37,7 @@ class ModelType(Enum):
 
 class ThrowTimeModel:
     """
-    Container for throw time model
+    Container for throw time model.
 
     Attributes
     ----------
@@ -57,7 +55,7 @@ class ThrowTimeModel:
         self, data: ModelData, model_type: ModelType = ModelType.GAMMA
     ) -> None:
         """
-        Container for throw time model
+        Container for throw time model.
 
         Parameters
         ----------
@@ -81,7 +79,7 @@ class ThrowTimeModel:
 
     def sample_prior(self, sample_count: int = 500) -> Dataset:
         """
-        Sample from the prior predictive distribution
+        Sample from the prior predictive distribution.
 
         Parameters
         ----------
@@ -111,7 +109,7 @@ class ThrowTimeModel:
         thin: bool = True,
     ) -> InferenceData:
         """
-        Sample from the posterior distribution
+        Sample from the posterior distribution.
 
         Parameters
         ----------
@@ -167,7 +165,7 @@ class ThrowTimeModel:
 
     def sample_posterior_predictive(self, posterior_sample: Dataset) -> Dataset:
         """
-        Sample from the posterior predictive distribution
+        Sample from the posterior predictive distribution.
 
         Parameters
         ----------
@@ -192,7 +190,7 @@ class ThrowTimeModel:
         self, posterior_samples: Dataset, posterior_predictive: Dataset
     ) -> ELPDData:
         """
-        Carry out Pareto smoothed importance sampling leave-one-out cross-validation
+        Carry out Pareto smoothed importance sampling leave-one-out cross-validation.
 
         Parameters
         ----------
@@ -248,7 +246,7 @@ class ThrowTimeModel:
 
     def change_observations(self, y: npt.NDArray[np.int_] | None = None) -> Self:
         """
-        Change the observed data in the model
+        Change the observed data in the model.
 
         Parameters
         ----------
@@ -284,7 +282,7 @@ class ThrowTimeModel:
     @staticmethod
     def thin(samples: InferenceData) -> InferenceData:
         """
-        Thin the chains to reduce autocorrelations
+        Thin the chains to reduce autocorrelations.
 
         Parameters
         ----------
@@ -321,7 +319,7 @@ class ThrowTimeModel:
     @staticmethod
     def thin_posterior(samples: Dataset) -> Dataset:
         """
-        Thin the chains to reduce autocorrelations
+        Thin the chains to reduce autocorrelations.
 
         Parameters
         ----------
@@ -352,7 +350,7 @@ class ThrowTimeModel:
     @property
     def observed_variables(self) -> set[str]:
         """
-        Names of the observed variables
+        Names of the observed variables.
 
         Returns
         -------
@@ -365,7 +363,7 @@ class ThrowTimeModel:
     @property
     def dataset(self) -> Dataset:
         """
-        Data for the model as xarray.Dataset
+        Data for the model as xarray.Dataset.
 
         Returns
         -------
@@ -390,7 +388,7 @@ class ThrowTimeModel:
 
 def gamma_throw_model(data: ModelData, naive: bool = False) -> pm.Model:
     """
-    Construct a model for throw times
+    Construct a model for throw times.
 
     Parameters
     ----------
@@ -477,7 +475,7 @@ def _floored_gamma(k: float, theta: float, size: int):
 
 def invgamma_throw_model(data: ModelData, naive: bool = False) -> pm.Model:
     """
-    Construct a model for throw times
+    Construct a model for throw times.
 
     Parameters
     ----------

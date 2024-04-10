@@ -1,4 +1,4 @@
-"""Visualizations for posterior distributions"""
+"""Visualizations for posterior distributions."""
 
 from pathlib import Path
 from typing import Any
@@ -27,7 +27,7 @@ def parameter_distributions(
     true_values: Dataset | None = None,
 ) -> None:
     """
-    Plot information about the sampled parameters
+    Plot information about the sampled parameters.
 
     Parameters
     ----------
@@ -502,7 +502,7 @@ def predictive_distributions(
     true_values: Dataset | None = None,
 ) -> None:
     """
-    Plot the information about the sampled data
+    Plot the information about the sampled data.
 
     Parameters
     ----------

@@ -1,4 +1,4 @@
-"""Utility functions for plotly figures"""
+"""Utility functions for plotly figures."""
 
 from pathlib import Path
 from time import sleep
@@ -44,9 +44,11 @@ PERCENTILE_LATEX_CONVERSION = {
 
 def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     """
+    Write plotly figure to a PDF file.
+
     Saving the file twice and waiting in between to fix
     https://github.com/plotly/plotly.py/issues/3469.
-    Also apply pdf specific formatting
+    Also apply pdf specific formatting.
 
     Parameters
     ----------
@@ -103,7 +105,7 @@ def parameter_to_latex(
     variable_type: Literal["variable", "error", "percentile"] = "variable",
 ) -> str:
     """
-    Convert the name of the parameter to a LaTeX symbol
+    Convert the name of the parameter to a LaTeX symbol.
 
     Parameters
     ----------
@@ -142,7 +144,7 @@ def precalculated_histogram(
     legendgroup: str | None = None,
 ) -> tuple[go.Bar, go.Scatter]:
     """
-    Create a histogram out of bar graph
+    Create a histogram out of bar graph.
 
     Parameters
     ----------
@@ -217,7 +219,7 @@ def calculate_histogram(
     ] = "probability",
 ) -> tuple[npt.NDArray[np.float_], npt.NDArray[Any]]:
     """
-    Calculate bins and bin counts of a histogram
+    Calculate bins and bin counts of a histogram.
 
     Parameters
     ----------
@@ -253,7 +255,7 @@ def calculate_histogram(
 
 def create_bins(values: npt.NDArray[Any], bin_count: int) -> npt.NDArray[Any]:
     """
-    Create evenly distributed bins for data
+    Create evenly distributed bins for data.
 
     Parameters
     ----------
@@ -303,7 +305,7 @@ def ecdf(
     legendgroup: str | None = None,
 ) -> go.Scatter | tuple[go.Scatter, go.Scatter]:
     """
-    Create an empirical CDF plot
+    Create an empirical CDF plot.
 
     Parameters
     ----------
@@ -370,7 +372,7 @@ def uniform_variation(
     sample_size: int, bin_count: int
 ) -> tuple[go.Scatter, go.Scatter]:
     """
-    Visualize 99 % variation intervals for uniformly distributed data
+    Visualize 99 % variation intervals for uniformly distributed data.
 
     Parameters
     ----------
@@ -429,7 +431,7 @@ def uniform_variation(
 
 def hex_to_rgb(hex_value: str) -> tuple[str, str, str]:
     """
-    Convert hex valued color to rgb representation
+    Convert hex valued color to rgb representation.
 
     Parameters
     ----------

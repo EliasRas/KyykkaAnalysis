@@ -1,4 +1,4 @@
-"""Key numbers from the data"""
+"""Key numbers from the data."""
 
 import numpy as np
 
@@ -7,7 +7,7 @@ from .data_classes import Stream
 
 def print_description(data: list[Stream]) -> None:
     """
-    Print a description of the data set
+    Print a description of the data set.
 
     Parameters
     ----------

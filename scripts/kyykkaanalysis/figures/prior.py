@@ -1,4 +1,4 @@
-"""Visualizations for prior predictive checking"""
+"""Visualizations for prior predictive checking."""
 
 from pathlib import Path
 from typing import Any
@@ -24,7 +24,7 @@ def parameter_distributions(
     figure_directory: Path,
 ) -> None:
     """
-    Plot the distributions of the sampled parameters
+    Plot the distributions of the sampled parameters.
 
     Parameters
     ----------

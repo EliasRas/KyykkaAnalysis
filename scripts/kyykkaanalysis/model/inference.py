@@ -1,4 +1,4 @@
-"""Fitting the model"""
+"""Fitting the model."""
 
 from pathlib import Path
 
@@ -18,7 +18,7 @@ from ..figures.posterior import (
 
 def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path):
     """
-    Simulate data from prior and check if the parameter values can be recovered
+    Simulate data from prior and check if the parameter values can be recovered.
 
     Parameters
     ----------

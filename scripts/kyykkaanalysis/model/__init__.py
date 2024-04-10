@@ -1,4 +1,5 @@
-"""Modeling and testing models"""
+"""Modeling and testing models."""
+
 import logging
 
 LOGGER = logging.getLogger(__name__)

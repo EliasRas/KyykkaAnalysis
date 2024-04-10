@@ -1,4 +1,4 @@
-"""Visualizations for fake data simulations"""
+"""Visualizations for fake data simulations."""
 
 from pathlib import Path
 from typing import Any
@@ -24,7 +24,7 @@ def estimation_plots(
     figure_directory: Path,
 ) -> None:
     """
-    Plot the distributions of the sampled parameters
+    Plot the distributions of the sampled parameters.
 
     Parameters
     ----------

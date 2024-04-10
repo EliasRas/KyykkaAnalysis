@@ -1,4 +1,5 @@
-"""Analysis of kyykka play times"""
+"""Analysis of kyykka play times."""
+
 import logging
 
 LOGGER = logging.getLogger(__name__)

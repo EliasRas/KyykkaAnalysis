@@ -1,4 +1,4 @@
-"""Reading play times for CSV files"""
+"""Reading play times for CSV files."""
 
 from pathlib import Path
 
@@ -9,7 +9,7 @@ from .data_classes import Game, Half, Konatime, Stream, Throwtime
 
 def read_times(input_file: Path, team_file: Path) -> list[Stream]:
     """
-    Read play times from a CSV file
+    Read play times from a CSV file.
 
     Parameters
     ----------

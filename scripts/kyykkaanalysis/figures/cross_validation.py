@@ -1,4 +1,4 @@
-"""Visualizations for cross validation"""
+"""Visualizations for cross validation."""
 
 from pathlib import Path
 
@@ -20,7 +20,7 @@ def cross_validation_plots(
     data: Dataset, loo_result: ELPDData, figure_directory: Path
 ) -> None:
     """
-    Plot information about cross validation
+    Plot information about cross validation.
 
     Parameters
     ----------
@@ -195,7 +195,7 @@ def model_comparison(
     data: Dataset, loo_results: dict[str, ELPDData], figure_directory: Path
 ) -> None:
     """
-    Plot information about model comparisons
+    Plot information about model comparisons.
 
     Parameters
     ----------

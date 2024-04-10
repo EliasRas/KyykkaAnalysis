@@ -1,4 +1,4 @@
-"""Checking priors and model definition"""
+"""Checking priors and model definition."""
 
 from pathlib import Path
 
@@ -25,7 +25,7 @@ def check_priors(
     model_type: ModelType = ModelType.GAMMA,
 ):
     """
-    Sample data from prior distribution and analyze it
+    Sample data from prior distribution and analyze it.
 
     Parameters
     ----------
@@ -70,7 +70,7 @@ def fake_data_simulation(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ):
     """
-    Simulate data from prior and check if the parameter values can be recovered
+    Simulate data from prior and check if the parameter values can be recovered.
 
     Parameters
     ----------

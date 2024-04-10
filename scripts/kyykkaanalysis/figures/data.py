@@ -1,4 +1,4 @@
-"""Visualizations for data"""
+"""Visualizations for data."""
 
 from pathlib import Path
 
@@ -12,7 +12,7 @@ from ..data.data_classes import Stream
 
 def timeline(data: list[Stream]):
     """
-    Plot the timeline of the throws in a game
+    Plot the timeline of the throws in a game.
 
     Parameters
     ----------
@@ -87,7 +87,7 @@ def timeline(data: list[Stream]):
 
 def time_distributions(data: list[Stream], figure_directory: Path):
     """
-    Plot the distributions of the various durations
+    Plot the distributions of the various durations.
 
     Parameters
     ----------
@@ -411,7 +411,7 @@ def _game_break(data: list[Stream], figure_directory: Path) -> None:
 
 def averages(data: list[Stream], figure_directory: Path):
     """
-    Plot the distribution of the average throw times of players
+    Plot the distribution of the average throw times of players.
 
     Parameters
     ----------

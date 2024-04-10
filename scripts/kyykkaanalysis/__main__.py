@@ -1,4 +1,4 @@
-"""Analysis of kyykka play times"""
+"""Analysis of kyykka play times."""
 
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -10,10 +10,7 @@ from kyykkaanalysis.model import inference, model_checks
 from kyykkaanalysis.model.modeling import ModelType
 
 
-def main():
-    """
-    Run analysis
-    """
+    """Run analysis."""
 
     args = _parse_arguments()
     data = read_times(args.input_file, args.team_file)

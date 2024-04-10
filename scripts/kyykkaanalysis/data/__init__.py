@@ -1,4 +1,5 @@
-"""Data handling and storage"""
+"""Data handling and storage."""
+
 import logging
 
 LOGGER = logging.getLogger(__name__)
