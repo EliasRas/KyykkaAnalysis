@@ -102,6 +102,7 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
 
 def parameter_to_latex(
     parameter: str,
+    *,
     variable_type: Literal["variable", "error", "percentile"] = "variable",
 ) -> str:
     """
@@ -136,6 +137,7 @@ def parameter_to_latex(
 def precalculated_histogram(
     samples: npt.NDArray[Any],
     color: str,
+    *,
     name: str | None = None,
     bin_count: int | None = None,
     normalization: Literal[
@@ -214,6 +216,7 @@ def precalculated_histogram(
 def calculate_histogram(
     values: npt.NDArray[Any],
     bin_count: int,
+    *,
     normalization: Literal[
         "probability", "probability density", "count"
     ] = "probability",
@@ -300,6 +303,7 @@ def _mean_line(samples: npt.NDArray[Any], histogram: go.Bar, color: str) -> go.S
 
 def ecdf(
     parameter_samples: npt.NDArray[Any],
+    *,
     name: str | None = None,
     color: str | None = None,
     legendgroup: str | None = None,

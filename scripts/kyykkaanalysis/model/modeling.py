@@ -52,7 +52,7 @@ class ThrowTimeModel:
     # TODO: Should be changed to https://www.pymc.io/projects/examples/en/latest/howto/model_builder.html
 
     def __init__(
-        self, data: ModelData, model_type: ModelType = ModelType.GAMMA
+        self, data: ModelData, *, model_type: ModelType = ModelType.GAMMA
     ) -> None:
         """
         Container for throw time model.
@@ -77,7 +77,7 @@ class ThrowTimeModel:
             case ModelType.NAIVEINVGAMMA:
                 self.model = invgamma_throw_model(data, naive=True)
 
-    def sample_prior(self, sample_count: int = 500) -> Dataset:
+    def sample_prior(self, *, sample_count: int = 500) -> Dataset:
         """
         Sample from the prior predictive distribution.
 
@@ -102,6 +102,7 @@ class ThrowTimeModel:
 
     def sample(
         self,
+        *,
         sample_count: int = 1000,
         tune_count: int = 1000,
         chain_count: int = 4,
@@ -244,7 +245,7 @@ class ThrowTimeModel:
 
         return weights
 
-    def change_observations(self, y: npt.NDArray[np.int_] | None = None) -> Self:
+    def change_observations(self, *, y: npt.NDArray[np.int_] | None = None) -> Self:
         """
         Change the observed data in the model.
 
@@ -386,7 +387,7 @@ class ThrowTimeModel:
         return data
 
 
-def gamma_throw_model(data: ModelData, naive: bool = False) -> pm.Model:
+def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     """
     Construct a model for throw times.
 
@@ -455,6 +456,7 @@ def _podium_gamma_logp(value, k: float, theta: float):
 def _podium_gamma_rng(
     k: float,
     theta: float,
+    *,
     rng: np.random.RandomState | np.random.Generator | None = None,
     size: tuple[int, ...] | None = None,
 ) -> npt.NDArray[np.int_]:
@@ -473,7 +475,7 @@ def _floored_gamma(k: float, theta: float, size: int):
     return floor(pm.Gamma.dist(alpha=k, beta=k / theta, size=size))
 
 
-def invgamma_throw_model(data: ModelData, naive: bool = False) -> pm.Model:
+def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     """
     Construct a model for throw times.
 
@@ -564,6 +566,7 @@ def _gammainc_diff(value, alpha: float, beta: float):
 def _podium_invgamma_rng(
     a: float,
     theta: float,
+    *,
     rng: np.random.RandomState | np.random.Generator | None = None,
     size: tuple[int, ...] | None = None,
 ) -> npt.NDArray[np.int_]:

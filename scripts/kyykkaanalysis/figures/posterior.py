@@ -23,6 +23,7 @@ from .utils import (
 def parameter_distributions(
     samples: Dataset,
     figure_directory: Path,
+    *,
     prior_samples: Dataset | None = None,
     true_values: Dataset | None = None,
 ) -> None:
@@ -55,6 +56,7 @@ def parameter_distributions(
 def _sample_distributions(
     samples: Dataset,
     figure_directory: Path,
+    *,
     prior_samples: Dataset | None = None,
     true_values: Dataset | None = None,
 ) -> None:
@@ -86,6 +88,7 @@ def _sample_distributions(
 def _theta_distributions(
     samples: npt.NDArray[np.float_],
     theta_symbol: str,
+    *,
     prior_samples: Dataset | None = None,
     true_values: Dataset | None = None,
 ) -> go.Figure:
@@ -191,6 +194,7 @@ def _single_parameter_distribution(
     parameter: str,
     samples: npt.NDArray[np.float_],
     parameter_symbol: str,
+    *,
     prior_samples: Dataset | None = None,
     true_values: Dataset | None = None,
 ) -> go.Figure:
@@ -240,6 +244,7 @@ def _single_parameter_distribution(
 def _parameter_correlations(
     samples: Dataset,
     figure_directory: Path,
+    *,
     true_values: Dataset | None = None,
 ) -> None:
     samples = samples.drop_vars(["theta"])
@@ -499,6 +504,7 @@ def _contraction(
 def predictive_distributions(
     samples: Dataset,
     figure_directory: Path,
+    *,
     true_values: Dataset | None = None,
 ) -> None:
     """
@@ -526,7 +532,7 @@ def predictive_distributions(
 
 
 def _data_distribution(
-    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+    samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
 ) -> None:
     figure = make_subplots(rows=1, cols=2)
 
@@ -593,7 +599,7 @@ def _data_distribution(
 
 
 def _data_moments(
-    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+    samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
 ) -> None:
     figure = make_subplots(rows=2, cols=2)
 
@@ -711,7 +717,7 @@ def _data_moments(
 
 
 def _throw_data_distribution(
-    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+    samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
 ) -> None:
     figure = make_subplots(rows=2, cols=2)
 
@@ -824,7 +830,7 @@ def _throw_data_distribution(
 
 
 def _player_data_moments(
-    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+    samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
 ) -> None:
     samples = samples["y"].values.reshape(-1, samples["y"].shape[-1])
     player_ids = true_values["player"].values
@@ -861,7 +867,7 @@ def _player_data_moments(
 
 
 def _throw_time_ranges(
-    samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
+    samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
 ) -> None:
     throw_times = samples["y"].values
     throw_times = throw_times.reshape(-1, throw_times.shape[-1])

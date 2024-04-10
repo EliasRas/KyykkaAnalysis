@@ -18,6 +18,7 @@ from .utils import (
 def chain_plots(
     samples: Dataset,
     figure_directory: Path,
+    *,
     sample_stats: Dataset = None,
 ) -> None:
     """

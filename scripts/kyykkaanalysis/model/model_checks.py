@@ -22,6 +22,7 @@ def check_priors(
     data: list[Stream],
     figure_directory: Path,
     cache_directory: Path,
+    *,
     model_type: ModelType = ModelType.GAMMA,
 ):
     """
