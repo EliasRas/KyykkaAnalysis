@@ -1,4 +1,13 @@
-"""Reading play times for CSV files."""
+"""
+Reading play times for CSV files.
+
+This module provides functionalities for reading kyykkä play time data from CSV files
+formatted using the format described in this kyykkaanalysis' README.
+
+See Also
+--------
+README.md
+"""
 
 from pathlib import Path
 
@@ -10,6 +19,9 @@ from .data_classes import Game, Half, Konatime, Stream, Throwtime
 def read_times(input_file: Path, team_file: Path) -> list[Stream]:
     """
     Read play times from a CSV file.
+
+    Reads, stores and validates timestamps of throws and kona completions from a CSV
+    file.
 
     Parameters
     ----------

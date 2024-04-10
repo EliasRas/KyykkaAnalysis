@@ -1,4 +1,9 @@
-"""Containers for play time data."""
+"""
+Containers for play time data.
+
+This module provides containers for kyykkä play time data with functionalities for
+processing raw data.
+"""
 
 from dataclasses import dataclass, field
 
@@ -10,6 +15,9 @@ from numpy import typing as npt
 class Throwtime:
     """
     Container for the data from a single throw.
+
+    Throwtime contains the timestamp of when a throw was thrown and information about
+    the thrower and the game in which the throw was thrown.
 
     Attributes
     ----------
@@ -37,12 +45,12 @@ class Konatime:
     """
     Container for the data from a single kona.
 
+    Konatime contains the timestamp for the time when a kona was completed.
+
     Attributes
     ----------
     time : numpy.datetime64
         Time of the kona
-    playoffs : bool
-        Whether the half is from a playoff game
     """
 
     time: np.datetime64
@@ -53,12 +61,17 @@ class Half:
     """
     Container for the data from a half of a game.
 
+    Half contains the information about the throws thrown in a single half of a kyykkä
+    game. Half also provides methods for calculating the times between the events of the
+    half (throws and completing konas) and collecting additional information about the
+    events and the half.
+
     Attributes
     ----------
     throws : list of Throwtime
         Throws in the half
     konas : tuple of (Konatime, Konatime)
-        Piled konas from the half
+        Completed konas from the half
     """
 
     throws: list[Throwtime] = field(default_factory=list)
@@ -139,6 +152,9 @@ class Half:
         """
         Positions of the players that threw the throws of the half.
 
+        Collects the positions of the players that threw the throws of the half.
+        Position is 1 for the first player and 4 for the last player.
+
         Parameters
         ----------
         difference : bool, default False
@@ -160,6 +176,9 @@ class Half:
     def throw_numbers(self, *, difference: bool = False) -> npt.NDArray[np.int_]:
         """
         Whether the throw is the first or second throw.
+
+        Collects the throw numbers of the throws of the half. First throw of each turn
+        of each player is numbered 1 and the second 2.
 
         Parameters
         ----------
@@ -218,7 +237,7 @@ class Half:
         self, *, difference: bool = False
     ) -> npt.NDArray[np.timedelta64 | np.datetime64]:
         """
-        Timestamps of the piled konas in the half.
+        Timestamps of the completed konas in the half.
 
         Parameters
         ----------
@@ -356,6 +375,9 @@ class Game:
         """
         Positions of the players that threw the throws of the game.
 
+        Collects the positions of the players that threw the throws of the game.
+        Position is 1 for the first player and 4 for the last player.
+
         Parameters
         ----------
         difference : bool, default False
@@ -372,6 +394,9 @@ class Game:
     def throw_numbers(self, *, difference: bool = False) -> npt.NDArray[np.int_]:
         """
         Whether the throw is the first or second throw.
+
+        Collects the throw numbers of the throws of the game. First throw of each turn
+        of each player is numbered 1 and the second 2.
 
         Parameters
         ----------
@@ -564,6 +589,9 @@ class Stream:
         """
         Positions of the players that threw the throws in the stream.
 
+        Collects the positions of the players that threw the throws of the half.
+        Position is 1 for the first player and 4 for the last player.
+
         Parameters
         ----------
         difference : bool, default False
@@ -580,6 +608,9 @@ class Stream:
     def throw_numbers(self, *, difference: bool = False) -> npt.NDArray[np.int_]:
         """
         Whether the throw is the first or second throw.
+
+        Collects the throw numbers of the throws of the half. First throw of each turn
+        of each player is numbered 1 and the second 2.
 
         Parameters
         ----------
@@ -707,6 +738,9 @@ class Stream:
 class ModelData:
     """
     Container for the data needed by the throw time models.
+
+    ModelData collects the processed play time data in a form that can be used when
+    constructing throw time models.
 
     Attributes
     ----------

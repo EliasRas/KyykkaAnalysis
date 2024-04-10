@@ -1,4 +1,9 @@
-"""Construct a play time model."""
+"""
+Constructing play time models.
+
+This module constructs kyykkä play time models and provides containers for them with
+functionalities for interacting with the models.
+"""
 
 from collections.abc import Sequence
 from enum import Enum
@@ -41,6 +46,10 @@ class ModelType(Enum):
 class ThrowTimeModel:
     """
     Container for throw time model.
+
+    Stores kyykkä throw time model. Provides methods for sampling from the
+    distributions defined by the model, calculating cross-validation results,
+    and processing samples.
 
     Attributes
     ----------
@@ -392,6 +401,10 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     """
     Construct a model for throw times.
 
+    Constructs a model for throw times which uses gamma distribution for the underlying
+    distribution of noise free throw times. The error model is either floor rounding
+    or a more complex distribution based on error distribution of timestamps.
+
     Parameters
     ----------
     data : ModelData
@@ -403,6 +416,11 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     -------
     pymc.Model
         Throw time model
+
+    See Also
+    --------
+    The structure of the model, the error model and the motivation for it is explained
+    more thoroughly in the report stored in KyykkaAnalysis repo.
     """
 
     coordinates = {
@@ -486,6 +504,10 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     """
     Construct a model for throw times.
 
+    Constructs a model for throw times which uses inverse gamma distribution for the
+    underlying distribution of noise free throw times. The error model is either floor
+    rounding or a more complex distribution based on error distribution of timestamps.
+
     Parameters
     ----------
     data : ModelData
@@ -497,6 +519,11 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     -------
     pymc.Model
         Throw time model
+
+    See Also
+    --------
+    The structure of the model and the motivation for it is explained more thoroughly in
+    the report stored in kyykkaanalysis repo.
     """
 
     coordinates = {

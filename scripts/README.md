@@ -1,4 +1,5 @@
 # KyykkaAnalysis
 Analysis of kyykka play times
 
-## Data format
+## Data file formats
+TODO: Write

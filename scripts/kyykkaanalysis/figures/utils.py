@@ -1,4 +1,9 @@
-"""Utility functions for plotly figures."""
+"""
+Utilities for plotly figures.
+
+This module provides various utility functions and variables for plotly figures
+including file io wrappers and generic plots
+"""
 
 from pathlib import Path
 from time import sleep
@@ -112,7 +117,10 @@ def parameter_to_latex(
     variable_type: Literal["variable", "error", "percentile"] = "variable",
 ) -> str:
     """
-    Convert the name of the parameter to a LaTeX symbol.
+    Convert the name of a variable to a LaTeX symbol.
+
+    Returns a LaTeX string of a variable, it's estimation error or the percentile of a
+    value in sample.
 
     Parameters
     ----------
@@ -141,7 +149,7 @@ def parameter_to_latex(
 
 
 def precalculated_histogram(  # noqa: PLR0913
-    samples: npt.NDArray[Any],
+    values: npt.NDArray[Any],
     color: str,
     *,
     name: str | None = None,
@@ -154,10 +162,14 @@ def precalculated_histogram(  # noqa: PLR0913
     """
     Create a histogram out of bar graph.
 
+    Creates a bar graph which shows the same information as a plotly histogram without
+    storing the raw data with the graph. Helps improve performance and size of the
+    figures.
+
     Parameters
     ----------
-    samples : numpy.ndarray of Any
-        Samples of parameter distribution
+    values : numpy.ndarray of Any
+        Values for the histogram
     color : str
         Color of the trace
     name : str, optional
@@ -179,30 +191,30 @@ def precalculated_histogram(  # noqa: PLR0913
     """
 
     if bin_count is None:
-        bin_count = max(min(samples.size // 200, 200), 1)
+        bin_count = max(min(values.size // 200, 200), 1)
     elif bin_count < 1:
         bin_count = 1
-    counts, bins = calculate_histogram(samples, bin_count, normalization=normalization)
+    counts, bins = calculate_histogram(values, bin_count, normalization=normalization)
     if normalization == "probability":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
             "Osuus: %{y:.1f} %"
             f"<extra>{f'{name}<br>' if name is not None else ''}"
-            f"Keskiarvo: {round(samples.mean(),2)}</extra>"
+            f"Keskiarvo: {round(values.mean(),2)}</extra>"
         )
     elif normalization == "probability density":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
             "Suhteellinen yleisyys: %{y:.2f} %"
             f"<extra>{f'{name}<br>' if name is not None else ''}"
-            f"Keskiarvo: {round(samples.mean(),2)}</extra>"
+            f"Keskiarvo: {round(values.mean(),2)}</extra>"
         )
     elif normalization == "count":
         hovertemplate = (
             "Arvo: %{customdata[0]:.2f} - %{customdata[1]:.2f}<br>"
             "Näytteet: %{y} %"
             f"<extra>{f'{name}<br>' if name is not None else ''}"
-            f"Keskiarvo: {round(samples.mean(),2)}</extra>"
+            f"Keskiarvo: {round(values.mean(),2)}</extra>"
         )
     histogram = go.Bar(
         x=bins[:-1] + (bins[1] - bins[0]) / 2,
@@ -215,7 +227,7 @@ def precalculated_histogram(  # noqa: PLR0913
         legendgrouptitle_text=legendgroup,
         showlegend=name is not None,
     )
-    mean = _mean_line(samples, histogram, color)
+    mean = _mean_line(values, histogram, color)
 
     return histogram, mean
 
@@ -230,6 +242,9 @@ def calculate_histogram(
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[Any]]:
     """
     Calculate bins and bin counts of a histogram.
+
+    Calculates histogram bins and the bin counts while accounting for data containing
+    only integers or no variance.
 
     Parameters
     ----------
@@ -274,6 +289,9 @@ def create_bins(values: npt.NDArray[Any], bin_count: int) -> npt.NDArray[Any]:
     """
     Create evenly distributed bins for data.
 
+    Creates evenly distributed bins while accounting for data without variance. Integer
+    valued bins are created for integer data.
+
     Parameters
     ----------
     values : numpy.ndarray of Any
@@ -286,6 +304,7 @@ def create_bins(values: npt.NDArray[Any], bin_count: int) -> npt.NDArray[Any]:
     numpy.ndarray of Any
         Bin edges
     """
+
     min_value = np.floor(values.min())
     max_value = np.ceil(values.max())
     if min_value == max_value:
@@ -316,7 +335,7 @@ def _mean_line(samples: npt.NDArray[Any], histogram: go.Bar, color: str) -> go.S
 
 
 def ecdf(
-    parameter_samples: npt.NDArray[Any],
+    values: npt.NDArray[Any],
     *,
     name: str | None = None,
     color: str | None = None,
@@ -325,10 +344,17 @@ def ecdf(
     """
     Create an empirical CDF plot.
 
+    Creates a plot which shows the empirical cumulative distribution function. If given
+    a data array that has more than one dimension, the empirical CDF of the flattened
+    array is plotted along with the range of possible ecdf values. The range is
+    calculated by flattening all but the last dimension of values and calculating the
+    ecdfs of the rows of the resulting array.
+
     Parameters
     ----------
-    parameter_samples : numpy.ndarray of Any
-        Samples of parameter distribution
+    values : numpy.ndarray of Any
+        Values for the ecdf. If values has more than one dimension, the last dimension
+        is interpreted as indexing different datasets.
     name : str, optional
         Name of the trace
     color : str, optional
@@ -345,7 +371,7 @@ def ecdf(
         more than 1 dimensions
     """
 
-    conditional_mean = np.sort(parameter_samples.flatten())
+    conditional_mean = np.sort(values.flatten())
     conditional_mean = conditional_mean[np.isfinite(conditional_mean)]
     if conditional_mean.size > _TOO_MANY_SCATTER:
         conditional_mean = conditional_mean[
@@ -363,12 +389,10 @@ def ecdf(
         legendgrouptitle_text=legendgroup,
     )
 
-    if len(parameter_samples.shape) > 1:
-        parameter_samples = np.sort(
-            parameter_samples.reshape(-1, parameter_samples.shape[-1]), axis=-1
-        )
-        lower_bound = np.nanmin(parameter_samples, 0)
-        upper_bound = np.nanmax(parameter_samples, 0)
+    if len(values.shape) > 1:
+        values = np.sort(values.reshape(-1, values.shape[-1]), axis=-1)
+        lower_bound = np.nanmin(values, 0)
+        upper_bound = np.nanmax(values, 0)
         interval = go.Scatter(
             x=np.concatenate((lower_bound, upper_bound[::-1])),
             y=np.concatenate(
@@ -395,6 +419,18 @@ def uniform_variation(
     """
     Visualize 99 % variation intervals for uniformly distributed data.
 
+    Creates intervals for the expected variance of the histogram bin counts and
+    empirical cumulative distribution function values calculated from uniformly
+    distributed data.
+
+    Since the data is uniformly distributed, each bin is equally likely and the
+    probability of a sample falling into a bin is 1/bin_count. The distribution of
+    repeated yes-no questions is binomial.
+
+    The values of inverse empirical cumulative distribution are order statistics of
+    uniform distribution. The distribution of the kth largest value in a sample is
+    beta-distributed.
+
     Parameters
     ----------
     sample_size : int
@@ -408,6 +444,11 @@ def uniform_variation(
         Variation interval for histgram
     go.Scatter
         Variation interval for ecdf
+
+    See Also
+    --------
+    https://en.wikipedia.org/wiki/Order_statistic#Probability_distributions_of_order_statistics
+    For more in depth explanation about the distribution of ecdf values.
     """
 
     # Bin counts are binomially distributed
@@ -452,7 +493,7 @@ def uniform_variation(
 
 def hex_to_rgb(hex_value: str) -> tuple[str, str, str]:
     """
-    Convert hex valued color to rgb representation.
+    Convert hex valued color to a RGB representation.
 
     Parameters
     ----------

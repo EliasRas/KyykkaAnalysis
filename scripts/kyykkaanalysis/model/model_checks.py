@@ -1,4 +1,10 @@
-"""Checking priors and model definition."""
+"""
+Checking priors and parameter recovery.
+
+This model performs and visualizes prior predictive checks and simulation based
+calibration (SMC) for kyykkä play time models. SMC is performed with multiple models,
+also with data generated with other models.
+"""
 
 from pathlib import Path
 
@@ -32,6 +38,9 @@ def check_priors(
 ) -> None:
     """
     Sample data from prior distribution and analyze it.
+
+    Samples data from the prior distributions defined by the given model and visualizes
+    the distributions of both the parameters and the observed variables.
 
     Parameters
     ----------
@@ -77,6 +86,12 @@ def fake_data_simulation(
 ) -> None:
     """
     Simulate data from prior and check if the parameter values can be recovered.
+
+    Simulates data from the prior distributions defined by different kinds of models and
+    samples from the posterior distribution given the prior predictive samples.
+    Summarizes the parameter recovery and visualizes the results. Also visualizes the
+    MCMC chains and the posterior distributions for the first chains and the chains
+    where the sampling is not particularly efficient.
 
     Parameters
     ----------

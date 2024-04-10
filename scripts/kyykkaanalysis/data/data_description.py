@@ -1,4 +1,8 @@
-"""Key numbers from the data."""
+"""
+Key numbers from the data.
+
+This module provides functions for printing descriptions of kyykkä play time data.
+"""
 
 import numpy as np
 
@@ -9,7 +13,10 @@ from .data_classes import Stream
 
 def print_description(data: list[Stream]) -> None:
     """
-    Print a description of the data set.
+    Print a description of a kyykkä play time data set.
+
+    Prints information about the size of the data set, and the mean values and ranges of
+    throw times, game durations and kona completion times.
 
     Parameters
     ----------

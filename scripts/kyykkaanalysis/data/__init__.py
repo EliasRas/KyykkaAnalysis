@@ -1,4 +1,4 @@
-"""Data handling and storage."""
+"""Provides containers and handlers for kyykkä play time data."""
 
 import logging
 

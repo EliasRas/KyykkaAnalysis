@@ -1,2 +1,2 @@
 # KyykkaAnalysis
-Analysis of kyykka play times
+Analysis of kyykkä play times

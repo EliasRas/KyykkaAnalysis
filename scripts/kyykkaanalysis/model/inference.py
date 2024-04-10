@@ -1,4 +1,13 @@
-"""Fitting the model."""
+"""
+Fitting a play time model.
+
+This module performs statistical inference with different kinds of kyykkä play time
+models. Their posterior distributions are sampled given the data and the samples are
+stored for peristence. Posterior predictive checks are performed using the posteriors
+and the performance of the models is compared using PSIS-LOO cross-validation. The
+posteriors, posterior predictive checks and model comparisons are visualized
+automatically.
+"""
 
 from pathlib import Path
 
@@ -20,7 +29,12 @@ def fit_model(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ) -> None:
     """
-    Simulate data from prior and check if the parameter values can be recovered.
+    Perform statistical inference with different models.
+
+    Samples from the posterior distributions of different throw time models, and
+    analyzes the models' performance using posterior predictive checks and PSIS-LOO
+    cross-validation. Compares the performance of the models. Visualizes the MCMC
+    chains, posterior distributions and analyses.
 
     Parameters
     ----------
