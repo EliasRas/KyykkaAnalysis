@@ -16,7 +16,7 @@ def main():
     """
 
     args = _parse_arguments()
-    data = read_times(args.input_file)
+    data = read_times(args.input_file, args.team_file)
 
     print_description(data)
 
@@ -50,6 +50,11 @@ def _parse_arguments() -> Namespace:
     parser.add_argument(
         "input_file",
         help="Path to the CSV file which contains the input data",
+        type=Path,
+    )
+    parser.add_argument(
+        "team_file",
+        help="Path to the CSV file which contains the teams for the player",
         type=Path,
     )
     parser.add_argument(

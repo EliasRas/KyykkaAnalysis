@@ -6,71 +6,8 @@ import numpy as np
 
 from .data_classes import Game, Half, Konatime, Stream, Throwtime
 
-TEAMS = {
-    "Tommi Linnamaa": "ABUA",
-    "Tommi Nikula": "ABUA",
-    "Akseli Kalliomäki": "MOT",
-    "Jesse Peltoniemi": "MOT",
-    "Valtteri Yli-Karro": "ABUA",
-    "Tiina Mikkonen": "ABUA",
-    "Janne Rahko": "MOT",
-    "Sami Mäkipää": "MOT",
-    "Akseli Koskela": "DDRNV Biergarten",
-    "Juho Ahvenniemi": "KOVA",
-    "Pietu Mäenpää": "KOVA",
-    "Viljami Sinisalo": "KOVA",
-    "Kim Lillfors": "KOVA",
-    "Salla-Mari Palokari": "DDRNV Arschloch",
-    "Mikko Rajakorpi": "DDRNV Arschloch",
-    "Jere Lilja": "DDRNV Arschloch",
-    "Juulia Kärki": "DDRNV Arschloch",
-    "Vilma Mäkitalo": "KuHa",
-    "Miika Vanonen": "KuHa",
-    "Julius Setälä": "KOVA",
-    "Kalle Lehtola": "KuHa",
-    "Inka Seppälä": "KuHa",
-    "Eino Niittymäki": "Sauna ukot",
-    "Topi Jalonen": "Sauna ukot",
-    "Nuutti Mikkonen": "Sauna ukot",
-    "Antti Vettervik": "Sauna ukot",
-    "Aleksi Kamppi": "Sauna ukot",
-    "Lauri Varjo": "Sauna ukot",
-    "Antti Kukko": "DL",
-    "Elias Räsänen": "DL",
-    "Oskari Kansanen": "DDRNV Langer tod",
-    "Tuomas Himmanen": "DDRNV Langer tod",
-    "Antti Peltotalo": "DL",
-    "Julia Bondarchik": "DL",
-    "Veeti Ahvonen": "DDRNV Langer tod",
-    "Iiro Pulska": "DDRNV Langer tod",
-    "Teemu Ala-Järvenpää": "DDRNV Biergarten",
-    "Matias Selin": "DDRNV Biergarten",
-    "Niko Leppänen": "DDRNV Biergarten",
-    "Natalia Kovru": "Ullatus",
-    "Miika Sorvali": "Ullatus",
-    "Tuomo Nieminen": "Ullatus",
-    "Riku Sinkkonen": "Ullatus",
-    "Kimmo Lastunen": "MörköEeverttiMöröt",
-    "Sakari Rautalin": "MörköEeverttiMöröt",
-    "Janne Lehtimäki": "MörköEeverttiMöröt",
-    "Lasse Enäsuo": "MörköEeverttiMöröt",
-    "Oskari Kolehmainen": "DDRNV Arschloch",
-    "Thomas Mikkonen": "DDRNV Biergarten",
-    "Akseli Kolari": "EssoXL",
-    "Jori Ala-Aho": "EssoXL",
-    "Timo Punkari": "EssoXL",
-    "Karli Kund": "EssoXL",
-    "Lassi Halminen": "DDRNV Langer tod",
-    "Ville Venetjoki": "ABUA",
-    "Jani Käpylä": "Sauna ukot",
-    "Rudolf Salminen": "EssoXL",
-    "Leevi Malin": "KuHa",
-    "Lauri Ahlqvist": "KuHa",
-    "Ville Niemi": "DL",
-}
 
-
-def read_times(input_file: Path) -> list[Stream]:
+def read_times(input_file: Path, team_file: Path) -> list[Stream]:
     """
     Read play times from a CSV file
 
@@ -78,6 +15,8 @@ def read_times(input_file: Path) -> list[Stream]:
     ----------
     input_file : pathlib.Path
         Path to the file which contains the play times
+    team_file : pathlib.Path
+        Path to the file which contains the teams for the players
 
     Returns
     -------
@@ -87,13 +26,14 @@ def read_times(input_file: Path) -> list[Stream]:
     Raises
     ------
     ValueError
-        If the data file does not exist
+        If any of the data files does not exist
     ValueError
-        If the data file contains a timestamp in invalid format
+        If the play time file contains a timestamp in invalid format
     """
 
     if not input_file.exists():
         raise ValueError("Input file does not exist.")
+    teams = _read_teams(team_file)
 
     player_ids = {}
     data = []
@@ -111,11 +51,24 @@ def read_times(input_file: Path) -> list[Stream]:
             else:
                 players = content[: _last_valid_time(content) + 1]
                 _read_stream_times(
-                    player_ids, stream, times, players, playoffs=len(data) >= 13
+                    teams, player_ids, stream, times, players, playoffs=len(data) >= 13
                 )
                 data.append(stream)
 
     return data
+
+
+def _read_teams(team_file: Path) -> dict[str, str]:
+    if not team_file.exists():
+        raise ValueError("Input file does not exist.")
+
+    teams = {}
+    with open(team_file, encoding="utf-8") as file:
+        for line in file:
+            player, team = line.strip().split(",")
+            teams[player] = team
+
+    return teams
 
 
 def _last_valid_time(content: list[str]) -> int:
@@ -127,6 +80,7 @@ def _last_valid_time(content: list[str]) -> int:
 
 
 def _read_stream_times(
+    teams: dict[str, str],
     player_ids: dict[str, int],
     stream: Stream,
     times: list[str],
@@ -153,7 +107,7 @@ def _read_stream_times(
             halves, konas = _parse_kona_time(stream, halves, konas, time)
         else:
             halves[-1].throws.append(
-                Throwtime(player_ids[player], player, time, TEAMS[player], playoffs)
+                Throwtime(player_ids[player], player, time, teams[player], playoffs)
             )
 
     halves[-1].konas = (
