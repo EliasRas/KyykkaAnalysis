@@ -242,6 +242,26 @@ class Half:
         return times
 
     @property
+    def end(self) -> np.datetime64:
+        """
+        Timestamp for the end of the half.
+
+        Returns
+        -------
+        numpy.datetime64
+            End of the half
+        """
+
+        if np.isfinite(self.kona_times()).sum() < 2 and len(self.throws) > 0:  # noqa: PLR2004
+            end = self.throws[-1].time
+        elif np.isfinite(self.kona_times()).sum() < 2:  # noqa: PLR2004
+            end = np.datetime64("NaT")
+        else:
+            end = self.konas[-1].time
+
+        return end
+
+    @property
     def duration(self) -> np.timedelta64:
         """
         Duration of the half.
@@ -403,6 +423,19 @@ class Game:
         """
 
         return np.concatenate([half.kona_times(difference) for half in self.halfs])
+
+    @property
+    def end(self) -> np.datetime64:
+        """
+        Timestamp for the end of the game.
+
+        Returns
+        -------
+        numpy.datetime64
+            End of the game
+        """
+
+        return self.halfs[-1].end
 
     @property
     def duration(self) -> np.timedelta64:
@@ -598,6 +631,19 @@ class Stream:
         """
 
         return np.concatenate([game.kona_times(difference) for game in self.games])
+
+    @property
+    def end(self) -> np.datetime64:
+        """
+        Timestamp for the end of the stream.
+
+        Returns
+        -------
+        numpy.datetime64
+            End of the stream
+        """
+
+        return self.games[-1].end
 
     @property
     def game_durations(self) -> npt.NDArray[np.timedelta64]:
