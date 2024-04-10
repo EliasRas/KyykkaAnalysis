@@ -14,7 +14,8 @@ FONT_SIZE = 15
 FONT_SIZE_2X2 = 28
 FONT_SIZE_BOXPLOT = 10
 PLOT_COLORS = colors.qualitative.Plotly
-LATEX_CONVERSION = {
+
+_LATEX_CONVERSION = {
     "mu": r"$\mu$",
     "sigma": r"$\sigma$",
     "o": "$o$",
@@ -23,7 +24,7 @@ LATEX_CONVERSION = {
     "theta": r"$\theta$",
     "y": "$y$",
 }
-ERROR_LATEX_CONVERSION = {
+_ERROR_LATEX_CONVERSION = {
     "mu": r"$\mu-\text{virhe}$",
     "sigma": r"$\sigma-\text{virhe}$",
     "o": r"$o-\text{virhe}$",
@@ -32,7 +33,7 @@ ERROR_LATEX_CONVERSION = {
     "theta": r"$\theta-\text{virhe}$",
     "y": r"$y-\text{virhe}$",
 }
-PERCENTILE_LATEX_CONVERSION = {
+_PERCENTILE_LATEX_CONVERSION = {
     "mu": r"$\mu-\text{prosenttipiste}$",
     "sigma": r"$\sigma-\text{prosenttipiste}$",
     "o": r"$o-\text{prosenttipiste}$",
@@ -41,8 +42,7 @@ PERCENTILE_LATEX_CONVERSION = {
     "theta": r"$\theta-\text{prosenttipiste}$",
     "y": r"$y-\text{prosenttipiste}$",
 }
-
-TOO_MANY_SCATTER = 10000
+_TOO_MANY_SCATTER = 10000
 
 
 def write_pdf(figure: go.Figure, figure_path: Path) -> None:
@@ -125,11 +125,11 @@ def parameter_to_latex(
     """
 
     if variable_type == "variable":
-        symbol = LATEX_CONVERSION[parameter]
+        symbol = _LATEX_CONVERSION[parameter]
     elif variable_type == "error":
-        symbol = ERROR_LATEX_CONVERSION[parameter]
+        symbol = _ERROR_LATEX_CONVERSION[parameter]
     elif variable_type == "percentile":
-        symbol = PERCENTILE_LATEX_CONVERSION[parameter]
+        symbol = _PERCENTILE_LATEX_CONVERSION[parameter]
 
     return symbol
 
@@ -341,9 +341,9 @@ def ecdf(
 
     conditional_mean = np.sort(parameter_samples.flatten())
     conditional_mean = conditional_mean[np.isfinite(conditional_mean)]
-    if conditional_mean.size > TOO_MANY_SCATTER:
+    if conditional_mean.size > _TOO_MANY_SCATTER:
         conditional_mean = conditional_mean[
-            :: conditional_mean.size // TOO_MANY_SCATTER
+            :: conditional_mean.size // _TOO_MANY_SCATTER
         ]
     cdf = go.Scatter(
         x=conditional_mean,

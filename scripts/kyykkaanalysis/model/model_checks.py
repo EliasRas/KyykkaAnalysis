@@ -19,8 +19,8 @@ from ..figures.posterior import (
 from ..figures.prior import parameter_distributions as prior_distribution_plots
 from .modeling import ModelType, ThrowTimeModel
 
-SBC_SAMPLES = 1000
-SBC_CHAINS = 4
+_SBC_SAMPLES = 1000
+_SBC_CHAINS = 4
 
 
 def check_priors(
@@ -242,7 +242,7 @@ def _fake_data_inference(
 
         if (
             sample_index in [0, 1]
-            or posterior_sample.thinned_sample["draw"].size < SBC_SAMPLES / SBC_CHAINS
+            or posterior_sample.thinned_sample["draw"].size < _SBC_SAMPLES / _SBC_CHAINS
         ):
             _visualize_sample(
                 model,
@@ -337,9 +337,9 @@ def _sample_posterior(
     else:
         model.change_observations(y=sample["y"].values)
         posterior_sample = model.sample(
-            sample_count=SBC_SAMPLES,
-            chain_count=SBC_CHAINS,
-            parallel_count=SBC_CHAINS,
+            sample_count=_SBC_SAMPLES,
+            chain_count=_SBC_CHAINS,
+            parallel_count=_SBC_CHAINS,
             thin=False,
         )
         posterior_sample.to_netcdf(posterior_file)
