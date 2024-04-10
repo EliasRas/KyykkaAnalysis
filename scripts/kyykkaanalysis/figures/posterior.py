@@ -17,8 +17,6 @@ from .utils import (
     ecdf,
     parameter_to_latex,
     precalculated_histogram,
-    FONT_SIZE,
-    PLOT_COLORS,
 )
 
 
