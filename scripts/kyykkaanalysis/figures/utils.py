@@ -11,9 +11,15 @@ from plotly import graph_objects as go
 from scipy.stats import beta, binom
 
 FONT_SIZE = 15
+"""Size of the font for figures meant to be inserted directly to report PDF"""
 FONT_SIZE_2X2 = 28
+"""
+Size of the font for figures meant to be inserted in a 2x2 subfigure grid to report PDF
+"""
 FONT_SIZE_BOXPLOT = 10
+"""Size of the font for boxplot figures in report PDF"""
 PLOT_COLORS = colors.qualitative.Plotly
+"""Default colorcycle"""
 
 _LATEX_CONVERSION = {
     "mu": r"$\mu$",
