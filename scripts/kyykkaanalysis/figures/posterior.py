@@ -514,7 +514,7 @@ def predictive_distributions(
 
     Parameters
     ----------
-    sample : xarray.Dataset
+    samples : xarray.Dataset
         Posterior predictive samples
     figure_directory : Path
         Path to the directory in which the figures are saved

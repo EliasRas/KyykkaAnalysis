@@ -201,7 +201,7 @@ def model_comparison(
     ----------
     data : xarray.Dataset
         Observed data
-    loo_result : arviz.ELPDData
+    loo_results : arviz.ELPDData
         Results of cross validation
     figure_directory : Path
         Path to the directory in which the figures are saved
