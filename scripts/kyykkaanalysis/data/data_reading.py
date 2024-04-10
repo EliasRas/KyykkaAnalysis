@@ -108,7 +108,7 @@ def _read_stream_times(  # noqa: PLR0913
 
         if time_string == "?":
             time = np.datetime64("NaT")
-        elif time == player == "":
+        elif time_string == player == "":
             continue
         else:
             time = _parse_time(time_string)
