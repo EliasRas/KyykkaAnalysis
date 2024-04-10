@@ -32,7 +32,8 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
     """
 
     if not input_file.exists():
-        raise ValueError(f"Input file {input_file} does not exist.")
+        msg = f"Input file {input_file} does not exist."
+        raise ValueError(msg)
     teams = _read_teams(team_file)
 
     player_ids = {}
@@ -60,7 +61,8 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
 
 def _read_teams(team_file: Path) -> dict[str, str]:
     if not team_file.exists():
-        raise ValueError("Input file does not exist.")
+        msg = "Input file does not exist."
+        raise ValueError(msg)
 
     teams = {}
     with open(team_file, encoding="utf-8") as file:
@@ -129,7 +131,8 @@ def _parse_time(time_string: str) -> np.datetime64:
         minutes = np.timedelta64(int(time_info[1]), "m")
         seconds = np.timedelta64(int(time_info[2]), "s")
     else:
-        raise ValueError("Invalid time format")
+        msg = "Invalid time format"
+        raise ValueError(msg)
 
     return np.datetime64("2000-01-01") + hours + minutes + seconds
 

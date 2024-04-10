@@ -248,7 +248,8 @@ def calculate_histogram(
     elif normalization == "count":
         pass
     else:
-        raise ValueError(f"Invalid normalization {normalization}.")
+        msg = f"Invalid normalization {normalization}."
+        raise ValueError(msg)
 
     return counts, bins
 
