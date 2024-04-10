@@ -237,6 +237,11 @@ def calculate_histogram(
         Possibly normalized bin heights
     numpy.ndarray of Any
         Bin edges
+
+    Raises
+    ------
+    ValueError
+        If normalization is not one of allowed values
     """
 
     bins = create_bins(values, bin_count)
