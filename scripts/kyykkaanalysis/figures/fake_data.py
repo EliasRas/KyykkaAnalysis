@@ -563,7 +563,7 @@ def _ks_distances(
     posterior_summaries: Dataset,
     posterior_predictive_summaries: Dataset,
     figure_directory: Path,
-):
+) -> None:
     observed_variables = sorted(posterior_predictive_summaries.keys())
     parameters = sorted(posterior_summaries.keys())
     parameter_count = len(parameters)

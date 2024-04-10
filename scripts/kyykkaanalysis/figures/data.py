@@ -10,7 +10,7 @@ from .utils import write_pdf, FONT_SIZE, FONT_SIZE_2X2, PLOT_COLORS
 from ..data.data_classes import Stream
 
 
-def timeline(data: list[Stream]):
+def timeline(data: list[Stream]) -> None:
     """
     Plot the timeline of the throws in a game.
 
@@ -85,7 +85,7 @@ def timeline(data: list[Stream]):
         figure.show()
 
 
-def time_distributions(data: list[Stream], figure_directory: Path):
+def time_distributions(data: list[Stream], figure_directory: Path) -> None:
     """
     Plot the distributions of the various durations.
 
@@ -409,7 +409,7 @@ def _game_break(data: list[Stream], figure_directory: Path) -> None:
     write_pdf(figure, figure_directory / "pelit4.pdf")
 
 
-def averages(data: list[Stream], figure_directory: Path):
+def averages(data: list[Stream], figure_directory: Path) -> None:
     """
     Plot the distribution of the average throw times of players.
 

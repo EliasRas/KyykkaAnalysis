@@ -16,7 +16,9 @@ from ..figures.posterior import (
 )
 
 
-def fit_model(data: list[Stream], figure_directory: Path, cache_directory: Path):
+def fit_model(
+    data: list[Stream], figure_directory: Path, cache_directory: Path
+) -> None:
     """
     Simulate data from prior and check if the parameter values can be recovered.
 

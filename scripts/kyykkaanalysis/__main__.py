@@ -10,6 +10,7 @@ from kyykkaanalysis.model import inference, model_checks
 from kyykkaanalysis.model.modeling import ModelType
 
 
+def main() -> None:
     """Run analysis."""
 
     args = _parse_arguments()

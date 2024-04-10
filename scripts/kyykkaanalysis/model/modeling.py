@@ -443,7 +443,11 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     return model
 
 
-def _podium_gamma_logp(value, k: float, theta: float):
+def _podium_gamma_logp(
+    value: npt.ArrayLike | Sequence[TensorVariable],
+    k: float | TensorVariable,
+    theta: float | TensorVariable,
+) -> float | TensorVariable:
     dist = pm.Gamma.dist(alpha=k, beta=k / theta)
 
     density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
@@ -471,7 +475,9 @@ def _podium_gamma_rng(
     return np.floor(draws)
 
 
-def _floored_gamma(k: float, theta: float, size: int):
+def _floored_gamma(
+    k: float | TensorVariable, theta: float | TensorVariable, size: Shape
+) -> TensorVariable:
     return floor(pm.Gamma.dist(alpha=k, beta=k / theta, size=size))
 
 
@@ -531,7 +537,11 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     return model
 
 
-def _podium_invgamma_logp(value, a: float, theta: float):
+def _podium_invgamma_logp(
+    value: npt.ArrayLike | Sequence[TensorVariable],
+    a: float | TensorVariable,
+    theta: float | TensorVariable,
+) -> float | TensorVariable:
     alpha = exp(-a) + 1
     beta = theta * exp(-a)
 
@@ -544,7 +554,11 @@ def _podium_invgamma_logp(value, a: float, theta: float):
     return log(5 / 9 * density[0] + 3 / 9 * density[1] + 1 / 9 * density[2])
 
 
-def _dist_diff(value, alpha: float, beta: float):
+def _dist_diff(
+    value: npt.ArrayLike | Sequence[TensorVariable],
+    alpha: float | TensorVariable,
+    beta: float | TensorVariable,
+) -> tuple[float] | Sequence[TensorVariable]:
     dist = pm.InverseGamma.dist(alpha=alpha, beta=beta)
 
     density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
@@ -554,8 +568,11 @@ def _dist_diff(value, alpha: float, beta: float):
     return density1, density2, density3
 
 
-def _gammainc_diff(value, alpha: float, beta: float):
-
+def _gammainc_diff(
+    value: npt.ArrayLike | Sequence[TensorVariable],
+    alpha: float | TensorVariable,
+    beta: float | TensorVariable,
+) -> tuple[float] | Sequence[TensorVariable]:
     density1 = gammainc(alpha, beta / (value - 2)) - gammainc(alpha, beta / (value + 3))
     density2 = gammainc(alpha, beta / (value - 1)) - gammainc(alpha, beta / (value + 2))
     density3 = gammainc(alpha, beta / (value)) - gammainc(alpha, beta / (value + 1))
@@ -582,7 +599,9 @@ def _podium_invgamma_rng(
     return np.floor(draws)
 
 
-def _floored_invgamma(a: float, theta: float, size: int):
+def _floored_invgamma(
+    a: float | TensorVariable, theta: float | TensorVariable, size: Shape
+) -> TensorVariable:
     return floor(
         pm.InverseGamma.dist(alpha=exp(-a) + 1, beta=theta * exp(-a), size=size)
     )

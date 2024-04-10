@@ -24,7 +24,7 @@ def check_priors(
     cache_directory: Path,
     *,
     model_type: ModelType = ModelType.GAMMA,
-):
+) -> None:
     """
     Sample data from prior distribution and analyze it.
 
@@ -69,7 +69,7 @@ def check_priors(
 
 def fake_data_simulation(
     data: list[Stream], figure_directory: Path, cache_directory: Path
-):
+) -> None:
     """
     Simulate data from prior and check if the parameter values can be recovered.
 
