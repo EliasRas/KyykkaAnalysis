@@ -38,7 +38,7 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
 
     player_ids = {}
     data = []
-    with open(input_file, encoding="utf-8") as file:
+    with input_file.open(encoding="utf-8") as file:
         for i, line in enumerate(file):
             content = line.strip().split(",")
             if i % 3 == 0:
@@ -65,7 +65,7 @@ def _read_teams(team_file: Path) -> dict[str, str]:
         raise ValueError(msg)
 
     teams = {}
-    with open(team_file, encoding="utf-8") as file:
+    with team_file.open(encoding="utf-8") as file:
         for line in file:
             player, team = line.strip().split(",")
             teams[player] = team
