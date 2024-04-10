@@ -85,6 +85,7 @@ def _read_stream_times(
     stream: Stream,
     times: list[str],
     players: list[str],
+    *,
     playoffs: bool,
 ) -> None:
     halves = [Half()]
