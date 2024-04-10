@@ -1,4 +1,4 @@
-"""Visualizing data and models."""
+"""Provides visualizations for models and data"""
 
 import logging
 
