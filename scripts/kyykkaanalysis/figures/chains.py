@@ -8,10 +8,10 @@ from plotly.subplots import make_subplots
 from xarray import Dataset
 
 from .utils import (
-    parameter_to_latex,
-    precalculated_histogram,
     FONT_SIZE,
     PLOT_COLORS,
+    parameter_to_latex,
+    precalculated_histogram,
 )
 
 
@@ -106,7 +106,6 @@ def _trace_plot(samples: Dataset, figure_directory: Path) -> None:
 def _divergences(
     samples: Dataset, sample_stats: Dataset, figure_directory: Path
 ) -> None:
-
     dimensions = []
     for parameter in sorted(samples.keys()):
         if parameter == "theta":

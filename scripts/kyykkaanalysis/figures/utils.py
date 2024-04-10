@@ -6,8 +6,9 @@ from typing import Any, Literal
 
 import numpy as np
 from numpy import typing as npt
-from plotly import graph_objects as go, colors
-from scipy.stats import binom, beta
+from plotly import colors
+from plotly import graph_objects as go
+from scipy.stats import beta, binom
 
 FONT_SIZE = 15
 FONT_SIZE_2X2 = 28

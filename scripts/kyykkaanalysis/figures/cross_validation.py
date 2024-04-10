@@ -2,17 +2,17 @@
 
 from pathlib import Path
 
-from arviz import ELPDData
 import numpy as np
+from arviz import ELPDData
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 from xarray import Dataset
 
 from .utils import (
-    precalculated_histogram,
-    uniform_variation,
     FONT_SIZE,
     PLOT_COLORS,
+    precalculated_histogram,
+    uniform_variation,
 )
 
 

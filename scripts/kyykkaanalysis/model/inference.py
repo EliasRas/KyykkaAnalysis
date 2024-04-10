@@ -5,8 +5,6 @@ from pathlib import Path
 from arviz import InferenceData
 from xarray import Dataset, open_dataset
 
-from .modeling import ModelType, ThrowTimeModel
-from .model_checks import check_priors
 from ..data.data_classes import ModelData, Stream
 from ..figures.chains import chain_plots
 from ..figures.cross_validation import cross_validation_plots, model_comparison
@@ -14,6 +12,8 @@ from ..figures.posterior import (
     parameter_distributions,
     predictive_distributions,
 )
+from .model_checks import check_priors
+from .modeling import ModelType, ThrowTimeModel
 
 
 def fit_model(

@@ -2,20 +2,22 @@
 
 from pathlib import Path
 
-from arviz import InferenceData
 import numpy as np
+from arviz import InferenceData
 from scipy.stats import kstest
 from xarray import Dataset, open_dataset
 
-from .modeling import ModelType, ThrowTimeModel
 from ..data.data_classes import ModelData, Stream
 from ..figures.chains import chain_plots
 from ..figures.fake_data import estimation_plots
 from ..figures.posterior import (
     parameter_distributions as posterior_distribution_plots,
+)
+from ..figures.posterior import (
     predictive_distributions,
 )
 from ..figures.prior import parameter_distributions as prior_distribution_plots
+from .modeling import ModelType, ThrowTimeModel
 
 
 def check_priors(

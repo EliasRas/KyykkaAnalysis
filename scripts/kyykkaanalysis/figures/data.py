@@ -6,8 +6,8 @@ import numpy as np
 from numpy import typing as npt
 from plotly import graph_objects as go
 
-from .utils import write_pdf, FONT_SIZE, FONT_SIZE_2X2, PLOT_COLORS
 from ..data.data_classes import Stream
+from .utils import FONT_SIZE, FONT_SIZE_2X2, PLOT_COLORS, write_pdf
 
 
 def timeline(data: list[Stream]) -> None:

@@ -1,14 +1,17 @@
 """Construct a play time model."""
 
+from collections.abc import Sequence
 from enum import Enum
 from typing import Self
 
-from arviz import InferenceData, ELPDData, summary, loo, loo_pit, psislw, ess
 import numpy as np
-from numpy import typing as npt
 import pymc as pm
+from arviz import ELPDData, InferenceData, ess, loo, loo_pit, psislw, summary
+from numpy import typing as npt
+from pymc.distributions.shape_utils import Shape
 from pymc.math import exp, floor, log, switch
 from pytensor.tensor.math import gammainc
+from pytensor.tensor.variable import TensorVariable
 from xarray import DataArray, Dataset, merge
 
 from ..data.data_classes import ModelData

@@ -11,6 +11,8 @@ from scipy.stats import kurtosis, skew
 from xarray import Dataset
 
 from .utils import (
+    FONT_SIZE,
+    PLOT_COLORS,
     create_bins,
     ecdf,
     parameter_to_latex,

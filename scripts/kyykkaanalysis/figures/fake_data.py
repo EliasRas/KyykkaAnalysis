@@ -10,11 +10,11 @@ from plotly.subplots import make_subplots
 from xarray import Dataset
 
 from .utils import (
+    FONT_SIZE,
+    PLOT_COLORS,
     parameter_to_latex,
     precalculated_histogram,
     uniform_variation,
-    FONT_SIZE,
-    PLOT_COLORS,
 )
 
 
