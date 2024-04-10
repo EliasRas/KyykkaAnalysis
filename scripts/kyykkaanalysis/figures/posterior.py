@@ -482,7 +482,7 @@ def _contraction(
     figure = go.Figure(
         go.Scatter(
             x=contractions,
-            y=np.random.random(len(contractions)),
+            y=np.random.default_rng().random(len(contractions)),
             customdata=parameters,
             mode="markers",
             hovertemplate="Posteriorin supistuma: %{x:.2f}<extra>%{customdata}:</extra>",
