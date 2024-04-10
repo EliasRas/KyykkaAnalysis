@@ -463,23 +463,21 @@ def _contraction(
     parameters = []
     contractions = []
     for parameter, parameter_samples in samples.items():
-        parameter_samples = parameter_samples.values
+        sample_values = parameter_samples.values
         prior_sample = prior_samples[parameter].values
         if parameter == "theta":
-            parameter_samples = parameter_samples.reshape(
-                -1, parameter_samples.shape[-1]
-            )
+            sample_values = parameter_samples.reshape(-1, sample_values.shape[-1])
             prior_sample = prior_sample.reshape(-1, prior_sample.shape[-1])
             parameters.extend(
                 [
                     f"theta_{player_index+1}"
-                    for player_index in range(parameter_samples.shape[-1])
+                    for player_index in range(sample_values.shape[-1])
                 ]
             )
-            contractions.extend(1 - parameter_samples.var(0) / prior_sample.var(0))
+            contractions.extend(1 - sample_values.var(0) / prior_sample.var(0))
         else:
             parameters.append(parameter)
-            contractions.append(1 - parameter_samples.var() / prior_sample.var())
+            contractions.append(1 - sample_values.var() / prior_sample.var())
 
     figure = go.Figure(
         go.Scatter(
