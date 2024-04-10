@@ -366,7 +366,7 @@ def _visualize_sample(  # noqa: PLR0913
             sample_directory = figure_directory / f"naive_inv_{sample_index}"
 
     data = model.dataset
-    for var in posterior_sample.posterior_predictive.keys():
+    for var in posterior_sample.posterior_predictive:
         data[var] = prior[var].isel(draw=sample_index, chain=0)
 
     posterior_distribution_plots(
@@ -392,7 +392,7 @@ def _summarize_posterior(
     sample: Dataset,
     sample_index: int,
 ) -> None:
-    for parameter in summaries.keys():
+    for parameter in summaries:
         parameter_sample = sample[parameter]
         true_value = summaries[parameter].sel(summary="true value")[sample_index].values
 
@@ -428,7 +428,7 @@ def _summarize_posterior_predictive(
     prior_sample: Dataset,
     sample_index: int,
 ) -> None:
-    for parameter in summaries.keys():
+    for parameter in summaries:
         parameter_sample = sample[parameter].values.flatten()
         prior_parameter_sample = prior_sample[parameter].values.flatten()
         summaries[parameter].sel(summary="KS distance")[sample_index] = kstest(
