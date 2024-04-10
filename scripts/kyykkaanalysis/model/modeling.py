@@ -148,7 +148,7 @@ class ThrowTimeModel:
 
         return samples
 
-    def _starting_point(self) -> dict[str, npt.NDArray[np.float_]]:
+    def _starting_point(self) -> dict[str, npt.NDArray[np.float64]]:
         starting_point = {
             "mu_interval__": np.array(np.log(28)),
             "sigma_log__": np.array(np.log(11)),

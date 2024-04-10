@@ -217,7 +217,7 @@ def calculate_histogram(
     normalization: Literal[
         "probability", "probability density", "count"
     ] = "probability",
-) -> tuple[npt.NDArray[np.float_], npt.NDArray[Any]]:
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[Any]]:
     """
     Calculate bins and bin counts of a histogram.
 

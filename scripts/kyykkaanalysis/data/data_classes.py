@@ -687,7 +687,7 @@ class ModelData:
             Throw time data
         """
 
-        throw_times: npt.NDArray[np.float_] = np.concatenate(
+        throw_times: npt.NDArray[np.float64] = np.concatenate(
             [stream.throw_times(difference=True) for stream in data]
         )
         players = np.concatenate([stream.players(difference=True) for stream in data])

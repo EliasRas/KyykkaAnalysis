@@ -86,7 +86,7 @@ def _sample_distributions(
 
 
 def _theta_distributions(
-    samples: npt.NDArray[np.float_],
+    samples: npt.NDArray[np.float64],
     theta_symbol: str,
     *,
     prior_samples: Dataset | None = None,
@@ -192,7 +192,7 @@ def _theta_distributions(
 
 def _single_parameter_distribution(
     parameter: str,
-    samples: npt.NDArray[np.float_],
+    samples: npt.NDArray[np.float64],
     parameter_symbol: str,
     *,
     prior_samples: Dataset | None = None,
