@@ -232,9 +232,7 @@ class Half:
         """
 
         if difference:
-            times = []
-            for kona_time in self.konas:
-                times.append(kona_time.time - self.throws[-1].time)
+            times = [kona_time.time - self.throws[-1].time for kona_time in self.konas]
             times = np.array(times, dtype=np.timedelta64)
         else:
             times = np.array(
