@@ -52,7 +52,12 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
             else:
                 players = content[: _last_valid_time(content) + 1]
                 _read_stream_times(
-                    teams, player_ids, stream, times, players, playoffs=len(data) >= 13
+                    teams,
+                    player_ids,
+                    stream,
+                    times,
+                    players,
+                    playoffs=len(data) >= 13,  # noqa: PLR2004
                 )
                 data.append(stream)
 
