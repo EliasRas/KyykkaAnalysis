@@ -32,7 +32,7 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
     """
 
     if not input_file.exists():
-        raise ValueError("Input file does not exist.")
+        raise ValueError(f"Input file {input_file} does not exist.")
     teams = _read_teams(team_file)
 
     player_ids = {}
