@@ -17,6 +17,8 @@ from .utils import (
     uniform_variation,
 )
 
+ENOUGH_FOR_HEATMAP = 1000
+
 
 def estimation_plots(
     posterior_summaries: Dataset,
@@ -292,7 +294,7 @@ def _error_correlation_plot(
     customdata: npt.NDArray[Any],
     hover: str,
 ) -> go.Scatter | go.Histogram2d:
-    if x.size < 1000:
+    if x.size < ENOUGH_FOR_HEATMAP:
         trace = go.Scatter(
             x=x,
             y=y,
@@ -462,7 +464,7 @@ def _sample_size_plot(
     customdata: npt.NDArray[Any],
     hover: str,
 ) -> go.Scatter | go.Histogram2d:
-    if x.size < 1000:
+    if x.size < ENOUGH_FOR_HEATMAP:
         trace = go.Scatter(
             x=x,
             y=y,

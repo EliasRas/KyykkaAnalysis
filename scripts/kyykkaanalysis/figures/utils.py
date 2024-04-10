@@ -42,6 +42,8 @@ PERCENTILE_LATEX_CONVERSION = {
     "y": r"$y-\text{prosenttipiste}$",
 }
 
+TOO_MANY_SCATTER = 10000
+
 
 def write_pdf(figure: go.Figure, figure_path: Path) -> None:
     """
@@ -339,8 +341,10 @@ def ecdf(
 
     conditional_mean = np.sort(parameter_samples.flatten())
     conditional_mean = conditional_mean[np.isfinite(conditional_mean)]
-    if conditional_mean.size > 10000:
-        conditional_mean = conditional_mean[:: conditional_mean.size // 10000]
+    if conditional_mean.size > TOO_MANY_SCATTER:
+        conditional_mean = conditional_mean[
+            :: conditional_mean.size // TOO_MANY_SCATTER
+        ]
     cdf = go.Scatter(
         x=conditional_mean,
         y=np.linspace(0, 1, conditional_mean.size),
