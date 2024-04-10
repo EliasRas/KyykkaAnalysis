@@ -216,9 +216,7 @@ class ThrowTimeModel:
         pit = loo_pit(
             y=self.model.throw_times.container.data,
             y_hat=y_hat,
-            log_weights=self._psis_weights(
-                posterior_samples, posterior.log_likelihood  # pylint: disable=no-member
-            ),
+            log_weights=self._psis_weights(posterior_samples, posterior.log_likelihood),
         )
         loo_result.pit = DataArray(
             data=pit, dims=["throws"], coords={"throws": loo_result.loo_i.throws}
@@ -518,7 +516,7 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
             pm.CustomDist(
                 "y",
                 a,
-                theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+                theta[player] + o * is_first,
                 logp=_podium_invgamma_logp,
                 random=_podium_invgamma_rng,
                 dims="throws",
@@ -528,7 +526,7 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
             pm.CustomDist(
                 "y",
                 a,
-                theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+                theta[player] + o * is_first,
                 dist=_floored_invgamma,
                 dims="throws",
                 observed=throw_times,
