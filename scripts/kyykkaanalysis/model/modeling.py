@@ -424,7 +424,7 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
             pm.CustomDist(
                 "y",
                 k,
-                theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+                theta[player] + o * is_first,
                 logp=_podium_gamma_logp,
                 random=_podium_gamma_rng,
                 dims="throws",
@@ -434,7 +434,7 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
             pm.CustomDist(
                 "y",
                 k,
-                theta[player] + o * is_first,  # pylint: disable=unsubscriptable-object
+                theta[player] + o * is_first,
                 dist=_floored_gamma,
                 dims="throws",
                 observed=throw_times,
