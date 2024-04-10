@@ -50,27 +50,27 @@ def _sample_distributions(
     samples: Dataset, first_throw: npt.NDArray[np.bool_], figure_directory: Path
 ) -> None:
     for parameter, parameter_samples in samples.items():
-        parameter_samples = parameter_samples.values
+        sample_values = parameter_samples.values
         parameter_symbol = parameter_to_latex(parameter)
         if parameter == "y":
             figure = go.Figure()
             figure.add_traces(
                 precalculated_histogram(
-                    parameter_samples[:, :, first_throw].flatten(),
+                    sample_values[:, :, first_throw].flatten(),
                     PLOT_COLORS[0],
                     name="1. heitto",
                 )
             )
             figure.add_traces(
                 precalculated_histogram(
-                    parameter_samples[:, :, ~first_throw].flatten(),
+                    sample_values[:, :, ~first_throw].flatten(),
                     PLOT_COLORS[1],
                     name="2. heitto",
                 )
             )
         else:
             figure = go.Figure(
-                precalculated_histogram(parameter_samples.flatten(), PLOT_COLORS[0])
+                precalculated_histogram(sample_values.flatten(), PLOT_COLORS[0])
             )
 
         figure.update_layout(

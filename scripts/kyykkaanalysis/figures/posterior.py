@@ -61,11 +61,11 @@ def _sample_distributions(
     true_values: Dataset | None = None,
 ) -> None:
     for parameter, parameter_samples in samples.items():
-        parameter_samples = parameter_samples.values
+        sample_values = parameter_samples.values
         parameter_symbol = parameter_to_latex(parameter)
         if parameter == "theta":
             figure = _theta_distributions(
-                parameter_samples,
+                sample_values,
                 parameter_symbol,
                 prior_samples,
                 true_values,
@@ -73,7 +73,7 @@ def _sample_distributions(
         else:
             figure = _single_parameter_distribution(
                 parameter,
-                parameter_samples,
+                sample_values,
                 parameter_symbol,
                 prior_samples,
                 true_values,

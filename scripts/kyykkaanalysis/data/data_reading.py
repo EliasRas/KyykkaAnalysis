@@ -97,19 +97,19 @@ def _read_stream_times(  # noqa: PLR0913
 ) -> None:
     halves = [Half()]
     konas = []
-    for time, player in zip(times, players, strict=True):
+    for time_string, player in zip(times, players, strict=True):
         if player not in ["Kona kasassa", ""]:
             if len(player_ids) == 0:
                 player_ids[player] = 0
             elif player not in player_ids:
                 player_ids[player] = max(player_ids.values()) + 1
 
-        if time == "?":
+        if time_string == "?":
             time = np.datetime64("NaT")
         elif time == player == "":
             continue
         else:
-            time = _parse_time(time)
+            time = _parse_time(time_string)
 
         if player == "Kona kasassa":
             halves, konas = _parse_kona_time(stream, halves, konas, time)
