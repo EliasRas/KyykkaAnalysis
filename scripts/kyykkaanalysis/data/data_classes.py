@@ -334,7 +334,10 @@ class Game:
         """
 
         return np.concatenate(
-            [half.players(difference, anonymize) for half in self.halfs]
+            [
+                half.players(difference=difference, anonymize=anonymize)
+                for half in self.halfs
+            ]
         )
 
     def teams(self, *, difference: bool = False) -> npt.NDArray[np.str_]:
@@ -352,7 +355,9 @@ class Game:
             1D array of team names
         """
 
-        return np.concatenate([half.teams(difference) for half in self.halfs])
+        return np.concatenate(
+            [half.teams(difference=difference) for half in self.halfs]
+        )
 
     def playoffs(self, *, difference: bool = False) -> npt.NDArray[np.bool_]:
         """
@@ -369,7 +374,9 @@ class Game:
             1D array of values
         """
 
-        return np.concatenate([half.playoffs(difference) for half in self.halfs])
+        return np.concatenate(
+            [half.playoffs(difference=difference) for half in self.halfs]
+        )
 
     def positions(self, *, difference: bool = False) -> npt.NDArray[np.int_]:
         """
@@ -389,7 +396,9 @@ class Game:
             1D array of player positions
         """
 
-        return np.concatenate([half.positions(difference) for half in self.halfs])
+        return np.concatenate(
+            [half.positions(difference=difference) for half in self.halfs]
+        )
 
     def throw_numbers(self, *, difference: bool = False) -> npt.NDArray[np.int_]:
         """
@@ -409,7 +418,9 @@ class Game:
             1D array of throw numbers
         """
 
-        return np.concatenate([half.throw_numbers(difference) for half in self.halfs])
+        return np.concatenate(
+            [half.throw_numbers(difference=difference) for half in self.halfs]
+        )
 
     def throw_times(
         self, *, difference: bool = False
@@ -428,7 +439,9 @@ class Game:
             1D array of times
         """
 
-        return np.concatenate([half.throw_times(difference) for half in self.halfs])
+        return np.concatenate(
+            [half.throw_times(difference=difference) for half in self.halfs]
+        )
 
     def kona_times(
         self, *, difference: bool = False
@@ -447,7 +460,9 @@ class Game:
             1D array of times
         """
 
-        return np.concatenate([half.kona_times(difference) for half in self.halfs])
+        return np.concatenate(
+            [half.kona_times(difference=difference) for half in self.halfs]
+        )
 
     @property
     def end(self) -> np.datetime64:
@@ -548,7 +563,10 @@ class Stream:
         """
 
         return np.concatenate(
-            [game.players(difference, anonymize) for game in self.games]
+            [
+                game.players(difference=difference, anonymize=anonymize)
+                for game in self.games
+            ]
         )
 
     def teams(self, *, difference: bool = False) -> npt.NDArray[np.str_]:
@@ -566,7 +584,9 @@ class Stream:
             1D array of team names
         """
 
-        return np.concatenate([game.teams(difference) for game in self.games])
+        return np.concatenate(
+            [game.teams(difference=difference) for game in self.games]
+        )
 
     def playoffs(self, *, difference: bool = False) -> npt.NDArray[np.bool_]:
         """
@@ -583,7 +603,9 @@ class Stream:
             1D array of values
         """
 
-        return np.concatenate([game.playoffs(difference) for game in self.games])
+        return np.concatenate(
+            [game.playoffs(difference=difference) for game in self.games]
+        )
 
     def positions(self, *, difference: bool = False) -> npt.NDArray[np.int_]:
         """
@@ -603,7 +625,9 @@ class Stream:
             1D array of player positions
         """
 
-        return np.concatenate([game.positions(difference) for game in self.games])
+        return np.concatenate(
+            [game.positions(difference=difference) for game in self.games]
+        )
 
     def throw_numbers(self, *, difference: bool = False) -> npt.NDArray[np.int_]:
         """
@@ -623,7 +647,9 @@ class Stream:
             1D array of throw numbers
         """
 
-        return np.concatenate([game.throw_numbers(difference) for game in self.games])
+        return np.concatenate(
+            [game.throw_numbers(difference=difference) for game in self.games]
+        )
 
     def throw_times(
         self, *, difference: bool = False
@@ -642,7 +668,9 @@ class Stream:
             Times
         """
 
-        return np.concatenate([game.throw_times(difference) for game in self.games])
+        return np.concatenate(
+            [game.throw_times(difference=difference) for game in self.games]
+        )
 
     def kona_times(
         self, *, difference: bool = False
@@ -661,7 +689,9 @@ class Stream:
             1D array of times
         """
 
-        return np.concatenate([game.kona_times(difference) for game in self.games])
+        return np.concatenate(
+            [game.kona_times(difference=difference) for game in self.games]
+        )
 
     @property
     def end(self) -> np.datetime64:
