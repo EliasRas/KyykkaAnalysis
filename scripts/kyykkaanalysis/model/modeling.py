@@ -15,7 +15,7 @@ from arviz import ELPDData, InferenceData, ess, loo, loo_pit, psislw, summary
 from numpy import typing as npt
 from pymc.distributions.shape_utils import Shape
 from pymc.math import exp, floor, log, switch
-from pytensor.tensor.math import gammainc
+from pytensor.tensor.math import gammainc, gammaincc
 from pytensor.tensor.variable import TensorVariable
 from xarray import DataArray, Dataset, merge
 
@@ -465,13 +465,45 @@ def _podium_gamma_logp(
     k: float | TensorVariable,
     theta: float | TensorVariable,
 ) -> float | TensorVariable:
-    dist = pm.Gamma.dist(alpha=k, beta=k / theta)
+    alpha = k
+    beta = k / theta
+    density = switch(
+        value > alpha / beta,
+        _gammaincc_diff(value, alpha, beta),
+        _dist_diff(value, alpha, beta),
+    )
+
+    return log(5 / 9 * density[0] + 3 / 9 * density[1] + 1 / 9 * density[2])
+
+
+def _dist_diff(
+    value: npt.ArrayLike | Sequence[TensorVariable],
+    alpha: float | TensorVariable,
+    beta: float | TensorVariable,
+) -> tuple[float] | Sequence[TensorVariable]:
+    dist = pm.Gamma.dist(alpha=alpha, beta=beta)
 
     density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
     density2 = exp(pm.logcdf(dist, value + 2)) - exp(pm.logcdf(dist, value - 1))
     density3 = exp(pm.logcdf(dist, value + 1)) - exp(pm.logcdf(dist, value))
 
-    return log(5 / 9 * density1 + 3 / 9 * density2 + 1 / 9 * density3)
+    return density1, density2, density3
+
+
+def _gammaincc_diff(
+    value: npt.ArrayLike | Sequence[TensorVariable],
+    alpha: float | TensorVariable,
+    beta: float | TensorVariable,
+) -> tuple[float] | Sequence[TensorVariable]:
+    density1 = gammaincc(alpha, beta * (value - 2)) - gammaincc(
+        alpha, beta * (value + 3)
+    )
+    density2 = gammaincc(alpha, beta * (value - 1)) - gammaincc(
+        alpha, beta * (value + 2)
+    )
+    density3 = gammaincc(alpha, beta * (value)) - gammaincc(alpha, beta * (value + 1))
+
+    return density1, density2, density3
 
 
 def _podium_gamma_rng(
@@ -574,13 +606,13 @@ def _podium_invgamma_logp(
     density = switch(
         value > beta / (alpha - 1 + 1e-9),
         _gammainc_diff(value, alpha, beta),
-        _dist_diff(value, alpha, beta),
+        _invdist_diff(value, alpha, beta),
     )
 
     return log(5 / 9 * density[0] + 3 / 9 * density[1] + 1 / 9 * density[2])
 
 
-def _dist_diff(
+def _invdist_diff(
     value: npt.ArrayLike | Sequence[TensorVariable],
     alpha: float | TensorVariable,
     beta: float | TensorVariable,
