@@ -3,6 +3,7 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from kyykkaanalysis.data.data_classes import Stream
 from kyykkaanalysis.data.data_description import print_description
 from kyykkaanalysis.data.data_reading import read_times
 from kyykkaanalysis.figures import data as data_figures
@@ -16,29 +17,16 @@ def main() -> None:
     args = _parse_arguments()
     data = read_times(args.input_file, args.team_file)
 
-    print_description(data)
-
-    data_figures.time_distributions(data, args.figure_directory / "Data")
-    data_figures.averages(data, args.figure_directory / "Data")
-
-    model_checks.check_priors(
-        data, args.figure_directory / "Prior", args.cache_directory, ModelType.GAMMA
-    )
-    model_checks.check_priors(
-        data, args.figure_directory / "Prior", args.cache_directory, ModelType.NAIVE
-    )
-    model_checks.check_priors(
-        data, args.figure_directory / "Prior", args.cache_directory, ModelType.INVGAMMA
-    )
-    model_checks.check_priors(
-        data,
-        args.figure_directory / "Prior",
-        args.cache_directory,
-        ModelType.NAIVEINVGAMMA,
-    )
-    model_checks.fake_data_simulation(data, args.figure_directory, args.cache_directory)
-
-    inference.fit_model(data, args.figure_directory, args.cache_directory)
+    if "data" in args.pipelines:
+        _data_pipeline(data, args)
+    if "prior" in args.pipelines:
+        _prior_pipeline(data, args)
+    if "sbc" in args.pipelines:
+        model_checks.fake_data_simulation(
+            data, args.figure_directory, args.cache_directory
+        )
+    if "posterior" in args.pipelines:
+        inference.fit_model(data, args.figure_directory, args.cache_directory)
 
 
 def _parse_arguments() -> Namespace:
@@ -64,10 +52,54 @@ def _parse_arguments() -> Namespace:
         help="Path to the directory to which the visualizations are saved",
         type=Path,
     )
+    parser.add_argument(
+        "--pipelines",
+        nargs="+",
+        help="List of pipelines to run",
+        type=str,
+    )
+    parser.add_argument(
+        "--test",
+        nargs="+",
+        type=str,
+    )
 
     args = parser.parse_args()
 
     return args
+
+
+def _data_pipeline(data: list[Stream], args: Namespace) -> None:
+    print_description(data)
+    data_figures.time_distributions(data, args.figure_directory / "Data")
+    data_figures.averages(data, args.figure_directory / "Data")
+
+
+def _prior_pipeline(data: list[Stream], args: Namespace) -> None:
+    model_checks.check_priors(
+        data,
+        args.figure_directory / "Prior",
+        args.cache_directory,
+        model_type=ModelType.GAMMA,
+    )
+    model_checks.check_priors(
+        data,
+        args.figure_directory / "Prior",
+        args.cache_directory,
+        model_type=ModelType.NAIVE,
+    )
+    model_checks.check_priors(
+        data,
+        args.figure_directory / "Prior",
+        args.cache_directory,
+        model_type=ModelType.INVGAMMA,
+    )
+    model_checks.check_priors(
+        data,
+        args.figure_directory / "Prior",
+        args.cache_directory,
+        model_type=ModelType.NAIVEINVGAMMA,
+    )
 
 
 if __name__ == "__main__":
