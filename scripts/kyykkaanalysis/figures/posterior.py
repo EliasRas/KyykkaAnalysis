@@ -473,7 +473,7 @@ def _contraction(
         sample_values = parameter_samples.values
         prior_sample = prior_samples[parameter].values
         if parameter == "theta":
-            sample_values = parameter_samples.reshape(-1, sample_values.shape[-1])
+            sample_values = sample_values.reshape(-1, sample_values.shape[-1])
             prior_sample = prior_sample.reshape(-1, prior_sample.shape[-1])
             parameters.extend(
                 [
