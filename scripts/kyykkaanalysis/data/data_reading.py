@@ -109,7 +109,7 @@ def _read_stream_times(  # noqa: PLR0913
     *,
     playoffs: bool,
 ) -> None:
-    halves = [Half()]
+    halfs = [Half()]
     konas = []
     for time_string, player in zip(times, players, strict=True):
         if player not in ["Kona kasassa", ""]:
@@ -126,19 +126,19 @@ def _read_stream_times(  # noqa: PLR0913
             time = _parse_time(time_string)
 
         if player == "Kona kasassa":
-            halves, konas = _parse_kona_time(stream, halves, konas, time)
+            halfs, konas = _parse_kona_time(stream, halfs, konas, time)
         else:
-            _validate_time()
+            _validate_time(stream, halfs, time)
 
-            halves[-1].throws.append(
+            halfs[-1].throws.append(
                 Throwtime(player_ids[player], player, time, teams[player], playoffs)
             )
 
-    halves[-1].konas = (
+    halfs[-1].konas = (
         Konatime(np.datetime64("NaT")),
         Konatime(np.datetime64("NaT")),
     )
-    stream.games.append(Game(tuple(halves)))
+    stream.games.append(Game(tuple(halfs)))
 
 
 def _parse_time(time_string: str) -> np.datetime64:
@@ -158,18 +158,18 @@ def _parse_time(time_string: str) -> np.datetime64:
     return np.datetime64("2000-01-01") + hours + minutes + seconds
 
 
-def _validate_time(stream: Stream, halves: list[Half], time: np.datetime64) -> None:
-    if len(halves) == 1:
-        if len(halves[-1].throws) == 0 and len(stream.games) == 0:
+def _validate_time(stream: Stream, halfs: list[Half], time: np.datetime64) -> None:
+    if len(halfs) == 1:
+        if len(halfs[-1].throws) == 0 and len(stream.games) == 0:
             previous_time = np.datetime64("NaT")
-        elif len(halves[-1].throws) == 0:
+        elif len(halfs[-1].throws) == 0:
             previous_time = stream.end
         else:
-            previous_time = halves[-1].throws[-1].time
-    elif len(halves[-1].throws) == 0:
-        previous_time = halves[0].konas[-1].time
+            previous_time = halfs[-1].throws[-1].time
+    elif len(halfs[-1].throws) == 0:
+        previous_time = halfs[0].konas[-1].time
     else:
-        previous_time = halves[-1].throws[-1].time
+        previous_time = halfs[-1].throws[-1].time
     if time < previous_time:
         msg = (
             f"Throw timestamp {time} in stream {stream.url} is earlier than"
