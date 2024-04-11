@@ -61,8 +61,6 @@ class ThrowTimeModel:
         Throw time model
     """
 
-    # TODO: Should be changed to https://www.pymc.io/projects/examples/en/latest/howto/model_builder.html
-
     def __init__(
         self, data: ModelData, *, model_type: ModelType = ModelType.GAMMA
     ) -> None:
