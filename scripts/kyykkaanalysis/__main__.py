@@ -1,4 +1,4 @@
-"""Analysis of kyykka play times."""
+"""Provides an entry point for kyykkä play time analysis."""
 
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -37,7 +37,6 @@ def main() -> None:
         ModelType.NAIVEINVGAMMA,
     )
     model_checks.fake_data_simulation(data, args.figure_directory, args.cache_directory)
-
 
     inference.fit_model(data, args.figure_directory, args.cache_directory)
 

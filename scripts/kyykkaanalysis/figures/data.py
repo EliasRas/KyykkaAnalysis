@@ -1,4 +1,8 @@
-"""Visualizations for data."""
+"""
+Visualizations for data.
+
+This module provides functions for visualizing kyykkä play time data.
+"""
 
 from pathlib import Path
 
@@ -12,7 +16,11 @@ from .utils import FONT_SIZE, FONT_SIZE_2X2, PLOT_COLORS, write_pdf
 
 def timeline(data: list[Stream]) -> None:
     """
-    Plot the timeline of the throws in a game.
+    Plot the timeline of the events in a stream.
+
+    This function plots a timeline of throws and completed konas in a kyykkä stream and
+    opens the figures automatically. This function is meant for data validation
+    purposes.
 
     Parameters
     ----------
@@ -87,6 +95,10 @@ def timeline(data: list[Stream]) -> None:
 def time_distributions(data: list[Stream], figure_directory: Path) -> None:
     """
     Plot the distributions of the various durations.
+
+    This function plots the distributions of throw times, kona completion times and the
+    durations of games, halfs and respective breaks. The plots are saved also in PDF
+    format for usage in LaTeX reports.
 
     Parameters
     ----------
@@ -412,7 +424,10 @@ def _game_break(data: list[Stream], figure_directory: Path) -> None:
 
 def averages(data: list[Stream], figure_directory: Path) -> None:
     """
-    Plot the distribution of the average throw times of players.
+    Plot the distribution of the average throw times.
+
+    This function plots the distributions of average throw times of players and teams.
+    The plots are saved also in PDF format for usage in LaTeX reports.
 
     Parameters
     ----------

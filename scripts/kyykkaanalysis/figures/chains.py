@@ -1,4 +1,8 @@
-"""Visualizations about MCMC chains."""
+"""
+Visualizations about MCMC chains.
+
+This module provides plotting functions for analyzing MCMC chains and their performance.
+"""
 
 from pathlib import Path
 
@@ -22,7 +26,11 @@ def chain_plots(
     sample_stats: Dataset = None,
 ) -> None:
     """
-    Plot the information about MCMC chains.
+    Plot information about MCMC chains.
+
+    This function creates trace plots of MCMC chains. It also creates plots of NUTS
+    divergences and the distributions of energy transitions and marginal energies if
+    sampler statistics are provided.
 
     Parameters
     ----------

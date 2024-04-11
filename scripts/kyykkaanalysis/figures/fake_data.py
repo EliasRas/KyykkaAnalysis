@@ -1,4 +1,9 @@
-"""Visualizations for fake data simulations."""
+"""
+Visualizations for fake data simulations.
+
+This module provides functions for plotting the results of fake data simulation and
+simulation based calibration.
+"""
 
 from pathlib import Path
 from typing import Any
@@ -26,7 +31,14 @@ def estimation_plots(
     figure_directory: Path,
 ) -> None:
     """
-    Plot the distributions of the sampled parameters.
+    Plot summaries of parameter recovery.
+
+    This function plots summaries of parameter recovery from simulated data. It plots
+    the distributions of normalized and unnormalized errors, the correlations between
+    the normalized errors and true parameter values, distributions of the percentiles of
+    true values within the posterior samples, lengths of the thinned chains, posterior
+    contractions and the Kolmogorov-Smirnov distance between the data and posterior
+    predictive distributions.
 
     Parameters
     ----------

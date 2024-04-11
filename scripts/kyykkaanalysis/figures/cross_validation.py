@@ -1,4 +1,9 @@
-"""Visualizations for cross validation."""
+"""
+Visualizations for cross-validation.
+
+This module provides visualizations for cross-validation and model comparisons based on
+cross-validation.
+"""
 
 from pathlib import Path
 
@@ -20,14 +25,18 @@ def cross_validation_plots(
     data: Dataset, loo_result: ELPDData, figure_directory: Path
 ) -> None:
     """
-    Plot information about cross validation.
+    Plot information about cross-validation.
+
+    This function plots estimated leave-one-out log-likelihoods and estimated
+    Pareto k_hat (the shape parameter of generalized Pareto distribution) values of
+    importance sampling weights. It also plots the ecdf of the estimated likelihoods.
 
     Parameters
     ----------
     data : xarray.Dataset
         Observed data
     loo_result : arviz.ELPDData
-        Results of cross validation
+        Results of cross-validation
     figure_directory : Path
         Path to the directory in which the figures are saved
     """
@@ -198,12 +207,16 @@ def model_comparison(
     """
     Plot information about model comparisons.
 
+    This function plots correlations of estimated leave-one-out log likelihoods from
+    different models both w.r.t. each other and to the data. It also plots a comparison
+    of the expected log pointwise predictive densities of different models.
+
     Parameters
     ----------
     data : xarray.Dataset
         Observed data
     loo_results : arviz.ELPDData
-        Results of cross validation
+        Results of cross-validation
     figure_directory : Path
         Path to the directory in which the figures are saved
     """

@@ -1,4 +1,9 @@
-"""Visualizations for posterior distributions."""
+"""
+Visualizations for posterior distributions.
+
+This module provides functions for visualizing posterior distributions of parameters
+and posterior predictive distributions of observed data.
+"""
 
 from pathlib import Path
 from typing import Any
@@ -29,6 +34,10 @@ def parameter_distributions(
 ) -> None:
     """
     Plot information about the sampled parameters.
+
+    This function plots distributions of posterior distributions of parameters, their
+    ranges and correlations. It also plots the posterior contractions of parameters if
+    samples from prior distribution are provided.
 
     Parameters
     ----------
@@ -507,7 +516,10 @@ def predictive_distributions(
     true_values: Dataset | None = None,
 ) -> None:
     """
-    Plot the information about the sampled data.
+    Plot the information about the posterior predictive distribution of observed data.
+
+    This function plots visualizations of the posterior predictive distributions of
+    observed data and distributions of their moments and ranges.
 
     Parameters
     ----------
