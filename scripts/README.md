@@ -18,7 +18,7 @@ The analysis can be run by calling `python -m kyykkaanalysis`. The package uses 
 - pipelines
     - List of pipelines to run.
     - Allowed values for pipelines includes:
-        - `data` for creating visualizations of the data.
+        - `data` for printing information and creating visualizations of the data.
         - `prior` for creating visualizations of the prior distributions defined by the models.
         - `sbc` for performing and visualizing simulation based calibration.
         - `posterior` for performing posterior inference, cross-validation and model comparisons.
