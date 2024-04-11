@@ -398,7 +398,7 @@ def _visualize_sample(  # noqa: PLR0913
     chain_plots(
         posterior_sample.posterior,
         sample_directory / "chains",
-        posterior_sample.get("sample_stats", None),
+        sample_stats=posterior_sample.get("sample_stats", None),
     )
 
 

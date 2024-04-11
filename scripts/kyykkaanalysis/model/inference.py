@@ -163,18 +163,30 @@ def _visualize_sample(
     figure_directory: Path,
 ) -> None:
     raw_directory = figure_directory / "raw"
-    parameter_distributions(posterior.posterior, raw_directory / "parameters", prior)
-    chain_plots(posterior.posterior, raw_directory / "chains", posterior.sample_stats)
-
     parameter_distributions(
-        posterior.thinned_posterior, figure_directory / "parameters", prior
+        posterior.posterior, raw_directory / "parameters", prior_samples=prior
     )
     chain_plots(
-        posterior.thinned_posterior, figure_directory / "chains", posterior.sample_stats
+        posterior.posterior,
+        raw_directory / "chains",
+        sample_stats=posterior.sample_stats,
+    )
+
+    parameter_distributions(
+        posterior.thinned_posterior,
+        figure_directory / "parameters",
+        prior_samples=prior,
+    )
+    chain_plots(
+        posterior.thinned_posterior,
+        figure_directory / "chains",
+        sample_stats=posterior.sample_stats,
     )
 
     predictive_distributions(
-        posterior.posterior_predictive, figure_directory / "predictions", data
+        posterior.posterior_predictive,
+        figure_directory / "predictions",
+        true_values=data,
     )
     cross_validation_plots(
         data, posterior.loo_result, figure_directory / "cross_validation"

@@ -76,16 +76,16 @@ def _sample_distributions(
             figure = _theta_distributions(
                 sample_values,
                 parameter_symbol,
-                prior_samples,
-                true_values,
+                prior_samples=prior_samples,
+                true_values=true_values,
             )
         else:
             figure = _single_parameter_distribution(
                 parameter,
                 sample_values,
                 parameter_symbol,
-                prior_samples,
-                true_values,
+                prior_samples=prior_samples,
+                true_values=true_values,
             )
 
         figure.write_html(
@@ -537,9 +537,9 @@ def predictive_distributions(
     _data_moments(samples, figure_directory, true_values=true_values)
     _throw_time_ranges(samples, figure_directory, true_values=true_values)
     if true_values is not None:
-        _throw_data_distribution(samples, figure_directory, true_values)
-        _player_data_moments(samples, figure_directory, true_values)
-        _player_time_ranges(samples, figure_directory, true_values)
+        _throw_data_distribution(samples, figure_directory, true_values=true_values)
+        _player_data_moments(samples, figure_directory, true_values=true_values)
+        _player_time_ranges(samples, figure_directory, true_values=true_values)
 
 
 def _data_distribution(
@@ -587,7 +587,7 @@ def _data_distribution(
         figure.add_traces(
             ecdf(
                 true_values,
-                "Data",
+                name="Data",
                 color=PLOT_COLORS[1],
                 legendgroup="Kertymäfunktio",
             ),
@@ -793,7 +793,7 @@ def _throw_data_distribution(
     figure.add_traces(
         ecdf(
             true_values[is_first],
-            "Data",
+            name="Data",
             color=PLOT_COLORS[1],
             legendgroup="Kertymäfunktio, 1.",
         ),
@@ -814,7 +814,7 @@ def _throw_data_distribution(
     figure.add_traces(
         ecdf(
             true_values[~is_first],
-            "Data",
+            name="Data",
             color=PLOT_COLORS[1],
             legendgroup="Kertymäfunktio, 2.",
         ),
