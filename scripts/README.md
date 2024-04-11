@@ -5,10 +5,10 @@ Analysis of kyykka play times
 The analysis can be run by calling `python -m kyykkaanalysis`. The package uses the following arguments
 - input_file
     - Path to the CSV file which contains the input data.
-    - The format of the file is explained in [Data file formats]() section.
+    - The format of the file is explained in [Data file formats](#data-file-formats) section.
 - team_file
     - Path to the CSV file which contains the teams for the player.
-    - The format of the file is explained in [Data file formats]() section.
+    - The format of the file is explained in [Data file formats](#data-file-formats) section.
 - cache_directory
     - Path to the directory to which the cached data is saved.
     - The samples generated in pipelines `prior`, `sbc` and `posterior` are saved into this directory as NetCDF files
