@@ -45,22 +45,22 @@ def _parse_arguments() -> Namespace:
     parser = ArgumentParser()
 
     parser.add_argument(
-        "input_file",
+        "--input_file",
         help="Path to the CSV file which contains the input data",
         type=Path,
     )
     parser.add_argument(
-        "team_file",
+        "--team_file",
         help="Path to the CSV file which contains the teams for the player",
         type=Path,
     )
     parser.add_argument(
-        "cache_directory",
+        "--cache_directory",
         help="Path to the directory to which the cached data is saved",
         type=Path,
     )
     parser.add_argument(
-        "figure_directory",
+        "--figure_directory",
         help="Path to the directory to which the visualizations are saved",
         type=Path,
     )
