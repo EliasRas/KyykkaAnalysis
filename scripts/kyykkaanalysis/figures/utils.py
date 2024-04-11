@@ -269,6 +269,8 @@ def calculate_histogram(
         If normalization is not one of allowed values
     """
 
+    values = values[np.isfinite(values)]
+
     bins = create_bins(values, bin_count)
     counts, _ = np.histogram(values, bins)
     if normalization == "probability":
