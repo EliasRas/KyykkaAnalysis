@@ -9,7 +9,7 @@ authors = [
 ]
 description = "Analysis of kyykkä play times"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 version = "0.0.1"
 dependencies = [
     "arviz>=0.16.0",
