@@ -433,9 +433,9 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
         k = pm.TruncatedNormal("k", mu=1, sigma=14, lower=1)
 
         theta = pm.TruncatedNormal("theta", mu=mu, sigma=sigma, lower=0, dims="players")
-        player = pm.MutableData("player", data.player_ids, dims="throws")
-        is_first = pm.MutableData("is_first", data.first_throw, dims="throws")
-        throw_times = pm.MutableData("throw_times", data.throw_times, dims="throws")
+        player = pm.Data("player", data.player_ids, dims="throws")
+        is_first = pm.Data("is_first", data.first_throw, dims="throws")
+        throw_times = pm.Data("throw_times", data.throw_times, dims="throws")
 
         if not naive:
             pm.CustomDist(
@@ -568,9 +568,9 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
         a = pm.Normal("a", mu=-4.5, sigma=1)
 
         theta = pm.TruncatedNormal("theta", mu=mu, sigma=sigma, lower=0, dims="players")
-        player = pm.MutableData("player", data.player_ids, dims="throws")
-        is_first = pm.MutableData("is_first", data.first_throw, dims="throws")
-        throw_times = pm.MutableData("throw_times", data.throw_times, dims="throws")
+        player = pm.Data("player", data.player_ids, dims="throws")
+        is_first = pm.Data("is_first", data.first_throw, dims="throws")
+        throw_times = pm.Data("throw_times", data.throw_times, dims="throws")
 
         if not naive:
             pm.CustomDist(
