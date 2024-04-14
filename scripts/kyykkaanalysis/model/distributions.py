@@ -166,9 +166,9 @@ def floor_gamma_logp(
     )
 
     # Differences of gamma distribution's CDF
-    densities = densities[1, :][::-1, :] - densities[0, :]
+    densities = densities[1, :] - densities[0, :]
 
-    return log(sum(densities, 0))
+    return log(densities)
 
 
 def floor_gamma_rng(
@@ -358,9 +358,9 @@ def floor_invgamma_logp(
     )
 
     # Difference of inverse gamma distribution's CDF
-    densities = densities[1, :][::-1, :] - densities[0, :]
+    densities = densities[1, :] - densities[0, :]
 
-    return log(sum(densities, 0))
+    return log(densities)
 
 
 def floor_invgamma_rng(
