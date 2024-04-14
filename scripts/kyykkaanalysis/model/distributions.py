@@ -64,7 +64,7 @@ def podium_gamma_logp(
         _gammainc(alpha, beta * value),
     )
 
-    # Differences of gamma distributions CDF
+    # Differences of gamma distribution's CDF
     densities = densities[3:, :][::-1, :] - densities[:3, :]
     weights = expand_dims([5 / 9, 3 / 9, 1 / 9], -1)
 
@@ -173,7 +173,7 @@ def podium_invgamma_logp(
         _gammaincc(alpha, beta / value),
     )
 
-    # Differences of gamma distributions CDF
+    # Differences of inverse gamma distribution's CDF
     densities = densities[3:, :][::-1, :] - densities[:3, :]
     weights = expand_dims([5 / 9, 3 / 9, 1 / 9], -1)
 
@@ -188,7 +188,7 @@ def podium_invgamma_rng(
     size: tuple[int, ...] | None = None,
 ) -> npt.NDArray[np.int_]:
     """
-    Random number generator for gamma random variables measured with podium error.
+    RNG for inverse gamma random variables measured with podium error.
 
     Generates inverse gamma distributed random variables that are measured with podium
     error. Podium error is an error distribution for two random variables measured with
