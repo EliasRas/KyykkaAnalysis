@@ -14,17 +14,13 @@ import pymc as pm
 from arviz import ELPDData, InferenceData, ess, loo, loo_pit, psislw, summary
 from numpy import typing as npt
 from pymc.distributions.shape_utils import Shape
-from pymc.math import exp, floor, gt, log, lt, switch
-from pytensor.tensor.basic import expand_dims
+from pymc.math import exp, floor, log, switch
 from pytensor.tensor.math import gammainc, gammaincc
 from pytensor.tensor.variable import TensorVariable
 from xarray import DataArray, Dataset, merge
 
 from ..data.data_classes import ModelData
-
-DATA_INPUT_TYPE = (
-    float | npt.NDArray[np.float64] | TensorVariable | Sequence[TensorVariable]
-)
+from .distributions import podium_gamma_logp, podium_gamma_rng, podium_gamma_logp2
 
 
 class ModelType(Enum):
@@ -447,8 +443,8 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 k,
                 theta[player] + o * is_first,
-                logp=_podium_gamma_logp,
-                random=_podium_gamma_rng,
+                logp=podium_gamma_logp,
+                random=podium_gamma_rng,
                 dims="throws",
                 observed=throw_times,
             )
@@ -463,39 +459,6 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
             )
 
     return model
-
-
-def _gammainc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
-    return switch(lt(x, 0), 0, gammainc(k, x))
-
-
-def _gammaincc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
-    return switch(lt(x, 0), 0, gammaincc(k, x))
-
-
-def _podium_gamma_logp(
-    value: DATA_INPUT_TYPE,
-    k: float | TensorVariable,
-    theta: float | TensorVariable,
-) -> TensorVariable:
-    alpha = k
-    beta = k / theta
-    above_mean = gt(value, theta)
-
-    value = value + expand_dims([-2, -1, 0, 1, 2, 3], -1)
-    # Switch for numerical stability. If value is large, _gammainc is close to 1 and the
-    # small differences vanish due to floating point accuracy
-    densities = switch(
-        above_mean,
-        _gammaincc(alpha, beta * value)[::-1, :],
-        _gammainc(alpha, beta * value),
-    )
-
-    # Differences of gamma distributions CDF
-    densities = densities[3:, :][::-1, :] - densities[:3, :]
-    weights = expand_dims([5 / 9, 3 / 9, 1 / 9], -1)
-
-    return log(sum(densities * weights, 0))
 
 
 def _floored_gamma(
