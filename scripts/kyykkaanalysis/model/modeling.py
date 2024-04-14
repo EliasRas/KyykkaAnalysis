@@ -169,6 +169,7 @@ class ThrowTimeModel:
 
         match self.model_type:
             case ModelType.GAMMA | ModelType.NAIVE:
+                # k - 1 = 2
                 starting_point["k_interval__"] = np.array(np.log(2))
             case ModelType.INVGAMMA | ModelType.NAIVEINVGAMMA:
                 starting_point["a"] = np.array(-2)
