@@ -9,7 +9,7 @@ from collections.abc import Sequence
 
 import numpy as np
 from numpy import typing as npt
-from pymc.math import gt, log, lt, switch
+from pymc.math import exp, gt, log, lt, switch
 from pytensor.tensor.basic import expand_dims
 from pytensor.tensor.math import gammainc, gammaincc, sum
 from pytensor.tensor.variable import TensorVariable
