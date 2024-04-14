@@ -5,7 +5,6 @@ This module constructs kyykkä play time models and provides containers for them
 functionalities for interacting with the models.
 """
 
-from collections.abc import Sequence
 from enum import Enum
 from typing import Self
 
@@ -14,13 +13,12 @@ import pymc as pm
 from arviz import ELPDData, InferenceData, ess, loo, loo_pit, psislw, summary
 from numpy import typing as npt
 from pymc.distributions.shape_utils import Shape
-from pymc.math import exp, floor, log, switch
-from pytensor.tensor.math import gammainc, gammaincc
+from pymc.math import exp, floor
 from pytensor.tensor.variable import TensorVariable
 from xarray import DataArray, Dataset, merge
 
 from ..data.data_classes import ModelData
-from .distributions import podium_gamma_logp, podium_gamma_rng, podium_gamma_logp2
+from .distributions import podium_gamma_logp, podium_gamma_rng
 
 
 class ModelType(Enum):
@@ -531,68 +529,6 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
             )
 
     return model
-
-
-def _podium_invgamma_logp(
-    value: npt.ArrayLike | Sequence[TensorVariable],
-    a: float | TensorVariable,
-    theta: float | TensorVariable,
-) -> float | TensorVariable:
-    alpha = exp(-a) + 1
-    beta = theta * exp(-a)
-
-    density = switch(
-        value > beta / (alpha - 1 + 1e-9),
-        _gammainc_diff(value, alpha, beta),
-        _invdist_diff(value, alpha, beta),
-    )
-
-    return log(5 / 9 * density[0] + 3 / 9 * density[1] + 1 / 9 * density[2])
-
-
-def _invdist_diff(
-    value: npt.ArrayLike | Sequence[TensorVariable],
-    alpha: float | TensorVariable,
-    beta: float | TensorVariable,
-) -> tuple[float] | Sequence[TensorVariable]:
-    dist = pm.InverseGamma.dist(alpha=alpha, beta=beta)
-
-    density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
-    density2 = exp(pm.logcdf(dist, value + 2)) - exp(pm.logcdf(dist, value - 1))
-    density3 = exp(pm.logcdf(dist, value + 1)) - exp(pm.logcdf(dist, value))
-
-    return density1, density2, density3
-
-
-def _gammainc_diff(
-    value: npt.ArrayLike | Sequence[TensorVariable],
-    alpha: float | TensorVariable,
-    beta: float | TensorVariable,
-) -> tuple[float] | Sequence[TensorVariable]:
-    density1 = gammainc(alpha, beta / (value - 2)) - gammainc(alpha, beta / (value + 3))
-    density2 = gammainc(alpha, beta / (value - 1)) - gammainc(alpha, beta / (value + 2))
-    density3 = gammainc(alpha, beta / (value)) - gammainc(alpha, beta / (value + 1))
-
-    return density1, density2, density3
-
-
-def _podium_invgamma_rng(
-    a: float,
-    theta: float,
-    *,
-    rng: np.random.RandomState | np.random.Generator | None = None,
-    size: tuple[int, ...] | None = None,
-) -> npt.NDArray[np.int_]:
-    if rng is None:
-        rng = np.random.default_rng()
-
-    # If x ~ gamma(alpha,beta) -> 1/x ~ inv-gamma(alpha,beta)
-    draws = 1 / rng.gamma(np.exp(-a) + 1, np.exp(a) / theta, size=size)
-    draws += (
-        rng.multinomial(1, [1 / 9, 2 / 9, 3 / 9, 2 / 9, 1 / 9], size=size).argmax(1) - 2
-    )
-
-    return np.floor(draws)
 
 
 def _floored_invgamma(
