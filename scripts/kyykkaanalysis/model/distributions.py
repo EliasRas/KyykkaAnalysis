@@ -19,14 +19,6 @@ DATA_INPUT_TYPE = (
 )
 
 
-def _gammainc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
-    return switch(lt(x, 0), 0, gammainc(k, x))
-
-
-def _gammaincc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
-    return switch(lt(x, 0), 0, gammaincc(k, x))
-
-
 def podium_gamma_logp(
     value: DATA_INPUT_TYPE,
     k: float | TensorVariable,
@@ -77,6 +69,14 @@ def podium_gamma_logp(
     weights = expand_dims([5 / 9, 3 / 9, 1 / 9], -1)
 
     return log(sum(densities * weights, 0))
+
+
+def _gammainc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
+    return switch(lt(x, 0), 0, gammainc(k, x))
+
+
+def _gammaincc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
+    return switch(lt(x, 0), 0, gammaincc(k, x))
 
 
 def podium_gamma_rng(
