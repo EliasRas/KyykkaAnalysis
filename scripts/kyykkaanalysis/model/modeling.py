@@ -16,6 +16,10 @@ from xarray import DataArray, Dataset, merge
 
 from ..data.data_classes import ModelData
 from .distributions import (
+    floor_gamma_logp,
+    floor_gamma_rng,
+    floor_invgamma_logp,
+    floor_invgamma_rng,
     podium_gamma_logp,
     podium_gamma_rng,
     podium_invgamma_logp,
@@ -454,18 +458,13 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 k,
                 theta[player] + o * is_first,
-                dist=_floored_gamma,
+                logp=floor_gamma_logp,
+                random=floor_gamma_rng,
                 dims="throws",
                 observed=throw_times,
             )
 
     return model
-
-
-def _floored_gamma(
-    k: float | TensorVariable, theta: float | TensorVariable, size: Shape
-) -> TensorVariable:
-    return floor(pm.Gamma.dist(alpha=k, beta=k / theta, size=size))
 
 
 def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
@@ -525,17 +524,10 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 a,
                 theta[player] + o * is_first,
-                dist=_floored_invgamma,
+                logp=floor_invgamma_logp,
+                random=floor_invgamma_rng,
                 dims="throws",
                 observed=throw_times,
             )
 
     return model
-
-
-def _floored_invgamma(
-    a: float | TensorVariable, theta: float | TensorVariable, size: Shape
-) -> TensorVariable:
-    return floor(
-        pm.InverseGamma.dist(alpha=exp(-a) + 1, beta=theta * exp(-a), size=size)
-    )
