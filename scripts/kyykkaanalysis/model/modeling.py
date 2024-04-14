@@ -14,12 +14,17 @@ import pymc as pm
 from arviz import ELPDData, InferenceData, ess, loo, loo_pit, psislw, summary
 from numpy import typing as npt
 from pymc.distributions.shape_utils import Shape
-from pymc.math import exp, floor, log, switch
+from pymc.math import exp, floor, gt, log, lt, switch
+from pytensor.tensor.basic import expand_dims
 from pytensor.tensor.math import gammainc, gammaincc
 from pytensor.tensor.variable import TensorVariable
 from xarray import DataArray, Dataset, merge
 
 from ..data.data_classes import ModelData
+
+DATA_INPUT_TYPE = (
+    float | npt.NDArray[np.float64] | TensorVariable | Sequence[TensorVariable]
+)
 
 
 class ModelType(Enum):
@@ -460,68 +465,37 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     return model
 
 
+def _gammainc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
+    return switch(lt(x, 0), 0, gammainc(k, x))
+
+
+def _gammaincc(k: float | TensorVariable, x: DATA_INPUT_TYPE) -> TensorVariable:
+    return switch(lt(x, 0), 0, gammaincc(k, x))
+
+
 def _podium_gamma_logp(
-    value: npt.ArrayLike | Sequence[TensorVariable],
+    value: DATA_INPUT_TYPE,
     k: float | TensorVariable,
     theta: float | TensorVariable,
-) -> float | TensorVariable:
+) -> TensorVariable:
     alpha = k
     beta = k / theta
-    density = switch(
-        value > alpha / beta,
-        _gammaincc_diff(value, alpha, beta),
-        _dist_diff(value, alpha, beta),
+    above_mean = gt(value, theta)
+
+    value = value + expand_dims([-2, -1, 0, 1, 2, 3], -1)
+    # Switch for numerical stability. If value is large, _gammainc is close to 1 and the
+    # small differences vanish due to floating point accuracy
+    densities = switch(
+        above_mean,
+        _gammaincc(alpha, beta * value)[::-1, :],
+        _gammainc(alpha, beta * value),
     )
 
-    return log(5 / 9 * density[0] + 3 / 9 * density[1] + 1 / 9 * density[2])
+    # Differences of gamma distributions CDF
+    densities = densities[3:, :][::-1, :] - densities[:3, :]
+    weights = expand_dims([5 / 9, 3 / 9, 1 / 9], -1)
 
-
-def _dist_diff(
-    value: npt.ArrayLike | Sequence[TensorVariable],
-    alpha: float | TensorVariable,
-    beta: float | TensorVariable,
-) -> tuple[float] | Sequence[TensorVariable]:
-    dist = pm.Gamma.dist(alpha=alpha, beta=beta)
-
-    density1 = exp(pm.logcdf(dist, value + 3)) - exp(pm.logcdf(dist, value - 2))
-    density2 = exp(pm.logcdf(dist, value + 2)) - exp(pm.logcdf(dist, value - 1))
-    density3 = exp(pm.logcdf(dist, value + 1)) - exp(pm.logcdf(dist, value))
-
-    return density1, density2, density3
-
-
-def _gammaincc_diff(
-    value: npt.ArrayLike | Sequence[TensorVariable],
-    alpha: float | TensorVariable,
-    beta: float | TensorVariable,
-) -> tuple[float] | Sequence[TensorVariable]:
-    density1 = gammaincc(alpha, beta * (value - 2)) - gammaincc(
-        alpha, beta * (value + 3)
-    )
-    density2 = gammaincc(alpha, beta * (value - 1)) - gammaincc(
-        alpha, beta * (value + 2)
-    )
-    density3 = gammaincc(alpha, beta * (value)) - gammaincc(alpha, beta * (value + 1))
-
-    return density1, density2, density3
-
-
-def _podium_gamma_rng(
-    k: float,
-    theta: float,
-    *,
-    rng: np.random.RandomState | np.random.Generator | None = None,
-    size: tuple[int, ...] | None = None,
-) -> npt.NDArray[np.int_]:
-    if rng is None:
-        rng = np.random.default_rng()
-
-    draws = rng.gamma(k, theta / k, size=size)
-    draws += (
-        rng.multinomial(1, [1 / 9, 2 / 9, 3 / 9, 2 / 9, 1 / 9], size=size).argmax(1) - 2
-    )
-
-    return np.floor(draws)
+    return log(sum(densities * weights, 0))
 
 
 def _floored_gamma(
