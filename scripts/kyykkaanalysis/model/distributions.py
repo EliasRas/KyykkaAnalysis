@@ -33,17 +33,17 @@ def podium_gamma_logp(
 
     Parameters
     ----------
-    value : npt.ArrayLike | Sequence of pytensor.tensor.variable.TensorVariable
+    value : DATA_INPUT_TYPE
         Value of random variables
-    k : float | TensorVariable
+    k : float or TensorVariable
         Shape parameter of gamma distribution
-    theta : float | TensorVariable
+    theta : float or TensorVariable
         Mean of gamma distribution
 
     Returns
     -------
-    float | TensorVariable
-        Log-density
+    TensorVariable
+        Log density
 
     See Also
     --------
