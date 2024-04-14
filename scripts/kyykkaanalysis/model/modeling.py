@@ -12,13 +12,15 @@ import numpy as np
 import pymc as pm
 from arviz import ELPDData, InferenceData, ess, loo, loo_pit, psislw, summary
 from numpy import typing as npt
-from pymc.distributions.shape_utils import Shape
-from pymc.math import exp, floor
-from pytensor.tensor.variable import TensorVariable
 from xarray import DataArray, Dataset, merge
 
 from ..data.data_classes import ModelData
-from .distributions import podium_gamma_logp, podium_gamma_rng
+from .distributions import (
+    podium_gamma_logp,
+    podium_gamma_rng,
+    podium_invgamma_logp,
+    podium_invgamma_rng,
+)
 
 
 class ModelType(Enum):
@@ -513,8 +515,8 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 a,
                 theta[player] + o * is_first,
-                logp=_podium_invgamma_logp,
-                random=_podium_invgamma_rng,
+                logp=podium_invgamma_logp,
+                random=podium_invgamma_rng,
                 dims="throws",
                 observed=throw_times,
             )
