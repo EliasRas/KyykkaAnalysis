@@ -72,8 +72,9 @@ def _sample_distributions(
     for parameter, parameter_samples in samples.items():
         sample_values = parameter_samples.values
         parameter_symbol = parameter_to_latex(parameter)
-        if parameter == "theta":
-            figure = _theta_distributions(
+        if parameter in ["theta", "eta"]:
+            figure = _per_player_distributions(
+                parameter,
                 sample_values,
                 parameter_symbol,
                 prior_samples=prior_samples,
@@ -94,25 +95,26 @@ def _sample_distributions(
         )
 
 
-def _theta_distributions(
+def _per_player_distributions(
+    parameter: str,
     samples: npt.NDArray[np.float64],
     theta_symbol: str,
     *,
     prior_samples: Dataset | None = None,
     true_values: Dataset | None = None,
 ) -> go.Figure:
-    if prior_samples is not None and "theta" in prior_samples:
-        prior_sample = prior_samples["theta"].values
+    if prior_samples is not None and parameter in prior_samples:
+        prior_sample = prior_samples[parameter].values
     else:
         prior_sample = None
-    if true_values is not None and "theta" in true_values:
-        true_value = true_values["theta"].values[0, :]
+    if true_values is not None and parameter in true_values:
+        true_value = true_values[parameter].values[0, :]
     else:
         true_value = None
     figure = go.Figure()
-    for theta_index in range(samples.shape[-1]):
-        parameter_samples = samples[:, :, theta_index].flatten()
-        y = f"Pelaaja {theta_index+1}"
+    for player_index in range(samples.shape[-1]):
+        parameter_samples = samples[:, :, player_index].flatten()
+        y = f"Pelaaja {player_index+1}"
         figure.add_trace(
             go.Scatter(
                 x=np.linspace(parameter_samples.min(), parameter_samples.max(), 1000),
@@ -123,7 +125,7 @@ def _theta_distributions(
                 f" - {round(parameter_samples.max(),1)}<br>"
                 f"Kvartiiliväli: {round(np.quantile(parameter_samples, 0.25),1)} "
                 f"- {round(np.quantile(parameter_samples, 0.75),1)}"
-                f"<extra>Pelaaja {theta_index+1}</extra>",
+                f"<extra>Pelaaja {player_index+1}</extra>",
             )
         )
         figure.add_trace(
@@ -140,18 +142,18 @@ def _theta_distributions(
                 f" - {round(parameter_samples.max(),1)}<br>"
                 f"Kvartiiliväli: {round(np.quantile(parameter_samples, 0.25),1)} "
                 f"- {round(np.quantile(parameter_samples, 0.75),1)}"
-                f"<extra>Pelaaja {theta_index+1}</extra>",
+                f"<extra>Pelaaja {player_index+1}</extra>",
             )
         )
         if true_value is not None:
             figure.add_trace(
                 go.Scatter(
-                    x=[true_value[theta_index]],
+                    x=[true_value[player_index]],
                     y=[y],
                     mode="markers",
                     marker={"color": "black", "size": 7},
                     hovertemplate="Todellinen arvo: %{x:.2f}"
-                    f"<extra>Pelaaja {theta_index+1}</extra>",
+                    f"<extra>Pelaaja {player_index+1}</extra>",
                 )
             )
 
@@ -184,7 +186,7 @@ def _theta_distributions(
                 f" - {round(prior_sample.max(),1)}<br>"
                 f"Kvartiiliväli: {round(np.quantile(prior_sample, 0.25),1)} "
                 f"- {round(np.quantile(prior_sample, 0.75),1)}"
-                f"<extra>Pelaaja {theta_index+1}</extra>",
+                f"<extra>Pelaaja {player_index+1}</extra>",
             )
         )
 
@@ -256,7 +258,7 @@ def _parameter_correlations(
     *,
     true_values: Dataset | None = None,
 ) -> None:
-    samples = samples.drop_vars(["theta"])
+    samples = samples.drop_vars(["theta", "eta"], errors="ignore")
     parameter_count = len(samples)
     parameters = sorted(samples.keys())
     bin_count = min((samples["draw"].size * samples["chain"].size) // 200, 100)
@@ -470,14 +472,17 @@ def _contraction(
     parameters = []
     contractions = []
     for parameter, parameter_samples in samples.items():
+        if parameter not in prior_samples:
+            continue
+
         sample_values = parameter_samples.values
         prior_sample = prior_samples[parameter].values
-        if parameter == "theta":
+        if parameter in ["theta", "eta"]:
             sample_values = sample_values.reshape(-1, sample_values.shape[-1])
             prior_sample = prior_sample.reshape(-1, prior_sample.shape[-1])
             parameters.extend(
                 [
-                    f"theta_{player_index+1}"
+                    f"{parameter}_{player_index+1}"
                     for player_index in range(sample_values.shape[-1])
                 ]
             )

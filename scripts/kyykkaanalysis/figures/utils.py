@@ -33,6 +33,7 @@ _LATEX_CONVERSION = {
     "k": "$k$",
     "a": "$a$",
     "theta": r"$\theta$",
+    "eta": r"$\eta$",
     "y": "$y$",
 }
 _ERROR_LATEX_CONVERSION = {
@@ -42,6 +43,7 @@ _ERROR_LATEX_CONVERSION = {
     "k": r"$k-\text{virhe}$",
     "a": r"$a-\text{virhe}$",
     "theta": r"$\theta-\text{virhe}$",
+    "eta": r"$\eta-\text{virhe}$",
     "y": r"$y-\text{virhe}$",
 }
 _PERCENTILE_LATEX_CONVERSION = {
@@ -51,6 +53,7 @@ _PERCENTILE_LATEX_CONVERSION = {
     "k": r"$k-\text{prosenttipiste}$",
     "a": r"$a-\text{prosenttipiste}$",
     "theta": r"$\theta-\text{prosenttipiste}$",
+    "eta": r"$\eta-\text{prosenttipiste}$",
     "y": r"$y-\text{prosenttipiste}$",
 }
 _TOO_MANY_SCATTER = 10000

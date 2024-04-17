@@ -51,7 +51,7 @@ def chain_plots(
 
 
 def _trace_plot(samples: Dataset, figure_directory: Path) -> None:
-    samples = samples.drop_vars(["theta"])
+    samples = samples.drop_vars(["theta", "eta"], errors="ignore")
     parameter_count = len(samples)
 
     figure = make_subplots(rows=parameter_count, cols=2)
@@ -116,7 +116,7 @@ def _divergences(
 ) -> None:
     dimensions = []
     for parameter in sorted(samples.keys()):
-        if parameter == "theta":
+        if parameter in ["theta", "eta"]:
             parameter_samples = samples[parameter].values
             parameter_samples = parameter_samples.reshape(
                 -1, parameter_samples.shape[-1]
@@ -133,7 +133,7 @@ def _divergences(
                             np.floor(min_value - margin),
                             np.ceil(max_value + margin),
                         ],
-                        "label": f"theta_{player_index}",
+                        "label": f"{parameter}_{player_index}",
                         "values": player_samples,
                         "tickvals": [],
                     }

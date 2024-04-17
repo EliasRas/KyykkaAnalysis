@@ -67,7 +67,12 @@ class ThrowTimeModel:
     """
 
     def __init__(
-        self, data: ModelData, *, model_type: ModelType = ModelType.GAMMA
+        self,
+        data: ModelData,
+        *,
+        model_type: ModelType = ModelType.GAMMA,
+        non_centered: bool = False,
+        extra_stability: bool = False,
     ) -> None:
         """
         Container for throw time model.
@@ -78,19 +83,47 @@ class ThrowTimeModel:
             Data for the model
         model_type : ModelType, default GAMMA
             Type of model to construct
+        non_centered : bool, default False
+            Whether the model uses a non-centered parametrization
+        extra_stability : bool, default False
+            Whether the model uses a likelihood implementation that's numerically more
+            stable
         """
 
         self.data = data
         self.model_type = model_type
-        match model_type:
+        self._non_centered = non_centered
+        self._extra_stability = extra_stability
+        self._create_model()
+
+    def _create_model(self) -> None:
+        match self.model_type:
             case ModelType.GAMMA:
-                self.model = gamma_throw_model(data)
+                self.model = gamma_throw_model(
+                    self.data,
+                    non_centered=self._non_centered,
+                    extra_stability=self._extra_stability,
+                )
             case ModelType.NAIVE:
-                self.model = gamma_throw_model(data, naive=True)
+                self.model = gamma_throw_model(
+                    self.data,
+                    naive=True,
+                    non_centered=self._non_centered,
+                    extra_stability=self._extra_stability,
+                )
             case ModelType.INVGAMMA:
-                self.model = invgamma_throw_model(data)
+                self.model = invgamma_throw_model(
+                    self.data,
+                    non_centered=self._non_centered,
+                    extra_stability=self._extra_stability,
+                )
             case ModelType.NAIVEINVGAMMA:
-                self.model = invgamma_throw_model(data, naive=True)
+                self.model = invgamma_throw_model(
+                    self.data,
+                    naive=True,
+                    non_centered=self._non_centered,
+                    extra_stability=self._extra_stability,
+                )
 
     def sample_prior(self, *, sample_count: int = 500) -> Dataset:
         """
@@ -158,6 +191,13 @@ class ThrowTimeModel:
                 init="adapt_diag",
             )
 
+            if self._non_centered:
+                # Transform non-centered parametrization back to centered
+                samples.posterior["theta"] = (
+                    samples.posterior["mu"]
+                    + samples.posterior["sigma"] * samples.posterior["eta"]
+                )
+
         if thin:
             return self.thin(samples)
 
@@ -168,8 +208,14 @@ class ThrowTimeModel:
             "mu_interval__": np.array(np.log(28)),
             "sigma_log__": np.array(np.log(11)),
             "o_log__": np.array(np.log(1)),
-            "theta_interval__": np.ones(len(self.model.coords["players"])) * np.log(28),
         }
+
+        if self._non_centered:
+            starting_point["eta"] = np.zeros(len(self.model.coords["players"]))
+        else:
+            starting_point["theta_interval__"] = np.ones(
+                len(self.model.coords["players"])
+            ) * np.log(28)
 
         match self.model_type:
             case ModelType.GAMMA | ModelType.NAIVE:
@@ -258,6 +304,42 @@ class ThrowTimeModel:
         weights = psislw(-log_likelihood, reff=reff)[0].values
 
         return weights
+
+    def change_implementation(
+        self,
+        *,
+        non_centered: bool | None = None,
+        extra_stability: bool | None = None,
+    ) -> Self:
+        """
+        Change the implementation of the model.
+
+        Changes the parametrization of the model between centered and non-centered
+        parameterizations and the implementation of the likelihood function between
+        stable and fast.
+
+        Parameters
+        ----------
+        non_centered : bool | None, optional
+            Whether the model uses a non-centered parametrization
+        extra_stability : bool | None, optional
+            Whether the model uses a likelihood implementation that's numerically more
+            stable
+
+        Returns
+        -------
+        ThrowTimeModel
+            Model with updated implementation
+        """
+
+        if non_centered is not None:
+            self._non_centered = non_centered
+        if extra_stability is not None:
+            self._extra_stability = extra_stability
+
+        self._create_model()
+
+        return self
 
     def change_observations(self, *, y: npt.NDArray[np.int_] | None = None) -> Self:
         """
@@ -401,7 +483,13 @@ class ThrowTimeModel:
         return data
 
 
-def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
+def gamma_throw_model(
+    data: ModelData,
+    *,
+    naive: bool = False,
+    non_centered: bool = False,
+    extra_stability: bool = False,
+) -> pm.Model:
     """
     Construct a model for throw times.
 
@@ -415,6 +503,11 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
         Data for the model
     naive : bool, default False
         Whether the model uses simple floor rounding in likelihood
+    non_centered : bool, default False
+        Whether the model uses non-centered parametrization
+    extra_stability : bool, default False
+        Whether the model uses a likelihood implementation that's numerically more
+        stable
 
     Returns
     -------
@@ -438,7 +531,14 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
         o = pm.HalfNormal("o", sigma=11)
         k = pm.TruncatedNormal("k", mu=1, sigma=14, lower=1)
 
-        theta = pm.TruncatedNormal("theta", mu=mu, sigma=sigma, lower=0, dims="players")
+        if not non_centered:
+            theta = pm.TruncatedNormal(
+                "theta", mu=mu, sigma=sigma, lower=0, dims="players"
+            )
+        else:
+            # Missing a lower bound -mu/sigma
+            eta = pm.Normal("eta", mu=0, sigma=1, dims="players")
+            theta = mu + sigma * eta
         player = pm.Data("player", data.player_ids, dims="throws")
         is_first = pm.Data("is_first", data.first_throw, dims="throws")
         throw_times = pm.Data("throw_times", data.throw_times, dims="throws")
@@ -448,7 +548,7 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 k,
                 theta[player] + o * is_first,
-                logp=podium_gamma_logp,
+                logp=podium_gamma_logp(extra_stability),
                 random=podium_gamma_rng,
                 dims="throws",
                 observed=throw_times,
@@ -458,7 +558,7 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 k,
                 theta[player] + o * is_first,
-                logp=floor_gamma_logp,
+                logp=floor_gamma_logp(extra_stability),
                 random=floor_gamma_rng,
                 dims="throws",
                 observed=throw_times,
@@ -467,7 +567,13 @@ def gamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
     return model
 
 
-def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
+def invgamma_throw_model(
+    data: ModelData,
+    *,
+    naive: bool = False,
+    non_centered: bool = False,
+    extra_stability: bool = False,
+) -> pm.Model:
     """
     Construct a model for throw times.
 
@@ -481,6 +587,11 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
         Data for the model
     naive : bool, default False
         Whether the model uses simple floor rounding in likelihood
+    non_centered : bool, default False
+        Whether the model uses non-centered parametrization
+    extra_stability : bool, default False
+        Whether the model uses a likelihood implementation that's numerically more
+        stable
 
     Returns
     -------
@@ -504,7 +615,13 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
         o = pm.HalfNormal("o", sigma=11)
         a = pm.Normal("a", mu=-4.5, sigma=1)
 
-        theta = pm.TruncatedNormal("theta", mu=mu, sigma=sigma, lower=0, dims="players")
+        if not non_centered:
+            theta = pm.TruncatedNormal(
+                "theta", mu=mu, sigma=sigma, lower=0, dims="players"
+            )
+        else:
+            eta = pm.Normal("eta", mu=0, sigma=1, dims="players")  # lower = -mu
+            theta = mu + sigma * eta
         player = pm.Data("player", data.player_ids, dims="throws")
         is_first = pm.Data("is_first", data.first_throw, dims="throws")
         throw_times = pm.Data("throw_times", data.throw_times, dims="throws")
@@ -514,7 +631,7 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 a,
                 theta[player] + o * is_first,
-                logp=podium_invgamma_logp,
+                logp=podium_invgamma_logp(extra_stability),
                 random=podium_invgamma_rng,
                 dims="throws",
                 observed=throw_times,
@@ -524,7 +641,7 @@ def invgamma_throw_model(data: ModelData, *, naive: bool = False) -> pm.Model:
                 "y",
                 a,
                 theta[player] + o * is_first,
-                logp=floor_invgamma_logp,
+                logp=floor_invgamma_logp(extra_stability),
                 random=floor_invgamma_rng,
                 dims="throws",
                 observed=throw_times,
