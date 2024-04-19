@@ -305,7 +305,7 @@ class ThrowTimeModel:
 
         return weights
 
-    def stability_check(
+    def stability_check(  # noqa: PLR0913
         self,
         max_value: float,
         theta: float,
