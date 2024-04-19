@@ -21,7 +21,7 @@ DATA_INPUT_TYPE = (
 
 
 def podium_gamma_logp(
-    extra_stability: bool,  # noqa: FBT001
+    *, extra_stability: bool
 ) -> Callable[
     [DATA_INPUT_TYPE, float | TensorVariable, float | TensorVariable], TensorVariable
 ]:
@@ -210,7 +210,7 @@ def podium_gamma_rng(
 
 
 def floor_gamma_logp(
-    extra_stability: bool,  # noqa: FBT001
+    *, extra_stability: bool
 ) -> Callable[
     [DATA_INPUT_TYPE, float | TensorVariable, float | TensorVariable], TensorVariable
 ]:
@@ -365,7 +365,7 @@ def floor_gamma_rng(
 
 
 def podium_invgamma_logp(
-    extra_stability: bool,  # noqa: FBT001
+    *, extra_stability: bool
 ) -> Callable[
     [DATA_INPUT_TYPE, float | TensorVariable, float | TensorVariable], TensorVariable
 ]:
@@ -553,7 +553,7 @@ def podium_invgamma_rng(
 
 
 def floor_invgamma_logp(
-    extra_stability: bool,  # noqa: FBT001
+    *, extra_stability: bool
 ) -> Callable[
     [DATA_INPUT_TYPE, float | TensorVariable, float | TensorVariable], TensorVariable
 ]:
