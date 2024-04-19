@@ -305,6 +305,65 @@ class ThrowTimeModel:
 
         return weights
 
+    def stability_check(
+        self,
+        max_value: float,
+        theta: float,
+        o: float,
+        *,
+        k: float | None = None,
+        a: float | None = None,
+    ) -> bool:
+        """
+        Check whether the log-likelihood calculation has to be numerically more stable.
+
+        Checks whether the output of log-likelihood function is NaN for the given test
+        values or the initial point given by _starting_point.
+
+        Parameters
+        ----------
+        max_value : float
+            Maximum throw time value
+        theta : float
+            Mean of the throw time distribution to test
+        o : float
+            Offset for the first throw
+        k : float, optional
+            Shape parameter of the gamma distribution to test. Used only if model_type
+            is GAMMA or NAIVE
+        a : float, optional
+            Transformed shape parameter of inverse gamma distribution to test. Shape
+            parameter alpha = exp(-a) + 1. Used only if model_type is INVGAMMA or
+            NAIVEINVGAMMA
+
+        Returns
+        -------
+        bool
+            Whether the log-likelihood calculation has to be numerically more stable.
+        """
+
+        match self.model_type:
+            case ModelType.GAMMA:
+                logp = podium_gamma_logp(extra_stability=False)
+                test_args = (max_value, k, theta + o)
+                starting_args = (max_value, 3, 29)
+            case ModelType.NAIVE:
+                logp = floor_gamma_logp(extra_stability=False)
+                test_args = (max_value, k, theta + o)
+                starting_args = (max_value, 3, 29)
+            case ModelType.INVGAMMA:
+                logp = podium_invgamma_logp(extra_stability=False)
+                test_args = (max_value, a, theta + o)
+                starting_args = (max_value, -2, 29)
+            case ModelType.NAIVEINVGAMMA:
+                logp = floor_invgamma_logp(extra_stability=False)
+                test_args = (max_value, a, theta + o)
+                starting_args = (max_value, -2, 29)
+
+        return not np.isfinite(logp(*test_args).eval().item()) or not np.isfinite(
+            logp(*starting_args).eval().item()
+        )
+
     def change_implementation(
         self,
         *,

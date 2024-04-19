@@ -28,7 +28,6 @@ from .modeling import ModelType, ThrowTimeModel
 _SBC_SAMPLES = 1000
 _SBC_CHAINS = 4
 _SMALL_SIGMA = 5
-_LARGE_Y = 400
 
 
 def check_priors(
@@ -247,10 +246,25 @@ def _fake_data_inference(
                     prior[parameter].values.squeeze().std(0)
                 )
 
-        if sample["sigma"].item() < _SMALL_SIGMA or sample["y"].values.max() > _LARGE_Y:
+        match model.model_type:
+            case ModelType.GAMMA | ModelType.NAIVE:
+                needs_stability = model.stability_check(
+                    sample["y"].values.max(),
+                    sample["theta"].values.min(),
+                    sample["o"].item(),
+                    k=sample["k"].item(),
+                )
+            case ModelType.GAMMA | ModelType.NAIVE:
+                needs_stability = model.stability_check(
+                    sample["y"].values.max(),
+                    sample["theta"].values.min(),
+                    sample["o"].item(),
+                    a=sample["a"].item(),
+                )
+        if needs_stability or sample["sigma"].item() < _SMALL_SIGMA:
             model.change_implementation(
                 non_centered=sample["sigma"].item() < _SMALL_SIGMA,
-                extra_stability=sample["y"].values.max() > _LARGE_Y,
+                extra_stability=needs_stability,
             )
             posterior_sample = _sample_posterior(
                 sample_index, sample, cache_directory, model
