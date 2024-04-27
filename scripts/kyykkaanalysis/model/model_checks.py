@@ -9,7 +9,7 @@ also with data generated with other models.
 from pathlib import Path
 
 import numpy as np
-from arviz import InferenceData
+from arviz import InferenceData, summary
 from scipy.stats import kstest
 from xarray import Dataset, open_dataset
 
