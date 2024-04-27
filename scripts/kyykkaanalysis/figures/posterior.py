@@ -17,6 +17,7 @@ from xarray import Dataset
 
 from .utils import (
     FONT_SIZE,
+    HEATMAP_COLORS,
     PLOT_COLORS,
     create_bins,
     ecdf,
@@ -278,7 +279,7 @@ def _parameter_correlations(
                     y=parameter2_samples,
                     nbinsx=bin_count,
                     nbinsy=bin_count,
-                    colorscale="thermal",
+                    colorscale=HEATMAP_COLORS,
                     showscale=False,
                     hovertemplate=f"{parameter}: %{{x}}<br>"
                     f"{parameter2}: %{{y}}<br>Näytteitä: %{{z}}<extra></extra>",
@@ -381,7 +382,7 @@ def _range_figure(
             y=maximum_values,
             nbinsx=min_bins,
             nbinsy=max_bins,
-            colorscale="thermal",
+            colorscale=HEATMAP_COLORS,
             hovertemplate=f"{values_name} minimi: %{{x}} s<br>"
             f"{values_name} maksimi: %{{y}} s<br>Näytteitä: %{{z}}<extra></extra>",
         ),
@@ -1020,7 +1021,7 @@ def _range_heatmap(
             "end": max_bins[-1],
             "size": max_bins[1] - max_bins[0],
         },
-        colorscale="thermal",
+        colorscale=HEATMAP_COLORS,
         hovertemplate="Heittoaikojen minimi: %{x} s<br>"
         "Heittoaikojen maksimi: %{y} s<br>Näytteitä: %{z}<extra></extra>",
     )

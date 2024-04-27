@@ -11,6 +11,7 @@ from xarray import Dataset
 
 from .utils import (
     FONT_SIZE,
+    HEATMAP_COLORS,
     PLOT_COLORS,
     parameter_to_latex,
     precalculated_histogram,
@@ -130,7 +131,7 @@ def _range_figure(
             y=maximum_values,
             nbinsx=min_bins,
             nbinsy=max_bins,
-            colorscale="thermal",
+            colorscale=HEATMAP_COLORS,
             hovertemplate=f"{values_name} minimi: %{{x}} s<br>"
             f"{values_name} maksimi: %{{y}} s<br>Näytteitä: %{{z}}<extra></extra>",
         ),

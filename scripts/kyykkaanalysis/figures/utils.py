@@ -25,6 +25,9 @@ FONT_SIZE_BOXPLOT = 10
 """Size of the font for boxplot figures in report PDF"""
 PLOT_COLORS = colors.qualitative.Plotly
 """Default colorcycle"""
+HEATMAP_COLORS = colors.get_colorscale("thermal")
+"""Colormap for heatmaps with empty cells removed"""
+HEATMAP_COLORS[0] = [0, "rgb(255,255,255)"]
 
 _LATEX_CONVERSION = {
     "mu": r"$\mu$",

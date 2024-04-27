@@ -16,6 +16,7 @@ from xarray import Dataset
 
 from .utils import (
     FONT_SIZE,
+    HEATMAP_COLORS,
     PLOT_COLORS,
     parameter_to_latex,
     precalculated_histogram,
@@ -322,7 +323,7 @@ def _error_correlation_plot(
             y=y,
             nbinsx=bin_count,
             nbinsy=bin_count,
-            colorscale="thermal",
+            colorscale=HEATMAP_COLORS,
             showscale=False,
             hovertemplate="Todellinen arvo: %{x}<br>"
             "Virhe: %{y}<br>Näytteitä: %{z}<extra></extra>",
@@ -492,7 +493,7 @@ def _sample_size_plot(
             y=y,
             nbinsx=bin_count,
             nbinsy=bin_count,
-            colorscale="thermal",
+            colorscale=HEATMAP_COLORS,
             showscale=False,
             hovertemplate="Todellinen arvo: %{x}<br>"
             "Otoksen koko: %{y}<br>Näytteitä: %{z}<extra></extra>",
