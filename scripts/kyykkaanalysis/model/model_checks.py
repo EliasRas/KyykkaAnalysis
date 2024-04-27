@@ -254,7 +254,7 @@ def _fake_data_inference(
                     sample["o"].item(),
                     k=sample["k"].item(),
                 )
-            case ModelType.GAMMA | ModelType.NAIVE:
+            case ModelType.INVGAMMA | ModelType.NAIVEINVGAMMA:
                 needs_stability = model.stability_check(
                     sample["y"].values.max(),
                     sample["theta"].values.min(),
