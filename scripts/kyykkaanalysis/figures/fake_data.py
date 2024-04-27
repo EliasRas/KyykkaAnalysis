@@ -509,7 +509,7 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
     figure = make_subplots(
         rows=row_count,
         cols=col_count,
-        subplot_titles=parameters,
+        subplot_titles=[parameter_to_latex(parameter) for parameter in parameters],
     )
     customdata, theta_customdata, extra_hover, theta_hover = _simulation_infos(
         posterior_summaries, parameters
