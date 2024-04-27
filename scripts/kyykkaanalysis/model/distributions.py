@@ -438,7 +438,7 @@ def _podium_invgamma_logp(
     beta = theta * exp(-a)
 
     value = value + expand_dims([-2, -1, 0, 1, 2, 3], -1)
-    densities = (_gammaincc(alpha, beta / value),)
+    densities = _gammaincc(alpha, beta / value)
 
     # Differences of inverse gamma distribution's CDF
     densities = densities[3:, :][::-1, :] - densities[:3, :]
