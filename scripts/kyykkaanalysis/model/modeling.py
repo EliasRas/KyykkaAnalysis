@@ -144,6 +144,9 @@ class ThrowTimeModel:
             samples = pm.sample_prior_predictive(samples=sample_count)
 
         samples = merge([samples.prior, samples.prior_predictive])
+        if self.model_type in [ModelType.INVGAMMA, ModelType.NAIVEINVGAMMA]:
+            # Detransform the shape parameter of inverse gamma distribution
+            samples["alpha"] = np.exp(-samples["a"]) + 1
         samples["y"] = samples["y"].astype(int)
 
         return samples
@@ -191,12 +194,16 @@ class ThrowTimeModel:
                 init="adapt_diag",
             )
 
-            if self._non_centered:
-                # Transform non-centered parametrization back to centered
-                samples.posterior["theta"] = (
-                    samples.posterior["mu"]
-                    + samples.posterior["sigma"] * samples.posterior["eta"]
-                )
+        if self._non_centered:
+            # Transform non-centered parametrization back to centered
+            samples.posterior["theta"] = (
+                samples.posterior["mu"]
+                + samples.posterior["sigma"] * samples.posterior["eta"]
+            )
+
+        if self.model_type in [ModelType.INVGAMMA, ModelType.NAIVEINVGAMMA]:
+            # Detransform the shape parameter of inverse gamma distribution
+            samples.posterior["alpha"] = np.exp(-samples.posterior["a"]) + 1
 
         if thin:
             return self.thin(samples)
