@@ -298,11 +298,18 @@ def _fake_data_inference(
                 posterior_sample,
             )
 
+        sample_sizes = summary(posterior_sample.posterior)["ess_bulk"]
         for parameter in parameters:
-            sample = posterior_sample.thinned_sample[parameter]
-            summaries[parameter].sel(summary="sample size").values[sample_index] = (
-                sample.shape[0] * sample.shape[1]
-            )
+            if parameter in sample_sizes:
+                summaries[parameter].sel(summary="sample size").values[sample_index] = (
+                    sample_sizes["o"]
+                )
+            else:
+                summaries[parameter].sel(summary="sample size").values[sample_index] = (
+                    sample_sizes[
+                        sample_sizes.index.str.startswith(parameter)
+                    ].to_numpy()
+                )
 
         _summarize_posterior(summaries, posterior_sample.posterior, sample_index)
         _summarize_posterior_predictive(
