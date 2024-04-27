@@ -540,7 +540,7 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     marker={"color": PLOT_COLORS[0], "opacity": 0.7},
                     hovertemplate=(
                         f"Posteriorin supistuma: %{{x:.2f}}<br>"
-                        "Normalisoitu virhe:%{{y:.2f}}"
+                        "Normalisoitu virhe:%{y:.2f}"
                         f"{theta_hover}<extra>{parameter}</extra>"
                     ),
                 ),
@@ -558,7 +558,7 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
                     marker={"color": PLOT_COLORS[0], "opacity": 0.7},
                     hovertemplate=(
                         f"Posteriorin supistuma: %{{x:.2f}}<br>"
-                        "Normalisoitu virhe:%{{y:.2f}}"
+                        "Normalisoitu virhe:%{y:.2f}"
                         f"{extra_hover}<extra>{parameter}</extra>"
                     ),
                 ),
