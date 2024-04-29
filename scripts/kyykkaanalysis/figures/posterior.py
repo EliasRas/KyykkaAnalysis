@@ -733,6 +733,25 @@ def _data_moments(
     figure.write_html(figure_directory / "y_moments.html", include_mathjax="cdn")
 
 
+def _throw_time_ranges(
+    samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
+) -> None:
+    throw_times = samples["y"].values
+    throw_times = throw_times.reshape(-1, throw_times.shape[-1])
+    minimum_times = throw_times.min(1)
+    maximum_times = throw_times.max(1)
+    if true_values is not None:
+        true_values = true_values["y"].values
+
+    figure = _range_figure(
+        minimum_times, maximum_times, "Heittoaikojen", true_values=true_values
+    )
+    figure.write_html(
+        figure_directory / "y_range.html",
+        include_mathjax="cdn",
+    )
+
+
 def _throw_data_distribution(
     samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
 ) -> None:
@@ -881,25 +900,6 @@ def _player_data_moments(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "player_y_moments.html", include_mathjax="cdn")
-
-
-def _throw_time_ranges(
-    samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
-) -> None:
-    throw_times = samples["y"].values
-    throw_times = throw_times.reshape(-1, throw_times.shape[-1])
-    minimum_times = throw_times.min(1)
-    maximum_times = throw_times.max(1)
-    if true_values is not None:
-        true_values = true_values["y"].values
-
-    figure = _range_figure(
-        minimum_times, maximum_times, "Heittoaikojen", true_values=true_values
-    )
-    figure.write_html(
-        figure_directory / "y_range.html",
-        include_mathjax="cdn",
-    )
 
 
 def _player_time_ranges(
