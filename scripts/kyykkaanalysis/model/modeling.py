@@ -92,8 +92,8 @@ class ThrowTimeModel:
 
         self.data = data
         self.model_type = model_type
-        self._non_centered = non_centered
-        self._extra_stability = extra_stability
+        self.non_centered = non_centered
+        self.extra_stability = extra_stability
         self._create_model()
 
     def _create_model(self) -> None:
@@ -101,28 +101,28 @@ class ThrowTimeModel:
             case ModelType.GAMMA:
                 self.model = gamma_throw_model(
                     self.data,
-                    non_centered=self._non_centered,
-                    extra_stability=self._extra_stability,
+                    non_centered=self.non_centered,
+                    extra_stability=self.extra_stability,
                 )
             case ModelType.NAIVE:
                 self.model = gamma_throw_model(
                     self.data,
                     naive=True,
-                    non_centered=self._non_centered,
-                    extra_stability=self._extra_stability,
+                    non_centered=self.non_centered,
+                    extra_stability=self.extra_stability,
                 )
             case ModelType.INVGAMMA:
                 self.model = invgamma_throw_model(
                     self.data,
-                    non_centered=self._non_centered,
-                    extra_stability=self._extra_stability,
+                    non_centered=self.non_centered,
+                    extra_stability=self.extra_stability,
                 )
             case ModelType.NAIVEINVGAMMA:
                 self.model = invgamma_throw_model(
                     self.data,
                     naive=True,
-                    non_centered=self._non_centered,
-                    extra_stability=self._extra_stability,
+                    non_centered=self.non_centered,
+                    extra_stability=self.extra_stability,
                 )
 
     def sample_prior(self, *, sample_count: int = 500) -> Dataset:
@@ -194,7 +194,7 @@ class ThrowTimeModel:
                 init="adapt_diag",
             )
 
-        if self._non_centered:
+        if self.non_centered:
             # Transform non-centered parametrization back to centered
             samples.posterior["theta"] = (
                 samples.posterior["mu"]
@@ -217,7 +217,7 @@ class ThrowTimeModel:
             "o_log__": np.array(np.log(1)),
         }
 
-        if self._non_centered:
+        if self.non_centered:
             starting_point["eta"] = np.zeros(len(self.model.coords["players"]))
         else:
             starting_point["theta_interval__"] = np.ones(
@@ -399,9 +399,9 @@ class ThrowTimeModel:
         """
 
         if non_centered is not None:
-            self._non_centered = non_centered
+            self.non_centered = non_centered
         if extra_stability is not None:
-            self._extra_stability = extra_stability
+            self.extra_stability = extra_stability
 
         self._create_model()
 
