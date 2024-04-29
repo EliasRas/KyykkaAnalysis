@@ -344,6 +344,7 @@ def _half_duration(data: list[Stream], figure_directory: Path) -> None:
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
     )
 
+    figure.write_html(figure_directory / "pelit1.html")
     write_pdf(figure, figure_directory / "pelit1.pdf")
 
 
