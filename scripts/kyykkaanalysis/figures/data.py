@@ -7,11 +7,14 @@ This module provides functions for visualizing kyykkä play time data.
 from pathlib import Path
 
 import numpy as np
+import structlog
 from numpy import typing as npt
 from plotly import graph_objects as go
 
 from ..data.data_classes import Stream
 from .utils import FONT_SIZE, FONT_SIZE_2X2, PLOT_COLORS, write_pdf
+
+_LOG = structlog.get_logger(__name__)
 
 
 def timeline(data: list[Stream]) -> None:
@@ -28,7 +31,11 @@ def timeline(data: list[Stream]) -> None:
         Play time data
     """
 
-    for stream in data:
+    log = _LOG.bind(stream_count=len(data))
+    log.info("Creating stream timeline figures.")
+
+    for stream_index, stream in enumerate(data):
+        log.info("Creating a timeline of a stream.", stream_index=stream_index)
         figure = go.Figure()
         index_start = 0
         for game_index, game in enumerate(stream.games):
@@ -91,6 +98,8 @@ def timeline(data: list[Stream]) -> None:
         )
         figure.show()
 
+    log.info("Stream timeline figures created.")
+
 
 def time_distributions(data: list[Stream], figure_directory: Path) -> None:
     """
@@ -108,11 +117,16 @@ def time_distributions(data: list[Stream], figure_directory: Path) -> None:
         Path to the directory in which the figures are saved
     """
 
+    log = _LOG.bind(figure_directory=figure_directory)
+    log.info("Creating time distribution figures.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _throw_distributions(data, figure_directory)
     _kona_distribution(data, figure_directory)
     _game_distributions(data, figure_directory)
+
+    log.info("Time distribution figures created.")
 
 
 def _throw_distributions(data: list[Stream], figure_directory: Path) -> None:
@@ -168,6 +182,12 @@ def _game_throws(
     figure.write_html(figure_directory / "heitot1.html")
     write_pdf(figure, figure_directory / "heitot1.pdf")
 
+    _LOG.debug(
+        "Throw time distributions of playoffs and regular season created.",
+        figure_path=figure_directory / "heitot1.html",
+        pdf_path=figure_directory / "heitot1.pdf",
+    )
+
 
 def _position_throws(
     data: list[Stream], throw_times: npt.NDArray[np.timedelta64], figure_directory: Path
@@ -208,6 +228,12 @@ def _position_throws(
     figure.write_html(figure_directory / "heitot2.html")
     write_pdf(figure, figure_directory / "heitot2.pdf")
 
+    _LOG.debug(
+        "Throw time distributions of player position created.",
+        figure_path=figure_directory / "heitot1.html",
+        pdf_path=figure_directory / "heitot1.pdf",
+    )
+
 
 def _order_throws1(
     data: list[Stream], throw_times: npt.NDArray[np.timedelta64], figure_directory: Path
@@ -247,6 +273,12 @@ def _order_throws1(
 
     figure.write_html(figure_directory / "heitot3.html")
     write_pdf(figure, figure_directory / "heitot3.pdf")
+
+    _LOG.debug(
+        "Throw time distributions of throw number created.",
+        figure_path=figure_directory / "heitot3.html",
+        pdf_path=figure_directory / "heitot3.pdf",
+    )
 
 
 def _order_throws2(
@@ -293,6 +325,12 @@ def _order_throws2(
     figure.write_html(figure_directory / "heitot4.html")
     write_pdf(figure, figure_directory / "heitot4.pdf")
 
+    _LOG.debug(
+        "Throw time distributions of per turn throw number created.",
+        figure_path=figure_directory / "heitot4.html",
+        pdf_path=figure_directory / "heitot4.pdf",
+    )
+
 
 def _kona_distribution(data: list[Stream], figure_directory: Path) -> None:
     kona_times = np.concatenate([stream.kona_times(difference=True) for stream in data])
@@ -314,6 +352,12 @@ def _kona_distribution(data: list[Stream], figure_directory: Path) -> None:
     )
     figure.write_html(figure_directory / "konat.html")
     write_pdf(figure, figure_directory / "konat.pdf")
+
+    _LOG.debug(
+        "Kona piling time distribution created.",
+        figure_path=figure_directory / "konat.html",
+        pdf_path=figure_directory / "konat.pdf",
+    )
 
 
 def _game_distributions(data: list[Stream], figure_directory: Path) -> None:
@@ -347,6 +391,12 @@ def _half_duration(data: list[Stream], figure_directory: Path) -> None:
     figure.write_html(figure_directory / "pelit1.html")
     write_pdf(figure, figure_directory / "pelit1.pdf")
 
+    _LOG.debug(
+        "Half duration distribution created.",
+        figure_path=figure_directory / "pelit1.html",
+        pdf_path=figure_directory / "pelit1.pdf",
+    )
+
 
 def _game_duration(data: list[Stream], figure_directory: Path) -> None:
     game_durations = np.concatenate([stream.game_durations for stream in data])
@@ -371,6 +421,12 @@ def _game_duration(data: list[Stream], figure_directory: Path) -> None:
 
     figure.write_html(figure_directory / "pelit2.html")
     write_pdf(figure, figure_directory / "pelit2.pdf")
+
+    _LOG.debug(
+        "Game duration distribution created.",
+        figure_path=figure_directory / "pelit2.html",
+        pdf_path=figure_directory / "pelit2.pdf",
+    )
 
 
 def _half_break(data: list[Stream], figure_directory: Path) -> None:
@@ -397,6 +453,12 @@ def _half_break(data: list[Stream], figure_directory: Path) -> None:
     figure.write_html(figure_directory / "pelit3.html")
     write_pdf(figure, figure_directory / "pelit3.pdf")
 
+    _LOG.debug(
+        "Half break duration distribution created.",
+        figure_path=figure_directory / "pelit3.html",
+        pdf_path=figure_directory / "pelit3.pdf",
+    )
+
 
 def _game_break(data: list[Stream], figure_directory: Path) -> None:
     game_breaks = np.concatenate([stream.game_breaks for stream in data])
@@ -422,6 +484,12 @@ def _game_break(data: list[Stream], figure_directory: Path) -> None:
     figure.write_html(figure_directory / "pelit4.html")
     write_pdf(figure, figure_directory / "pelit4.pdf")
 
+    _LOG.debug(
+        "Game break duration distribution created.",
+        figure_path=figure_directory / "pelit4.html",
+        pdf_path=figure_directory / "pelit4.pdf",
+    )
+
 
 def averages(data: list[Stream], figure_directory: Path) -> None:
     """
@@ -438,10 +506,15 @@ def averages(data: list[Stream], figure_directory: Path) -> None:
         Path to the directory in which the figure is saved
     """
 
+    log = _LOG.bind(figure_directory=figure_directory)
+    log.info("Creating average figures.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _player_averages(data, figure_directory)
     _team_averages(data, figure_directory)
+
+    log.info("Average figures created.")
 
 
 def _player_averages(data: list[Stream], figure_directory: Path) -> None:
@@ -522,6 +595,12 @@ def _player_averages(data: list[Stream], figure_directory: Path) -> None:
     figure.update_layout(showlegend=False)
     write_pdf(figure, figure_directory / "keskiarvot1.pdf")
 
+    _LOG.debug(
+        "Player averages figure created.",
+        figure_path=figure_directory / "keskiarvot1.html",
+        pdf_path=figure_directory / "keskiarvot1.pdf",
+    )
+
 
 def _team_averages(data: list[Stream], figure_directory: Path) -> None:
     throw_times = np.concatenate(
@@ -600,3 +679,9 @@ def _team_averages(data: list[Stream], figure_directory: Path) -> None:
     figure.write_html(figure_directory / "keskiarvot2.html")
     figure.update_layout(showlegend=False)
     write_pdf(figure, figure_directory / "keskiarvot2.pdf")
+
+    _LOG.debug(
+        "Team averages figure created.",
+        figure_path=figure_directory / "keskiarvot2.html",
+        pdf_path=figure_directory / "keskiarvot2.pdf",
+    )

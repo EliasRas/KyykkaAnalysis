@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import structlog
 from numpy import typing as npt
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
@@ -16,6 +17,8 @@ from .utils import (
     parameter_to_latex,
     precalculated_histogram,
 )
+
+_LOG = structlog.get_logger(__name__)
 
 
 def parameter_distributions(
@@ -39,6 +42,9 @@ def parameter_distributions(
         Path to the directory in which the figures are saved
     """
 
+    log = _LOG.bind(figure_directory=figure_directory)
+    log.info("Creating prior predictive figures.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _sample_distributions(samples, first_throw, figure_directory)
@@ -46,10 +52,13 @@ def parameter_distributions(
     _throw_time_ranges(samples, figure_directory)
     _player_time_ranges(samples, players, figure_directory)
 
+    log.info("Prior predictive figures created.")
+
 
 def _sample_distributions(
     samples: Dataset, first_throw: npt.NDArray[np.bool_], figure_directory: Path
 ) -> None:
+    log = _LOG.bind()
     for parameter, parameter_samples in samples.items():
         sample_values = parameter_samples.values
         parameter_symbol = parameter_to_latex(parameter)
@@ -86,6 +95,10 @@ def _sample_distributions(
             figure_directory / f"{parameter}.html",
             include_mathjax="cdn",
         )
+        log.debug(
+            "Distribution plot created for parameter.",
+            figure_path=figure_directory / f"{parameter}.html",
+        )
 
 
 def _theta_ranges(samples: Dataset, figure_directory: Path) -> None:
@@ -97,6 +110,11 @@ def _theta_ranges(samples: Dataset, figure_directory: Path) -> None:
     figure.write_html(
         figure_directory / "theta_range.html",
         include_mathjax="cdn",
+    )
+
+    _LOG.debug(
+        "Distribution of player's throw time mean ranges created.",
+        figure_path=figure_directory / "theta_range.html",
     )
 
 
@@ -171,6 +189,11 @@ def _throw_time_ranges(samples: Dataset, figure_directory: Path) -> None:
         include_mathjax="cdn",
     )
 
+    _LOG.debug(
+        "Distribution of throw time range created.",
+        figure_path=figure_directory / "y_range.html",
+    )
+
 
 def _player_time_ranges(
     samples: Dataset, players: npt.NDArray[np.str_], figure_directory: Path
@@ -189,4 +212,9 @@ def _player_time_ranges(
     figure.write_html(
         figure_directory / "player_y_range.html",
         include_mathjax="cdn",
+    )
+
+    _LOG.debug(
+        "Distribution of per player throw time range created.",
+        figure_path=figure_directory / "player_y_range.html",
     )

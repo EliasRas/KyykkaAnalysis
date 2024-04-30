@@ -5,10 +5,12 @@ This module provides functions for printing descriptions of kyykkä play time da
 """
 
 import numpy as np
+import structlog
 
 from .data_classes import Stream
 
 # ruff: noqa: T201
+_LOG = structlog.get_logger(__name__)
 
 
 def print_description(data: list[Stream]) -> None:
@@ -24,6 +26,8 @@ def print_description(data: list[Stream]) -> None:
         Play times
     """
 
+    _LOG.info("Printing information about kyykkä play time data.")
+
     _count_description(data)
     _key_throw_values(data)
     _key_game_values(data)
@@ -35,6 +39,8 @@ def print_description(data: list[Stream]) -> None:
         _format_to_minutes(np.mean(kona_times.astype(int))),
         "sekuntia",
     )
+
+    _LOG.info("Kyykkä play time data printed.")
 
 
 def _count_description(data: list[Stream]) -> None:

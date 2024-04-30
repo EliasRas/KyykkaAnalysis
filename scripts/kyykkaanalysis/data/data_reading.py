@@ -12,8 +12,11 @@ README.md
 from pathlib import Path
 
 import numpy as np
+import structlog
 
 from .data_classes import Game, Half, Konatime, Stream, Throwtime
+
+_LOG = structlog.get_logger(__name__)
 
 
 def read_times(input_file: Path, team_file: Path) -> list[Stream]:
@@ -45,25 +48,35 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
         If the play time file contains a timestamps in unchronological order
     """
 
+    log = _LOG.bind(input_file=input_file, team_file=team_file)
+    log.info("Reading kyykkä play time data.")
+
     if not input_file.exists():
         msg = f"Input file {input_file} does not exist."
         raise ValueError(msg)
     teams = _read_teams(team_file)
 
+    log.info("Reading timestamps for events of kyykkä games.")
     player_ids = {}
     data = []
     with input_file.open(encoding="utf-8") as file:
         for i, line in enumerate(file):
             content = line.strip().split(",")
             if i % 3 == 0:
+                log = log.bind(stream_index=i // 3)
+                log.debug("Reading stream description.", row=i)
                 url = content[0]
                 pitch = content[1]
                 if pitch == "":
                     pitch = "Kenttä 1"
                 stream = Stream(url, pitch)
             elif i % 3 == 1:
+                log.debug("Reading timestamps.", row=i)
                 times = content[: _last_valid_time(content) + 1]
             else:
+                log.debug(
+                    "Reading players or events and matching them to timestamps.", row=i
+                )
                 players = content[: _last_valid_time(content) + 1]
                 _read_stream_times(
                     teams,
@@ -73,12 +86,22 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
                     players,
                     playoffs=len(data) >= 13,  # noqa: PLR2004
                 )
+                log.debug(
+                    "Read data from one stream.",
+                    url=stream.url,
+                    pitch=stream.pitch,
+                    game_count=len(stream.games),
+                )
+                log = log.unbind("stream_index")
                 data.append(stream)
+
+    log.info("Kyykkä play time data read.", stream_count=len(data))
 
     return data
 
 
 def _read_teams(team_file: Path) -> dict[str, str]:
+    _LOG.info("Reading teams of players.", team_file=team_file)
     if not team_file.exists():
         msg = "Input file does not exist."
         raise ValueError(msg)
@@ -88,6 +111,13 @@ def _read_teams(team_file: Path) -> dict[str, str]:
         for line in file:
             player, team = line.strip().split(",")
             teams[player] = team
+
+    _LOG.info(
+        "Read teams of players.",
+        team_file=team_file,
+        player_count=len(player),
+        team_count=len(set(teams.values())),
+    )
 
     return teams
 

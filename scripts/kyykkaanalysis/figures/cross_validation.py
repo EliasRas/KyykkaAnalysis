@@ -8,6 +8,7 @@ cross-validation.
 from pathlib import Path
 
 import numpy as np
+import structlog
 from arviz import ELPDData
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
@@ -19,6 +20,8 @@ from .utils import (
     precalculated_histogram,
     uniform_variation,
 )
+
+_LOG = structlog.get_logger(__name__)
 
 
 def cross_validation_plots(
@@ -41,11 +44,16 @@ def cross_validation_plots(
         Path to the directory in which the figures are saved
     """
 
+    log = _LOG.bind(figure_directory=figure_directory)
+    log.info("Creating cross-validation figures.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _k_hat(data, loo_result, figure_directory)
     _log_likelihoods(data, loo_result, figure_directory)
     _log_likelihood_percentiles(loo_result, figure_directory)
+
+    log.info("Cross-validation figures created.")
 
 
 def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None:
@@ -106,6 +114,9 @@ def _k_hat(data: Dataset, loo_results: ELPDData, figure_directory: Path) -> None
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "k_hat.html", include_mathjax="cdn")
+    _LOG.debug(
+        "Pareto k-hat plot created.", figure_path=figure_directory / "k_hat.html"
+    )
 
 
 def _log_likelihoods(
@@ -152,6 +163,10 @@ def _log_likelihoods(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "log_likelihood.html", include_mathjax="cdn")
+    _LOG.debug(
+        "Log-likelihood plot created.",
+        figure_path=figure_directory / "log_likelihood.html",
+    )
 
 
 def _log_likelihood_percentiles(loo_results: ELPDData, figure_directory: Path) -> None:
@@ -199,6 +214,10 @@ def _log_likelihood_percentiles(loo_results: ELPDData, figure_directory: Path) -
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "pit.html", include_mathjax="cdn")
+    _LOG.debug(
+        "Probability integral transform plot created.",
+        figure_path=figure_directory / "pit.html",
+    )
 
 
 def model_comparison(
@@ -221,9 +240,14 @@ def model_comparison(
         Path to the directory in which the figures are saved
     """
 
+    log = _LOG.bind(figure_directory=figure_directory)
+    log.info("Creating model comparison figures.")
+
     _log_likelihood_comparison(data, loo_results, figure_directory)
     _log_likelihood_difference(data, loo_results, figure_directory)
     _elpd(loo_results, figure_directory)
+
+    log.info("Model comparison figures created.")
 
 
 def _log_likelihood_comparison(
@@ -326,6 +350,10 @@ def _log_likelihood_comparison(
     figure.write_html(
         figure_directory / "log_likelihood_comparison.html", include_mathjax="cdn"
     )
+    _LOG.debug(
+        "Log-likelihood comparison plot created.",
+        figure_path=figure_directory / "log_likelihood_comparison.html",
+    )
 
 
 def _log_likelihood_difference(
@@ -397,6 +425,10 @@ def _log_likelihood_difference(
     figure.write_html(
         figure_directory / "log_likelihood_differences.html", include_mathjax="cdn"
     )
+    _LOG.debug(
+        "Log-likelihood difference plot created.",
+        figure_path=figure_directory / "log_likelihood_differences.html",
+    )
 
 
 def _elpd(loo_results: dict[str, ELPDData], figure_directory: Path) -> None:
@@ -418,3 +450,7 @@ def _elpd(loo_results: dict[str, ELPDData], figure_directory: Path) -> None:
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "elpd.html", include_mathjax="cdn")
+    _LOG.debug(
+        "Estimated log predictive density plot created.",
+        figure_path=figure_directory / "elpd.html",
+    )

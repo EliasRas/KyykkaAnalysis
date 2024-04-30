@@ -10,6 +10,7 @@ from time import sleep
 from typing import Any, Literal
 
 import numpy as np
+import structlog
 from numpy import typing as npt
 from plotly import colors
 from plotly import graph_objects as go
@@ -29,6 +30,7 @@ HEATMAP_COLORS = colors.get_colorscale("thermal")
 """Colormap for heatmaps with empty cells removed"""
 HEATMAP_COLORS[0] = [0, "rgb(255,255,255)"]
 
+_LOG = structlog.get_logger(__name__)
 _LATEX_CONVERSION = {
     "mu": r"$\mu$",
     "sigma": r"$\sigma$",
@@ -102,8 +104,10 @@ def write_pdf(figure: go.Figure, figure_path: Path) -> None:
         figure.update_traces(marker={"line": {"width": 1}})
     figure.update_layout(plot_bgcolor="white", bargap=0)
 
+    _LOG.debug("Writing PDF file for the first time.", figure_path=figure_path)
     figure.write_image(figure_path)
     sleep(1)
+    _LOG.debug("Writing PDF file for the second time.", figure_path=figure_path)
     figure.write_image(figure_path)
 
     for row in rows:

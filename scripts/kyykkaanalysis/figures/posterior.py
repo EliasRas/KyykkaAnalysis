@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import structlog
 from numpy import typing as npt
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
@@ -24,6 +25,8 @@ from .utils import (
     parameter_to_latex,
     precalculated_histogram,
 )
+
+_LOG = structlog.get_logger(__name__)
 
 
 def parameter_distributions(
@@ -52,6 +55,13 @@ def parameter_distributions(
         True values of the parameters
     """
 
+    log = _LOG.bind(
+        figure_directory=figure_directory,
+        prior_exist=prior_samples is not None,
+        truth_exists=true_values is not None,
+    )
+    log.info("Creating posterior distribution figures for parameters.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _sample_distributions(
@@ -62,6 +72,8 @@ def parameter_distributions(
     if prior_samples is not None:
         _contraction(samples, prior_samples, figure_directory)
 
+    log.info("Posterior distribution figures for parameters created.")
+
 
 def _sample_distributions(
     samples: Dataset,
@@ -70,6 +82,7 @@ def _sample_distributions(
     prior_samples: Dataset | None = None,
     true_values: Dataset | None = None,
 ) -> None:
+    log = _LOG.bind()
     for parameter, parameter_samples in samples.items():
         sample_values = parameter_samples.values
         parameter_symbol = parameter_to_latex(parameter)
@@ -93,6 +106,12 @@ def _sample_distributions(
         figure.write_html(
             figure_directory / f"{parameter}.html",
             include_mathjax="cdn",
+        )
+
+        log.debug(
+            "Posterior plot created for parameter.",
+            figure_path=figure_directory / f"{parameter}.html",
+            parameter=parameter,
         )
 
 
@@ -327,6 +346,11 @@ def _parameter_correlations(
     )
     figure.write_html(figure_directory / "correlations.html", include_mathjax="cdn")
 
+    _LOG.debug(
+        "Posterior correlation figure created.",
+        figure_path=figure_directory / "correlations.html",
+    )
+
 
 def _theta_ranges(
     samples: Dataset, figure_directory: Path, true_values: Dataset | None = None
@@ -347,6 +371,11 @@ def _theta_ranges(
     figure.write_html(
         figure_directory / "theta_range.html",
         include_mathjax="cdn",
+    )
+
+    _LOG.debug(
+        "Player mean range figure created.",
+        figure_path=figure_directory / "theta_range.html",
     )
 
 
@@ -514,6 +543,11 @@ def _contraction(
     )
     figure.write_html(figure_directory / "contraction.html", include_mathjax="cdn")
 
+    _LOG.debug(
+        "Posterior contraction figure created.",
+        figure_path=figure_directory / "contraction.html",
+    )
+
 
 def predictive_distributions(
     samples: Dataset,
@@ -537,6 +571,12 @@ def predictive_distributions(
         Observed data
     """
 
+    log = _LOG.bind(
+        figure_directory=figure_directory,
+        truth_exists=true_values is not None,
+    )
+    log.info("Creating posterior predictive distribution figures.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _data_distribution(samples, figure_directory, true_values=true_values)
@@ -546,6 +586,8 @@ def predictive_distributions(
         _throw_data_distribution(samples, figure_directory, true_values=true_values)
         _player_data_moments(samples, figure_directory, true_values=true_values)
         _player_time_ranges(samples, figure_directory, true_values=true_values)
+
+    log.info("Posterior predictive distribution figures created.")
 
 
 def _data_distribution(
@@ -613,6 +655,11 @@ def _data_distribution(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "y.html", include_mathjax="cdn")
+
+    _LOG.debug(
+        "Posterior predictive throw time distribution figure created.",
+        figure_path=figure_directory / "y.html",
+    )
 
 
 def _data_moments(
@@ -732,6 +779,12 @@ def _data_moments(
     )
     figure.write_html(figure_directory / "y_moments.html", include_mathjax="cdn")
 
+    _LOG.debug(
+        "Posterior predictive figure created for the moments of throw time "
+        "distribution.",
+        figure_path=figure_directory / "y_moments.html",
+    )
+
 
 def _throw_time_ranges(
     samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
@@ -749,6 +802,11 @@ def _throw_time_ranges(
     figure.write_html(
         figure_directory / "y_range.html",
         include_mathjax="cdn",
+    )
+
+    _LOG.debug(
+        "Posterior throw time range figure created.",
+        figure_path=figure_directory / "y_range.html",
     )
 
 
@@ -864,6 +922,11 @@ def _throw_data_distribution(
     )
     figure.write_html(figure_directory / "throw_y.html", include_mathjax="cdn")
 
+    _LOG.debug(
+        "Posterior predictive per throw throw time figure created.",
+        figure_path=figure_directory / "throw_y.html",
+    )
+
 
 def _player_data_moments(
     samples: Dataset, figure_directory: Path, *, true_values: Dataset | None = None
@@ -900,6 +963,12 @@ def _player_data_moments(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "player_y_moments.html", include_mathjax="cdn")
+
+    _LOG.debug(
+        "Posterior predictive figure created for the moments of throw time "
+        "distribution of players.",
+        figure_path=figure_directory / "player_y_moments.html",
+    )
 
 
 def _player_time_ranges(
@@ -957,6 +1026,11 @@ def _player_time_ranges(
     figure.write_html(
         figure_directory / "player_y_range.html",
         include_mathjax="cdn",
+    )
+
+    _LOG.debug(
+        "Posterior per player throw time range figure created.",
+        figure_path=figure_directory / "player_y_range.html",
     )
 
 

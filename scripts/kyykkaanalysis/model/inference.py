@@ -11,6 +11,7 @@ automatically.
 
 from pathlib import Path
 
+import structlog
 from arviz import InferenceData
 from xarray import Dataset, open_dataset
 
@@ -23,6 +24,8 @@ from ..figures.posterior import (
 )
 from .model_checks import check_priors
 from .modeling import ModelType, ThrowTimeModel
+
+_LOG = structlog.get_logger(__name__)
 
 
 def fit_model(
@@ -45,6 +48,8 @@ def fit_model(
     cache_directory : Path
         Path to the directory in which the sampled posterior is saved
     """
+
+    _LOG.info("Performing posterior inference.")
 
     figure_directory = figure_directory / "Posterior"
     cache_directory.mkdir(parents=True, exist_ok=True)
@@ -100,6 +105,52 @@ def fit_model(
         figure_directory,
     )
 
+    _LOG.info("Posterior inference completed.")
+
+
+def _sample_posterior(model: ThrowTimeModel, cache_directory: Path) -> InferenceData:
+    log = _LOG.bind(
+        model_type=model.model_type,
+        non_centered=model.non_centered,
+        extra_stability=model.extra_stability,
+    )
+    log.info("Sampling posterior distribution for a model.")
+
+    match model.model_type:
+        case ModelType.GAMMA:
+            posterior_file = cache_directory / "posterior.nc"
+        case ModelType.NAIVE:
+            posterior_file = cache_directory / "naive_posterior.nc"
+        case ModelType.INVGAMMA:
+            posterior_file = cache_directory / "inv_posterior.nc"
+        case ModelType.NAIVEINVGAMMA:
+            posterior_file = cache_directory / "naive_inv_posterior.nc"
+
+    if posterior_file.exists():
+        posterior = InferenceData.from_netcdf(posterior_file)
+        log.debug("Posterior samples read from cache.", cache_file=posterior_file)
+    else:
+        posterior = model.sample(
+            sample_count=10000, chain_count=4, parallel_count=4, thin=False
+        )
+        posterior.to_netcdf(posterior_file)
+        log.debug("Posterior samples cached.", cache_file=posterior_file)
+
+    log.info("Thinning posterior for a model.")
+    posterior.thinned_posterior = model.thin_posterior(posterior.posterior)
+    log.info("Sampling posterior predictive distribution for a model.")
+    posterior.posterior_predictive = model.sample_posterior_predictive(
+        posterior.thinned_posterior
+    )
+    log.info("Performing approximate cross-validation for a model.")
+    posterior.loo_result = model.psis_loo(
+        posterior.thinned_posterior, posterior.posterior_predictive
+    )
+
+    log.info("Posterior distribution sampled for a model.")
+
+    return posterior
+
 
 def _load_prior(
     data: list[Stream],
@@ -117,43 +168,15 @@ def _load_prior(
         case ModelType.NAIVEINVGAMMA:
             prior_file = cache_directory / "naive_inv_prior.nc"
 
+    _LOG.debug("Loading prior samples.", cache_file=prior_file)
     if prior_file.exists():
         prior = open_dataset(prior_file)
     else:
         check_priors(data, figure_directory, cache_directory, model_type=model_type)
         prior = open_dataset(prior_file)
+    _LOG.debug("Prior samples loaded.", cache_file=prior_file)
 
     return prior
-
-
-def _sample_posterior(model: ThrowTimeModel, cache_directory: Path) -> InferenceData:
-    match model.model_type:
-        case ModelType.GAMMA:
-            posterior_file = cache_directory / "posterior.nc"
-        case ModelType.NAIVE:
-            posterior_file = cache_directory / "naive_posterior.nc"
-        case ModelType.INVGAMMA:
-            posterior_file = cache_directory / "inv_posterior.nc"
-        case ModelType.NAIVEINVGAMMA:
-            posterior_file = cache_directory / "naive_inv_posterior.nc"
-
-    if posterior_file.exists():
-        posterior = InferenceData.from_netcdf(posterior_file)
-    else:
-        posterior = model.sample(
-            sample_count=10000, chain_count=4, parallel_count=4, thin=False
-        )
-        posterior.to_netcdf(posterior_file)
-
-    posterior.thinned_posterior = model.thin_posterior(posterior.posterior)
-    posterior.posterior_predictive = model.sample_posterior_predictive(
-        posterior.thinned_posterior
-    )
-    posterior.loo_result = model.psis_loo(
-        posterior.thinned_posterior, posterior.posterior_predictive
-    )
-
-    return posterior
 
 
 def _visualize_sample(
@@ -162,6 +185,8 @@ def _visualize_sample(
     posterior: InferenceData,
     figure_directory: Path,
 ) -> None:
+    _LOG.info("Visualizing posterior inference.", figure_directory=figure_directory)
+
     raw_directory = figure_directory / "raw"
     parameter_distributions(
         posterior.posterior, raw_directory / "parameters", prior_samples=prior
@@ -192,10 +217,13 @@ def _visualize_sample(
         data, posterior.loo_result, figure_directory / "cross_validation"
     )
 
+    _LOG.info("Posterior inference visualized.", figure_directory=figure_directory)
+
 
 def _compare_models(
     data: Dataset, posteriors: dict[str, InferenceData], figure_directory: Path
 ) -> None:
+    _LOG.info("Visualizing model comparisons.", figure_directory=figure_directory)
     model_comparison(
         data,
         {

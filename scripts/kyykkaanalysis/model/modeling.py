@@ -11,6 +11,7 @@ from typing import Self
 
 import numpy as np
 import pymc as pm
+import structlog
 from arviz import ELPDData, InferenceData, ess, loo, loo_pit, psislw, summary
 from numpy import typing as npt
 from xarray import DataArray, Dataset, merge
@@ -26,6 +27,8 @@ from .distributions import (
     podium_invgamma_logp,
     podium_invgamma_rng,
 )
+
+_LOG = structlog.get_logger(__name__)
 
 
 class ModelType(Enum):
@@ -141,6 +144,8 @@ class ThrowTimeModel:
             Prior samples
         """
 
+        _LOG.debug("Sampling from prior distribution.", sample_count=sample_count)
+
         with self.model:
             samples = pm.sample_prior_predictive(samples=sample_count)
 
@@ -182,6 +187,15 @@ class ThrowTimeModel:
         arviz.InferenceData
             Posterior samples
         """
+
+        _LOG.debug(
+            "Sampling from posterior distribution.",
+            sample_count=sample_count,
+            tune_count=tune_count,
+            chain_count=chain_count,
+            parallel_count=parallel_count,
+            thin=thin,
+        )
 
         with self.model:
             starting_point = self._starting_point()
@@ -249,6 +263,11 @@ class ThrowTimeModel:
             Posterior predictive samples
         """
 
+        _LOG.debug(
+            "Sampling from posterior predictive distribution.",
+            sample_count=posterior_sample["chain"].size * posterior_sample["draw"].size,
+        )
+
         with self.model:
             samples = pm.sample_posterior_predictive(posterior_sample)
 
@@ -275,6 +294,11 @@ class ThrowTimeModel:
         arviz.ELPDData
             Cross-validation results
         """
+
+        _LOG.debug(
+            "Estimating leave-one-out cross-validation with Pareto smoothed importance "
+            "sampling."
+        )
 
         posterior = InferenceData(posterior=posterior_samples)
         with self.model:
@@ -384,6 +408,12 @@ class ThrowTimeModel:
                 test_args = (max_value, a, theta + o)
                 starting_args = (max_value, -2, 29)
 
+        _LOG.debug(
+            "Checked numerical stability of log-likelihood calculations.",
+            test_point_stable=not np.isfinite(logp(*test_args).eval().item()),
+            starting_point_stable=not np.isfinite(logp(*starting_args).eval().item()),
+        )
+
         return not np.isfinite(logp(*test_args).eval().item()) or not np.isfinite(
             logp(*starting_args).eval().item()
         )
@@ -415,6 +445,12 @@ class ThrowTimeModel:
             Model with updated implementation
         """
 
+        _LOG.debug(
+            "Changing model implementation.",
+            non_centered=non_centered,
+            extra_stability=extra_stability,
+        )
+
         if non_centered is not None:
             self.non_centered = non_centered
         if extra_stability is not None:
@@ -439,21 +475,30 @@ class ThrowTimeModel:
             Model with updated observations
         """
 
+        _LOG.debug("Changing data used by the model.", y_changed=y is not None)
+
         if y is not None:
             with self.model:
                 y = y.flatten()
 
                 # Ensure that measurement error bounds are within relevant distribution
                 # domain. Otherwise gradient calculation fails
+                datum_modified = 0
                 match self.model_type:
-                    case ModelType.GAMMA:
-                        y[y < 3] = 3  # noqa: PLR2004
-                    case ModelType.NAIVE:
-                        y[y < 1] = 1
-                    case ModelType.INVGAMMA:
-                        y[y < 3] = 3  # noqa: PLR2004
-                    case ModelType.NAIVEINVGAMMA:
-                        y[y < 1] = 1
+                    case ModelType.GAMMA | ModelType.INVGAMMA:
+                        invalid_data = y < 3  # noqa: PLR2004
+                        datum_modified = (invalid_data).sum()
+                        y[invalid_data] = 3
+                    case ModelType.NAIVE | ModelType.NAIVEINVGAMMA:
+                        invalid_data = y < 1
+                        datum_modified = (invalid_data).sum()
+                        y[invalid_data] = 1
+
+                if datum_modified > 0:
+                    _LOG.debug(
+                        "y modified to ensure valid computation.",
+                        datum_modified=datum_modified,
+                    )
 
                 pm.set_data({"throw_times": y})
 
@@ -475,12 +520,19 @@ class ThrowTimeModel:
             Thinned chains
         """
 
+        _LOG.debug("Thinning posterior samples.")
+
         sample_count = (
             samples.posterior.sizes["chain"] * samples.posterior.sizes["draw"]
         )
         max_ess = summary(samples)["ess_bulk"].max()
         if max_ess > sample_count:
             # Get rid of negative autocorrelations à la NUTS
+            _LOG.debug(
+                "Removing negative autocorrelation.",
+                max_ess=max_ess,
+                sample_count=sample_count,
+            )
             samples.posterior = samples.posterior.thin({"draw": 2})
             samples.sample_stats = samples.sample_stats.thin({"draw": 2})
 
@@ -491,6 +543,12 @@ class ThrowTimeModel:
         subsample_step = int(sample_count // min_ess)
         if subsample_step > 1:
             # Get rid of autocorrelation
+            _LOG.debug(
+                "Removing autocorrelation.",
+                min_ess=min_ess,
+                sample_count=sample_count,
+                subsample_step=subsample_step,
+            )
             samples.posterior = samples.posterior.thin({"draw": subsample_step})
             samples.sample_stats = samples.sample_stats.thin({"draw": subsample_step})
 
@@ -512,10 +570,17 @@ class ThrowTimeModel:
             Thinned chains
         """
 
+        _LOG.debug("Thinning posterior samples.")
+
         sample_count = samples.sizes["chain"] * samples.sizes["draw"]
         max_ess = summary(samples)["ess_bulk"].max()
         if max_ess > sample_count:
             # Get rid of negative autocorrelations à la NUTS
+            _LOG.debug(
+                "Removing negative autocorrelation.",
+                max_ess=max_ess,
+                sample_count=sample_count,
+            )
             samples = samples.thin({"draw": 2})
 
         sample_count = samples.sizes["chain"] * samples.sizes["draw"]
@@ -523,6 +588,12 @@ class ThrowTimeModel:
         subsample_step = int(sample_count // min_ess)
         if subsample_step > 1:
             # Get rid of autocorrelation
+            _LOG.debug(
+                "Removing autocorrelation.",
+                min_ess=min_ess,
+                sample_count=sample_count,
+                subsample_step=subsample_step,
+            )
             samples = samples.thin({"draw": subsample_step})
 
         return samples

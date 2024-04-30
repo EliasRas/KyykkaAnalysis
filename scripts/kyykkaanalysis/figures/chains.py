@@ -7,6 +7,7 @@ This module provides plotting functions for analyzing MCMC chains and their perf
 from pathlib import Path
 
 import numpy as np
+import structlog
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 from xarray import Dataset
@@ -17,6 +18,8 @@ from .utils import (
     parameter_to_latex,
     precalculated_histogram,
 )
+
+_LOG = structlog.get_logger(__name__)
 
 
 def chain_plots(
@@ -42,12 +45,19 @@ def chain_plots(
         Information about posterior samples
     """
 
+    log = _LOG.bind(
+        figure_directory=figure_directory, stats_exist=sample_stats is not None
+    )
+    log.info("Creating chain figures.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _trace_plot(samples, figure_directory)
     if sample_stats is not None:
         _divergences(samples, sample_stats, figure_directory)
         _energy_plot(sample_stats, figure_directory)
+
+    log.info("Chain figures created.")
 
 
 def _trace_plot(samples: Dataset, figure_directory: Path) -> None:
@@ -109,6 +119,8 @@ def _trace_plot(samples: Dataset, figure_directory: Path) -> None:
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "chains.html", include_mathjax="cdn")
+
+    _LOG.debug("Trace plot created.", figure_path=figure_directory / "chains.html")
 
 
 def _divergences(
@@ -176,6 +188,9 @@ def _divergences(
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "divergences.html", include_mathjax="cdn")
+    _LOG.debug(
+        "Divergence plot created.", figure_path=figure_directory / "divergences.html"
+    )
 
 
 def _energy_plot(sample_stats: Dataset, figure_directory: Path) -> None:
@@ -221,3 +236,4 @@ def _energy_plot(sample_stats: Dataset, figure_directory: Path) -> None:
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "energies.html", include_mathjax="cdn")
+    _LOG.debug("Energy plot created.", figure_path=figure_directory / "energies.html")

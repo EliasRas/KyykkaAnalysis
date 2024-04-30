@@ -20,14 +20,19 @@ dependencies = [
     "pymc>=5.10.0",
     "pytensor>=2.18.1",
     "scipy>=1.11.4",
+    "structlog>=24.1.0",
     "xarray>=2023.6.0",
 ]
 
 
 [project.optional-dependencies]
+win = [ # Windows only
+    "colorama>=0.4.6",  # For colorful logging
+]
 dev = [
-    "ruff",     # Combined linting and formatting
     "pydot",    # For debugging pytensor graphs
+    "rich",     # Improved exceptions
+    "ruff",     # Combined linting and formatting
 ]
 
 [tool.ruff]

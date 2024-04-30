@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import structlog
 from numpy import typing as npt
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
@@ -23,6 +24,7 @@ from .utils import (
     uniform_variation,
 )
 
+_LOG = structlog.get_logger(__name__)
 _ENOUGH_FOR_HEATMAP = 1000
 
 
@@ -51,6 +53,9 @@ def estimation_plots(
         Path to the directory in which the figures are saved
     """
 
+    log = _LOG.bind(figure_directory=figure_directory)
+    log.info("Creating parameter recovery summary figures.")
+
     figure_directory.mkdir(parents=True, exist_ok=True)
 
     _cm_accuracy(posterior_summaries, figure_directory)
@@ -60,6 +65,8 @@ def estimation_plots(
     _contraction(posterior_summaries, figure_directory)
 
     _ks_distances(posterior_summaries, posterior_predictive_summaries, figure_directory)
+
+    log.info("Parameter recovery summary figures created.")
 
 
 def _cm_accuracy(posterior_summaries: Dataset, figure_directory: Path) -> None:
@@ -176,6 +183,10 @@ def _cm_accuracy(posterior_summaries: Dataset, figure_directory: Path) -> None:
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "errors.html", include_mathjax="cdn")
+
+    _LOG.debug(
+        "Estimation error plot created.", figure_path=figure_directory / "errors.html"
+    )
 
 
 def _simulation_infos(
@@ -300,6 +311,11 @@ def _error_correlations(posterior_summaries: Dataset, figure_directory: Path) ->
         figure_directory / "error_correlations.html", include_mathjax="cdn"
     )
 
+    _LOG.debug(
+        "Error correlation plot created.",
+        figure_path=figure_directory / "error_correlations.html",
+    )
+
 
 def _error_correlation_plot(
     x: npt.NDArray[Any],
@@ -397,6 +413,11 @@ def _percentiles(posterior_summaries: Dataset, figure_directory: Path) -> None:
     )
     figure.write_html(figure_directory / "percentiles.html", include_mathjax="cdn")
 
+    _LOG.debug(
+        "Estimated percentile plot created.",
+        figure_path=figure_directory / "percentiles.html",
+    )
+
 
 def _sample_sizes(posterior_summaries: Dataset, figure_directory: Path) -> None:
     parameters = sorted(posterior_summaries.keys())
@@ -469,6 +490,10 @@ def _sample_sizes(posterior_summaries: Dataset, figure_directory: Path) -> None:
         font={"size": FONT_SIZE, "family": "Computer modern"},
     )
     figure.write_html(figure_directory / "sample_sizes.html", include_mathjax="cdn")
+
+    _LOG.debug(
+        "Sample size plot created.", figure_path=figure_directory / "sample_size.html"
+    )
 
 
 def _sample_size_plot(
@@ -581,6 +606,11 @@ def _contraction(posterior_summaries: Dataset, figure_directory: Path) -> None:
     )
     figure.write_html(figure_directory / "contraction.html", include_mathjax="cdn")
 
+    _LOG.debug(
+        "Posterior contraction plot created.",
+        figure_path=figure_directory / "contraction.html",
+    )
+
 
 def _ks_distances(
     posterior_summaries: Dataset,
@@ -651,3 +681,8 @@ def _ks_distances(
             font={"size": FONT_SIZE, "family": "Computer modern"},
         )
         figure.write_html(figure_directory / "ks_test.html", include_mathjax="cdn")
+
+    _LOG.debug(
+        "Kolmogorov-Smirnov test distance plot created.",
+        figure_path=figure_directory / "ks_test.html",
+    )

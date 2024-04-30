@@ -7,8 +7,10 @@ also with data generated with other models.
 """
 
 from pathlib import Path
+from typing import Any
 
 import numpy as np
+import structlog
 from arviz import InferenceData, summary
 from scipy.stats import kstest
 from xarray import Dataset, open_dataset
@@ -25,6 +27,7 @@ from ..figures.posterior import (
 from ..figures.prior import parameter_distributions as prior_distribution_plots
 from .modeling import ModelType, ThrowTimeModel
 
+_LOG = structlog.get_logger(__name__)
 _SBC_SAMPLES = 1000
 _SBC_CHAINS = 4
 _SMALL_SIGMA = 5
@@ -55,6 +58,9 @@ def check_priors(
         Type of model to use
     """
 
+    log = _LOG.bind(model_type=model_type)
+    log.info("Performing prior predictive checks.")
+
     cache_directory.mkdir(parents=True, exist_ok=True)
 
     model = ThrowTimeModel(ModelData(data), model_type=model_type)
@@ -73,13 +79,17 @@ def check_priors(
 
     if cache_file.exists():
         samples = open_dataset(cache_file)
+        log.debug("Prior samples read from cache.", cache_file=cache_file)
     else:
         samples = model.sample_prior(10000)
         samples.to_netcdf(cache_file)
+        log.debug("Prior samples cached.", cache_file=cache_file)
 
     prior_distribution_plots(
         samples, model.data.player_ids, model.data.first_throw, figure_directory
     )
+
+    log.info("Prior predictive checks completed.")
 
 
 def fake_data_simulation(
@@ -104,6 +114,8 @@ def fake_data_simulation(
         Path to the directory in which the sampled prior is saved
     """
 
+    _LOG.info("Performing simulation based calibration.")
+
     naive_cache_directory = cache_directory / "naive"
     naive_cache_directory.mkdir(parents=True, exist_ok=True)
 
@@ -116,27 +128,34 @@ def fake_data_simulation(
         data, figure_directory / "naive_inv_SimulatedData", naive_cache_directory
     )
 
+    _LOG.info("Simulation based calibration finished.")
+
 
 def _test_model(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ) -> None:
+    log = _LOG.bind(data_model=ModelType.GAMMA)
+    log.info("Performing simulation based calibration for a dataset.")
+
     model = ThrowTimeModel(ModelData(data))
     naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVE)
 
     prior_file = cache_directory / "prior.nc"
+    log.debug("Loading prior samples.", cache_file=prior_file)
     if prior_file.exists():
         prior = open_dataset(prior_file)
     else:
         check_priors(data, figure_directory.parent / "Prior", cache_directory)
         prior = open_dataset(prior_file)
+    log.debug("Prior samples loaded.", cache_file=prior_file)
 
     summaries, predictive_summaries = _fake_data_inference(
-        model, prior, cache_directory, figure_directory
+        log, model, prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory)
 
     summaries, predictive_summaries = _fake_data_inference(
-        naive_model, prior, cache_directory, figure_directory
+        log, naive_model, prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory / "naive")
 
@@ -144,25 +163,30 @@ def _test_model(
 def _test_naive_model(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ) -> None:
+    log = _LOG.bind(data_model=ModelType.NAIVE)
+    log.info("Performing simulation based calibration for a dataset.")
+
     model = ThrowTimeModel(ModelData(data))
     naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVE)
 
-    naive_prior_file = cache_directory / "naive_prior.nc"
-    if naive_prior_file.exists():
-        naive_prior = open_dataset(naive_prior_file)
+    prior_file = cache_directory / "naive_prior.nc"
+    log.debug("Loading prior samples.", cache_file=prior_file)
+    if prior_file.exists():
+        naive_prior = open_dataset(prior_file)
     else:
         check_priors(
             data, figure_directory.parent, cache_directory, model_type=ModelType.NAIVE
         )
-        naive_prior = open_dataset(naive_prior_file)
+        naive_prior = open_dataset(prior_file)
+    log.debug("Prior samples loaded.", cache_file=prior_file)
 
     summaries, predictive_summaries = _fake_data_inference(
-        model, naive_prior, cache_directory, figure_directory
+        log, model, naive_prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory)
 
     summaries, predictive_summaries = _fake_data_inference(
-        naive_model, naive_prior, cache_directory, figure_directory
+        log, naive_model, naive_prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory / "naive")
 
@@ -170,23 +194,28 @@ def _test_naive_model(
 def _test_inv_model(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ) -> None:
+    log = _LOG.bind(data_model=ModelType.INVGAMMA)
+    log.info("Performing simulation based calibration for a dataset.")
+
     model = ThrowTimeModel(ModelData(data), model_type=ModelType.INVGAMMA)
     naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVEINVGAMMA)
 
     prior_file = cache_directory / "inv_prior.nc"
+    log.debug("Loading prior samples.", cache_file=prior_file)
     if prior_file.exists():
         prior = open_dataset(prior_file)
     else:
         check_priors(data, figure_directory.parent / "Prior", cache_directory)
         prior = open_dataset(prior_file)
+    log.debug("Prior samples loaded.", cache_file=prior_file)
 
     summaries, predictive_summaries = _fake_data_inference(
-        model, prior, cache_directory, figure_directory
+        log, model, prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory)
 
     summaries, predictive_summaries = _fake_data_inference(
-        naive_model, prior, cache_directory, figure_directory
+        log, naive_model, prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory / "naive")
 
@@ -194,40 +223,52 @@ def _test_inv_model(
 def _test_naive_inv_model(
     data: list[Stream], figure_directory: Path, cache_directory: Path
 ) -> None:
+    log = _LOG.bind(data_model=ModelType.INVGAMMA)
+    log.info("Performing simulation based calibration for a dataset.")
+
     model = ThrowTimeModel(ModelData(data), model_type=ModelType.INVGAMMA)
     naive_model = ThrowTimeModel(ModelData(data), model_type=ModelType.NAIVEINVGAMMA)
 
     prior_file = cache_directory / "naive_inv_prior.nc"
+    log.debug("Loading prior samples.", cache_file=prior_file)
     if prior_file.exists():
         prior = open_dataset(prior_file)
     else:
         check_priors(data, figure_directory.parent / "Prior", cache_directory)
         prior = open_dataset(prior_file)
+    log.debug("Prior samples loaded.", cache_file=prior_file)
 
     summaries, predictive_summaries = _fake_data_inference(
-        model, prior, cache_directory, figure_directory
+        log, model, prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory)
 
     summaries, predictive_summaries = _fake_data_inference(
-        naive_model, prior, cache_directory, figure_directory
+        log, naive_model, prior, cache_directory, figure_directory
     )
     estimation_plots(summaries, predictive_summaries, figure_directory / "naive")
 
 
 def _fake_data_inference(
+    log: Any,
     model: ThrowTimeModel,
     prior: Dataset,
     cache_directory: Path,
     figure_directory: Path,
 ) -> tuple[Dataset, Dataset]:
+    log = log.bind(model_type=model.model_type)
     parameters = sorted(set(prior.keys()) - model.observed_variables)
     sample_count = min(100, len(prior.coords["draw"]))
+    log = log.bind(sample_count=sample_count)
     summaries, predictive_summaries = _generate_summaries(
         parameters, sample_count, prior, model
     )
 
     for sample_index in range(sample_count):
+        log = log.bind(sample_index=sample_index)
+        log.info(
+            "Performing posterior inference on data sampled from prior distribution.",
+        )
         sample = prior.isel(draw=sample_index)
         for parameter in parameters:
             true_value = sample[parameter]
@@ -266,8 +307,13 @@ def _fake_data_inference(
                 non_centered=sample["sigma"].item() < _SMALL_SIGMA,
                 extra_stability=needs_stability,
             )
+            log.info(
+                "Model implementation temporarily changed.",
+                extra_stability=needs_stability,
+                non_centered=sample["sigma"].item() < _SMALL_SIGMA,
+            )
             posterior_sample = _sample_posterior(
-                sample_index, sample, cache_directory, model
+                log, sample_index, sample, cache_directory, model
             )
             model.change_implementation(
                 non_centered=False,
@@ -275,12 +321,14 @@ def _fake_data_inference(
             )
         else:
             posterior_sample = _sample_posterior(
-                sample_index, sample, cache_directory, model
+                log, sample_index, sample, cache_directory, model
             )
 
+        log.info("Thinning posterior.")
         posterior_sample.thinned_sample = model.thin_posterior(
             posterior_sample.posterior
         )
+        log.info("Sampling from posterior predictive distribution.")
         posterior_sample.posterior_predictive = model.sample_posterior_predictive(
             posterior_sample.thinned_sample
         )
@@ -289,6 +337,11 @@ def _fake_data_inference(
             sample_index in [0, 1]
             or posterior_sample.thinned_sample["draw"].size < _SBC_SAMPLES / _SBC_CHAINS
         ):
+            log.info(
+                "Visualizing chain.",
+                chain_length=posterior_sample.thinned_sample["draw"].size,
+                goal_chain_length=_SBC_SAMPLES / _SBC_CHAINS,
+            )
             _visualize_sample(
                 model,
                 figure_directory,
@@ -318,6 +371,11 @@ def _fake_data_inference(
             prior[posterior_sample.posterior_predictive.keys()].isel(draw=sample_index),
             sample_index,
         )
+
+        log.info(
+            "Posterior inference performed on data sampled from prior distribution.",
+        )
+        log.unbind("sample_index")
 
     return summaries, predictive_summaries
 
@@ -368,8 +426,14 @@ def _generate_summaries(
 
 
 def _sample_posterior(
-    sample_index: int, sample: Dataset, cache_directory: Path, model: ThrowTimeModel
+    log: Any,
+    sample_index: int,
+    sample: Dataset,
+    cache_directory: Path,
+    model: ThrowTimeModel,
 ) -> InferenceData:
+    log.info("Sampling from posterior distribution.")
+
     match model.model_type:
         case ModelType.GAMMA:
             posterior_file = cache_directory / f"posterior_{sample_index}.nc"
@@ -384,8 +448,11 @@ def _sample_posterior(
         posterior_sample = open_dataset(posterior_file)
         if len(posterior_sample.keys()) > 0:
             posterior_sample = InferenceData(posterior=posterior_sample)
+            log2 = log.bind(cache_format=Dataset)
         else:
             posterior_sample = InferenceData.from_netcdf(posterior_file)
+            log2 = log.bind(cache_format=InferenceData)
+        log2.debug("Posterior samples loaded.", cache_file=posterior_file)
     else:
         model.change_observations(y=sample["y"].values)
         posterior_sample = model.sample(
@@ -395,6 +462,7 @@ def _sample_posterior(
             thin=False,
         )
         posterior_sample.to_netcdf(posterior_file)
+        log.debug("Posterior samples cached.", cache_file=posterior_file)
 
     return posterior_sample
 
