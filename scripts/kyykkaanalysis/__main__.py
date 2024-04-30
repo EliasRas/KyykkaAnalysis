@@ -1,9 +1,12 @@
 """Provides an entry point for kyykkä play time analysis."""
 
+import logging
+import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 import structlog
+from structlog import dev, processors
 
 from kyykkaanalysis.data.data_classes import Stream
 from kyykkaanalysis.data.data_description import print_description
@@ -12,12 +15,13 @@ from kyykkaanalysis.figures import data as data_figures
 from kyykkaanalysis.model import inference, model_checks
 from kyykkaanalysis.model.modeling import ModelType
 
-_LOG = structlog.get_logger()
+_LOG = structlog.get_logger(__name__)
 
 
 def main() -> None:
     """Run analysis."""
 
+    _configure_log()
     _LOG.info("Program started.")
 
     args = _parse_arguments()
@@ -38,6 +42,40 @@ def main() -> None:
         inference.fit_model(data, args.figure_directory, args.cache_directory)
         _LOG.info("Posterior inference pipeline finished.")
 
+
+def _configure_log() -> None:
+    logging.basicConfig(
+        format="%(message)s", stream=sys.stdout, level=logging.INFO, force=True
+    )
+
+    configured_processors = [
+        structlog.stdlib.filter_by_level,
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        processors.StackInfoRenderer(),
+        dev.set_exc_info,
+        processors.format_exc_info,
+        processors.TimeStamper(fmt="iso", utc=True),
+        processors.TimeStamper(utc=True, key="UNIX timestamp"),
+        processors.CallsiteParameterAdder(
+            {
+                processors.CallsiteParameter.FUNC_NAME,
+                processors.CallsiteParameter.LINENO,
+            }
+        ),
+    ]
+    if sys.stderr.isatty():
+        configured_processors.append(dev.ConsoleRenderer())
+    else:
+        configured_processors.append(processors.JSONRenderer())
+
+    structlog.configure(
+        processors=configured_processors,
+        wrapper_class=structlog.stdlib.BoundLogger,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        cache_logger_on_first_use=True,
+    )
 
 
 def _parse_arguments() -> Namespace:
