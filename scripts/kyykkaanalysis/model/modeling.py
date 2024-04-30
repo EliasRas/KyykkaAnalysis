@@ -1,3 +1,4 @@
+# Part of this module is derived from code licensed under Apache License, Version 2.0
 """
 Constructing play time models.
 
