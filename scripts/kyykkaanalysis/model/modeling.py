@@ -296,6 +296,22 @@ class ThrowTimeModel:
     def _psis_weights(
         self, posterior_samples: Dataset, log_likelihood: Dataset
     ) -> None:
+        # Adapted from arviz.stats.stats.loo_pit and arviz.stats.stats.psislw
+        # based on ArviZ version 0.16.1
+
+        # Copyright (c) 2018, ArviZ devs
+        # Licensed under the Apache License, Version 2.0 (the "License");
+        # you may not use this file except in compliance with the License.
+        # You may obtain a copy of the License at
+
+        #    http://www.apache.org/licenses/LICENSE-2.0
+
+        # Unless required by applicable law or agreed to in writing, software
+        # distributed under the License is distributed on an "AS IS" BASIS,
+        # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        # See the License for the specific language governing permissions and
+        # limitations under the License.
+
         log_likelihood = log_likelihood["y"].stack(__sample__=("chain", "draw"))
 
         if posterior_samples["chain"].size > 1:
