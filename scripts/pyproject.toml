@@ -35,6 +35,7 @@ dev = [
 extend-select = ["ALL"]
 extend-ignore = [
     "ANN101",
+    "ANN401",
     "D202",
     "D212",
     "D413",
