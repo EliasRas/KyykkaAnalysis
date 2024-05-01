@@ -149,6 +149,10 @@ class ThrowTimeModel:
         with self.model:
             samples = pm.sample_prior_predictive(samples=sample_count)
 
+        _LOG.debug(
+            "Sampling from prior distribution finished.", sample_count=sample_count
+        )
+
         samples = merge([samples.prior, samples.prior_predictive])
         if self.model_type in [ModelType.INVGAMMA, ModelType.NAIVEINVGAMMA]:
             # Detransform the shape parameter of inverse gamma distribution
@@ -208,6 +212,15 @@ class ThrowTimeModel:
                 initvals=starting_point,
                 init="adapt_diag",
             )
+
+        _LOG.debug(
+            "Sampling from posterior distribution finished.",
+            sample_count=sample_count,
+            tune_count=tune_count,
+            chain_count=chain_count,
+            parallel_count=parallel_count,
+            thin=thin,
+        )
 
         if self.non_centered:
             # Transform non-centered parametrization back to centered
@@ -271,6 +284,11 @@ class ThrowTimeModel:
         with self.model:
             samples = pm.sample_posterior_predictive(posterior_sample)
 
+        _LOG.debug(
+            "Sampling from posterior predictive distribution finished.",
+            sample_count=posterior_sample["chain"].size * posterior_sample["draw"].size,
+        )
+
         samples = samples.posterior_predictive
         samples["y"] = samples["y"].astype(int)
 
@@ -312,6 +330,12 @@ class ThrowTimeModel:
             y_hat=y_hat,
             log_weights=self._psis_weights(posterior_samples, posterior.log_likelihood),
         )
+
+        _LOG.debug(
+            "Leave-one-out cross-validation with Pareto smoothed importance "
+            "sampling estimated."
+        )
+
         loo_result.pit = DataArray(
             data=pit, dims=["throws"], coords={"throws": loo_result.loo_i.throws}
         )
