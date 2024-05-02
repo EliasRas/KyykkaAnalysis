@@ -92,7 +92,6 @@ def read_times(input_file: Path, team_file: Path) -> list[Stream]:
                     pitch=stream.pitch,
                     game_count=len(stream.games),
                 )
-                log = log.unbind("stream_index")
                 data.append(stream)
 
     log.info("Kyykkä play time data read.", stream_count=len(data))

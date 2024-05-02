@@ -375,7 +375,6 @@ def _fake_data_inference(
         log.info(
             "Posterior inference performed on data sampled from prior distribution.",
         )
-        log.unbind("sample_index")
 
     return summaries, predictive_summaries
 
