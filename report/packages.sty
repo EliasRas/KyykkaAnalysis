@@ -21,7 +21,6 @@
 
 % Math
 \usepackage{mathtools}  % amsmath + additional control over formatting and symbols
-\mathtoolsset{showonlyrefs} % Only number equations that are referred to
 \usepackage{amssymb,amsthm}   % Math environments, fonts, symbols, etc.
 \usepackage{commath}    % Differential calculus, delimiter and reference macros, misc.
 \usepackage{bm,bbm}     % \bm for bold math symbols and \mathbbm to use instead of \mathbb
@@ -84,11 +83,11 @@
 
 % Hyper/cleveref have a tendency to mess things up if imported too early, hence they are imported as late as possible
 \usepackage{hyperref}
-\usepackage[capitalize]{cleveref}% Hyperlinks and automatic reference style with \cref
+\usepackage[capitalize]{cleveref} % Hyperlinks and automatic reference style with \cref
 \urlstyle{same}
 % Formatting of the references
 \crefdefaultlabelformat{#2#1#3}
 \creflabelformat{figure}{#2#1#3}
 % Fix refering to appendices
-\AtBeginEnvironment{appendices}{\crefalias{section}{appendix}} 
+\AtBeginEnvironment{appendices}{\crefalias{section}{appendix}}
 \AtBeginEnvironment{appendices}{\crefalias{subsection}{appendix}}
