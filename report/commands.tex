@@ -7,6 +7,9 @@
 \newcommand{\+}[1]{\ensuremath{\mathbf{#1}}}
 \newcommand{\declarecommand}[1]{\providecommand{#1}{}\renewcommand{#1}} 
 
+% Viittaus suomen kielellä. Argumentit teksti ja viitattava kohde
+\newcommand{\fref}[2]{\hyperref[#2]{#1~\ref{#2}}}
+
 % Model structure
 \tikzstyle{var} = [rectangle, draw=black]
 \tikzstyle{parameter} = [ellipse, draw=black]
@@ -75,7 +78,6 @@
     }
 }
 \tikzstyle{comment} = [three sided, minimum width=3cm, minimum height=1cm, text centered]
-\newcommand{\fref}[2]{\hyperref[#2]{#1~\ref{#2}}}
 
 % Remove extra ; from bayesnet
 % The MIT License (MIT)
