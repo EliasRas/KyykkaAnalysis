@@ -1,0 +1,35 @@
+\begin{tikzpicture}
+    % Observations
+    \node[obs] (y) {\(\mathbf{y}_i\)};
+    \node[latent, above of=y, yshift=2cm] (y_hat) {\(\hat{\mathbf{y}}_i\)};
+
+    % Parameters
+    \node[latent, above of=y_hat, yshift=2cm] (t_tilde) {\(\tilde{\theta}_i\)};
+    \node[const, above of=t_tilde, yshift=0.75cm] (t_tilde-calc) {\(\theta_i+o[1.]\)};
+    \node[latent, above of=t_tilde-calc, yshift=2cm] (t) {\(\theta_i\)};
+    \node[latent, left of=t, xshift=-2.5cm] (o) {\(o\)};
+    \node[latent, above of=y_hat, xshift=2.5cm, yshift=0.97cm] (alpha) {\(\alpha \)};
+    \node[const, above of=alpha, yshift=0.75cm] (alpha-calc) {\(\exp(-a)+1\)};
+    \node[latent, above of=alpha-calc, yshift=0.75cm] (a) {\(a\)};
+    \node[latent, above of=t, xshift=-0.5cm, yshift=2cm] (m) {\(\mu\)};
+    \node[latent, above of=t, xshift=0.5cm, yshift=2cm] (s) {\(\sigma\)};
+
+    % Factors
+    \factor[above of=y, yshift=1cm] {meas-f} {left:\fref{Kap.}{sec:measurement}} {y_hat} {y}
+    \factor[above of=y_hat, yshift=1cm] {y-f} {left:\(\mathcal{G}^{-1}\)} {alpha, t_tilde} {y_hat}
+    \factoredge {o,t} {t_tilde-calc.north} {}
+    \factor[above of=o, yshift=1cm] {o-f} {left:puoli-\(\mathcal{N}(0,11^2)\)} {} {o}
+    \factor[above of=t, yshift=1cm] {t-f} {right:\(\mathcal{N}^+\)} {m, s} {t}
+    \factor[above of=m, yshift=1cm] {m-f} {left:\(\mathcal{N}^+(28,11^2)\)} {} {m}
+    \factor[above of=s, yshift=1cm] {s-f} {right:puoli-\(\mathcal{N}(0,11^2)\)} {} {s}
+    \factoredge {a} {alpha-calc} {}
+    \factoredge {alpha-calc} {alpha} {}
+    \factor[above of=a, yshift=1cm] {o-f} {above:\(\mathcal{N}(-4.5,1)\)} {} {a}
+
+    % Gates
+    \node[font=\footnotesize, left of=o, xshift=-0.5cm, yshift=0.3cm] (first) {ensimmäinen};
+    \gate {first-gate} {(first)(o)} {}
+
+    % Plates
+    \plate {thrower} {(y)(y_hat)(y-f)(t_tilde)(t_tilde-calc)(t)} {heittäjä\hspace*{1.3cm}}
+\end{tikzpicture}
